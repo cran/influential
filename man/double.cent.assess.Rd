@@ -30,17 +30,27 @@ the values of the independent variable.}
 }
 \value{
 A list of 11 objects including:
-Summary of the basic statistics of two centrality measures (or any two other continuous variables)
-The results of normality assessment of two variable (p-value > 0.05 imply that the variable is normally distributed).
-Description of the normality assessment of the dependent variable.
-Description of the normality assessment of the independent variable.
-Results of the generalized additive modeling (GAM) of the data.
-The association type based on simultaneous consideration of normality assessment,
+
+    - Summary of the basic statistics of two centrality measures (or any two other continuous variables).
+
+    - The results of normality assessment of two variable (p-value > 0.05 imply that the variable is normally distributed).
+
+    - Description of the normality assessment of the dependent variable.
+
+    - Description of the normality assessment of the independent variable.
+
+    - Results of the generalized additive modeling (GAM) of the data.
+
+    - The association type based on simultaneous consideration of normality assessment,
 GAM Computation with smoothness estimation, Spearman correlation, and ranked regression analysis of splines.
-The Hoeffding's D Statistic of dependence (ranging from -0.5 to 1).
-Description of the dependence significance.
-Correlation between variables based on the NNS method.
-The last two objects are the conditional probability of deviation of two
+
+    - The Hoeffding's D Statistic of dependence (ranging from -0.5 to 1).
+
+    - Description of the dependence significance.
+
+    - Correlation between variables based on the NNS method.
+
+    - The last two objects are the conditional probability of deviation of two
 centrality measures from their corresponding means in opposite directions based
 on both the entire network and the split-half random sample of network nodes.
 }
@@ -59,9 +69,9 @@ For the conditional probability assessment, the independent variable is consider
 \examples{
 MyData <- centrality.measures
 My.metrics.assessment <- double.cent.assess(data = MyData,
-                                            nodes.colname = "name",
-                                            dependent.colname = "BetweennessCentrality",
-                                            independent.colname = "NeighborhoodConnectivity")
+                                            nodes.colname = rownames(MyData),
+                                            dependent.colname = "BC",
+                                            independent.colname = "NC")
 }
 \seealso{
 \code{\link[nortest]{ad.test}} for Anderson-Darling test for normality,

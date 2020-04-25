@@ -27,14 +27,22 @@ the values of the Centrality_2 variable.}
 }
 \value{
 A list of nine objects including:
-Summary of the basic statistics of two centrality measures (or any two other continuous variables)
-The results of normality assessment of two variable (p-value > 0.05 imply that the variable is normally distributed).
-Description of the normality assessment of the centrality1 (first variable).
-Description of the normality assessment of the centrality2 (second variable).
-The Hoeffding's D Statistic of dependence (ranging from -0.5 to 1).
-Description of the dependence significance.
-Correlation between variables based on the NNS method.
-The last two objects are the conditional probability of deviation of two
+
+- Summary of the basic statistics of two centrality measures (or any two other continuous variables).
+
+- The results of normality assessment of two variable (p-value > 0.05 imply that the variable is normally distributed).
+
+- Description of the normality assessment of the centrality1 (first variable).
+
+- Description of the normality assessment of the centrality2 (second variable).
+
+- The Hoeffding's D Statistic of dependence (ranging from -0.5 to 1).
+
+- Description of the dependence significance.
+
+- Correlation between variables based on the NNS method.
+
+- The last two objects are the conditional probability of deviation of two
 centrality measures from their corresponding means in opposite directions based
 on both the entire network and the split-half random sample of network nodes.
 }
@@ -52,9 +60,9 @@ as the condition variable.
 \examples{
 MyData <- centrality.measures
 My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,
-                                            nodes.colname = "name",
-                                            centrality1.colname = "BetweennessCentrality",
-                                            centrality2.colname = "NeighborhoodConnectivity")
+                                            nodes.colname = rownames(MyData),
+                                            centrality1.colname = "BC",
+                                            centrality2.colname = "NC")
 }
 \seealso{
 \code{\link[nortest]{ad.test}} for Anderson-Darling test for normality,

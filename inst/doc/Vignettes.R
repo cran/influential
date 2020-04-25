@@ -23,55 +23,99 @@ class(My_graph)
 ## ---- echo=FALSE--------------------------------------------------------------
 knitr::kable(head(coexpression.adjacency)[,1:10])
 
-## ----g_adj--------------------------------------------------------------------
-MyData <- coexpression.adjacency        # Preparing the data
+## ----g_adj, eval=FALSE--------------------------------------------------------
+#  MyData <- coexpression.adjacency        # Preparing the data
+#  
+#  My_graph <- graph_from_adjacency_matrix(MyData)        # Reconstructing the graph
 
-My_graph <- graph_from_adjacency_matrix(MyData)        # Reconstructing the graph
+## ----Vertices, eval=FALSE-----------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  My_graph_vertices <- V(My_graph)        # Extracting the vertices
 
-## ----Vertices-----------------------------------------------------------------
-MyData <- coexpression.data        # Preparing the data
+## ----DC, eval=FALSE-----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE) # Calculating degree centrality
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+## ----BC, eval=FALSE-----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,    # Calculating betweenness centrality
+#                                      directed = FALSE, normalized = FALSE)
 
-My_graph_vertices <- V(My_graph)        # Extracting the vertices
+## ----NC, eval=FALSE-----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  neighrhood.co <- neighborhood.connectivity(graph = My_graph,    # Calculating neighborhood connectivity
+#                                             vertices = GraphVertices,
+#                                             mode = "all")
 
-## ----DC-----------------------------------------------------------------------
-MyData <- coexpression.data        # Preparing the data
+## ----H_index, eval=FALSE------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  h.index <- h_index(graph = My_graph,    # Calculating H-index
+#                     vertices = GraphVertices,
+#                     mode = "all")
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+## ----LH_index, eval=FALSE-----------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  lh.index <- lh_index(graph = My_graph,    # Calculating Local H-index
+#                     vertices = GraphVertices,
+#                     mode = "all")
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+## ----CI, eval=FALSE-----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  ci <- collective.influence(graph = My_graph,    # Calculating Collective Influence
+#                            vertices = GraphVertices,
+#                            mode = "all", d=3)
 
-My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE) # Calculating degree centrality
-
-## ----BC-----------------------------------------------------------------------
-MyData <- coexpression.data        # Preparing the data
-
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
-
-GraphVertices <- V(My_graph)        # Extracting the vertices
-
-My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,    # Calculating betweenness centrality
-                                    directed = FALSE, normalized = FALSE)
-
-## ----NC-----------------------------------------------------------------------
-MyData <- coexpression.data        # Preparing the data
-
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
-
-GraphVertices <- V(My_graph)        # Extracting the vertices
-
-neighrhood.co <- neighborhood.connectivity(graph = My_graph,    # Calculating neighborhood connectivity
-                                           vertices = GraphVertices,
-                                           mode = "all")
+## ----CR, eval=FALSE-----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  cr <- clusterrank(graph = My_graph,    # Calculating ClusterRank
+#                    vids = GraphVertices,
+#                    directed = FALSE, loops = TRUE)
 
 ## ----cond.prob----------------------------------------------------------------
 MyData <- centrality.measures        # Preparing the data
 
 My.conditional.prob <- cond.prob.analysis(data = MyData,       # Assessing the conditional probability
-                                          nodes.colname = "name",
-                                          Desired.colname = "BetweennessCentrality",
-                                          Condition.colname = "NeighborhoodConnectivity")
+                                          nodes.colname = rownames(MyData),
+                                          Desired.colname = "BC",
+                                          Condition.colname = "NC")
 
 print(My.conditional.prob)
 
@@ -79,13 +123,13 @@ print(My.conditional.prob)
 #  MyData <- centrality.measures        # Preparing the data
 #  
 #  My.metrics.assessment <- double.cent.assess(data = MyData,       # Association assessment
-#                                              nodes.colname = "name",
-#                                              dependent.colname = "BetweennessCentrality",
-#                                              independent.colname = "NeighborhoodConnectivity")
+#                                              nodes.colname = rownames(MyData),
+#                                              dependent.colname = "BC",
+#                                              independent.colname = "NC")
 #  
 #  print(My.metrics.assessment)
 #  #> $Summary_statistics
-#  #>         BetweennessCentrality NeighborhoodConnectivity
+#  #>         BC NC
 #  #> Min.              0.000000000                   1.2000
 #  #> 1st Qu.           0.000000000                  66.0000
 #  #> Median            0.000000000                 156.0000
@@ -95,8 +139,8 @@ print(My.conditional.prob)
 #  #>
 #  #> $Normality_results
 #  #>                               p.value
-#  #> BetweennessCentrality    1.415450e-50
-#  #> NeighborhoodConnectivity 9.411737e-30
+#  #> BC    1.415450e-50
+#  #> NC 9.411737e-30
 #  #>
 #  #> $Dependent_Normality
 #  #> [1] "Non-normally distributed"
@@ -133,13 +177,13 @@ print(My.conditional.prob)
 #  MyData <- centrality.measures        # Preparing the data
 #  
 #  My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,       # Association assessment
-#                                                           nodes.colname = "name",
-#                                                           centrality1.colname = "BetweennessCentrality",
-#                                                           centrality2.colname = "NeighborhoodConnectivity")
+#                                                           nodes.colname = rownames(MyData),
+#                                                           centrality1.colname = "BC",
+#                                                           centrality2.colname = "NC")
 #  
 #  print(My.metrics.assessment)
 #  #> $Summary_statistics
-#  #>         BetweennessCentrality NeighborhoodConnectivity
+#  #>         BC NC
 #  #> Min.              0.000000000                   1.2000
 #  #> 1st Qu.           0.000000000                  66.0000
 #  #> Median            0.000000000                 156.0000
@@ -149,8 +193,8 @@ print(My.conditional.prob)
 #  #>
 #  #> $Normality_results
 #  #>                               p.value
-#  #> BetweennessCentrality    1.415450e-50
-#  #> NeighborhoodConnectivity 9.411737e-30
+#  #> BC    1.415450e-50
+#  #> NC 9.411737e-30
 #  #>
 #  #> $Centrality1_Normality
 #  #> [1] "Non-normally distributed"
@@ -176,12 +220,60 @@ print(My.conditional.prob)
 #  #> $ConditionalProbability_split.half.sample
 #  #> [1] 55.68163
 
-## ----ihs----------------------------------------------------------------------
+## ----IVI.from.indices---------------------------------------------------------
 MyData <- centrality.measures        # Preparing the data
 
-My.vertices.IHS <- ihs(DC = centrality.measures$Degree,       # Calculation of IHS
-                       BC = centrality.measures$BetweennessCentrality,
-                       NC = centrality.measures$NeighborhoodConnectivity)
+My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
+                                   CR = centrality.measures$CR,
+                                   NC = centrality.measures$NC,
+                                   LH_index = centrality.measures$LH_index,
+                                   BC = centrality.measures$BC,
+                                   CI = centrality.measures$CI)
 
-print(head(My.vertices.IHS))
+## ----IVI, eval=FALSE----------------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices, # Calculation of IVI
+#                         weights = NULL, directed = FALSE, mode = "all",
+#                         loops = TRUE, d = 3, scaled = TRUE)
+
+## ----Spreading.score, eval=FALSE----------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  Spreading.score <- spreading.score(graph = My_graph,     # Calculation of Spreading score
+#                                     vertices = GraphVertices,
+#                                     weights = NULL, directed = FALSE, mode = "all",
+#                                     loops = TRUE, d = 3, scaled = TRUE)
+
+## ----Hubness.score, eval=FALSE------------------------------------------------
+#  MyData <- coexpression.data        # Preparing the data
+#  
+#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  
+#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  
+#  Hubness.score <- hubness.score(graph = My_graph,     # Calculation of Hubness score
+#                                     vertices = GraphVertices,
+#                                     directed = FALSE, mode = "all",
+#                                     loops = TRUE, scaled = TRUE)
+
+## ----SIRIR--------------------------------------------------------------------
+set.seed(1234)
+My_graph <- igraph::sample_gnp(n=50, p=0.05)        # Reconstructing the graph
+
+GraphVertices <- V(My_graph)        # Extracting the vertices
+
+Influence.Ranks <- sirir(graph = My_graph,     # Calculation of influence rank
+                                   vertices = GraphVertices, 
+                                   beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
+
+knitr::kable(Influence.Ranks[c(order(Influence.Ranks$rank)[1:10]),])
 
