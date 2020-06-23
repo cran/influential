@@ -3,7 +3,7 @@
 \name{ivi}
 \alias{ivi}
 \alias{IVI}
-\title{Integrated Vector of Influence (IVI)}
+\title{Integrated Value of Influence (IVI)}
 \usage{
 ivi(
   graph,
@@ -62,7 +62,15 @@ My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices,
 }
 }
 \seealso{
-\code{\link[influential]{ivi.from.indices}}
+\code{\link[influential]{ivi.from.indices}},
+\code{\link[influential]{exir}}
+
+Other integrative ranking functions: 
+\code{\link{exir}()},
+\code{\link{hubness.score}()},
+\code{\link{ivi.from.indices}()},
+\code{\link{spreading.score}()}
 }
+\concept{integrative ranking functions}
 \keyword{IVI}
-\keyword{integrated_vector_of_influence}
+\keyword{integrated_value_of_influence}

@@ -105,7 +105,7 @@ knitr::kable(head(coexpression.adjacency)[,1:10])
 #  
 #  GraphVertices <- V(My_graph)        # Extracting the vertices
 #  
-#  cr <- clusterrank(graph = My_graph,    # Calculating ClusterRank
+#  cr <- clusterRank(graph = My_graph,    # Calculating ClusterRank
 #                    vids = GraphVertices,
 #                    directed = FALSE, loops = TRUE)
 
@@ -220,15 +220,15 @@ print(My.conditional.prob)
 #  #> $ConditionalProbability_split.half.sample
 #  #> [1] 55.68163
 
-## ----IVI.from.indices---------------------------------------------------------
-MyData <- centrality.measures        # Preparing the data
-
-My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
-                                   CR = centrality.measures$CR,
-                                   NC = centrality.measures$NC,
-                                   LH_index = centrality.measures$LH_index,
-                                   BC = centrality.measures$BC,
-                                   CI = centrality.measures$CI)
+## ----IVI.from.indices, eval=FALSE---------------------------------------------
+#  MyData <- centrality.measures        # Preparing the data
+#  
+#  My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
+#                                     CR = centrality.measures$CR,
+#                                     NC = centrality.measures$NC,
+#                                     LH_index = centrality.measures$LH_index,
+#                                     BC = centrality.measures$BC,
+#                                     CI = centrality.measures$CI)
 
 ## ----IVI, eval=FALSE----------------------------------------------------------
 #  MyData <- coexpression.data        # Preparing the data
@@ -276,4 +276,26 @@ Influence.Ranks <- sirir(graph = My_graph,     # Calculation of influence rank
                                    beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
 
 knitr::kable(Influence.Ranks[c(order(Influence.Ranks$rank)[1:10]),])
+
+## ----ExIR, eval=FALSE---------------------------------------------------------
+#  
+#  #Preparing the required arguments for the `exir` function
+#  MyDesired_list <- Desiredlist
+#  MyDiff_data <- Diffdata
+#  Diff_value <- c(1,3,5)
+#  Regr_value <- 7
+#  Sig_value <- c(2,4,6,8)
+#  MyExptl_data <- Exptldata
+#  Condition_colname <- "condition"
+#  
+#  #Running the ExIR model
+#  My.exir <- exir(Desired_list = MyDesired_list,
+#  Diff_data = MyDiff_data, Diff_value = Diff_value,
+#  Regr_value = Regr_value, Sig_value = Sig_value,
+#  Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
+#  verbose = FALSE)
+#  
+#  names(My.exir)
+#  #> [1] "Driver table"          "DE-mediator table"     "nonDE-mediators table"
+#  #> [4] "Biomarker table"
 

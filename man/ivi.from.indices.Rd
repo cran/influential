@@ -3,7 +3,7 @@
 \name{ivi.from.indices}
 \alias{ivi.from.indices}
 \alias{IVI.FI}
-\title{Integrated Vector of Influence (IVI)}
+\title{Integrated Value of Influence (IVI)}
 \usage{
 ivi.from.indices(DC, CR, LH_index, NC, BC, CI, scaled = TRUE)
 }
@@ -41,6 +41,14 @@ My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,
                                     CI = centrality.measures$CI)
 }
 \seealso{
-\code{\link[influential]{ivi}}
+\code{\link[influential]{ivi}},
+\code{\link[influential]{exir}}
+
+Other integrative ranking functions: 
+\code{\link{exir}()},
+\code{\link{hubness.score}()},
+\code{\link{ivi}()},
+\code{\link{spreading.score}()}
 }
+\concept{integrative ranking functions}
 \keyword{ivi.from.indices}
