@@ -1,14 +1,14 @@
-f0e183b0bf7d227285d99e696de5a15b *DESCRIPTION
+f35dafa5777d4fe3ab5edd57859f674c *DESCRIPTION
 89179732598e20c54b1c6a248c1b3433 *NAMESPACE
-754c82301971710cb040ef75712a5721 *NEWS.md
+76a70c58ec303df95e9698508794fbdf *NEWS.md
 f26c2b49f0189f0ccc1403b76ff77e41 *R/data.R
-bf9dde38e30261236dadb51af2c43de3 *R/functions.R
+7ebf1f03147d9019205c90b958f5233f *R/functions.R
 db085a88bd752c4c57fe155ae5629ae3 *README.md
 d57030233bf38f546bf3acf570f52784 *build/vignette.rds
 f340b8acb4f7f1f8abdce7e463850109 *data/centrality.measures.rda
 8b32e4c665ad780d480d7201959160b1 *data/coexpression.adjacency.rda
 9b43777675a61d1b6a013a40e7320b25 *data/coexpression.data.rda
-88daa1e275b0f3615ab841f8031c4d98 *inst/CITATION
+86381bde73a4ad741f622634810e30fa *inst/CITATION
 16f19b75a18fc0ef4f46f3f7dc43ce7c *inst/doc/Vignettes.R
 26f7a266a7d1f99b458950fa89ea89d3 *inst/doc/Vignettes.Rmd
 dbd9f8861128a03bb0948dc15befa82a *inst/doc/Vignettes.html
@@ -29,7 +29,7 @@ d777cdc9d6444c1590032638efca9feb *man/graph_from_adjacency_matrix.Rd
 aae341a70fc9fd6434769add530a6919 *man/graph_from_data_frame.Rd
 cc9c37be6b0c5e99c551a2ae0e30ce57 *man/h_index.Rd
 7232a22bb42a138b70aac3fd63cfde13 *man/hubness.score.Rd
-348eb8b2b3ec04e02f82c2b291f27e19 *man/influential-package.Rd
+7439b0fefba97fb080b9c111b0c6e54f *man/influential-package.Rd
 369434090e8bee2bdd7b48dcdb443274 *man/ivi.Rd
 2276fed9622df2a1e6f68a6f83ffede0 *man/ivi.from.indices.Rd
 c1cabca9c14d31353af8bc7751d8c16f *man/lh_index.Rd
