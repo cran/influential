@@ -13,7 +13,7 @@
 #' reconstruction of networks from adjacency matrices and
 #' data frames, analysis of the topology of the network and calculation of centrality measures
 #' as well as a novel and powerful influential node ranking.
-#' The \strong{Experimental-data-based Integrative Ranking (ExIR)} is a sophisticated model
+#' The \strong{Experimental data-based Integrative Ranking (ExIR)} is a sophisticated model
 #' for classification and ranking of the top candidate features based on only the experimental data.
 #' The first integrative method, namely the \strong{Integrated Value of Influence (IVI)},
 #' that captures all topological dimensions of the network for
@@ -35,8 +35,8 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 1.1.1
-#'   \item Date: 24-06-2020
+#'   \item Version: 1.1.2
+#'   \item Date: 27-06-2020
 #'   \item License: GPL-3
 #' }
 #'
@@ -88,7 +88,7 @@ NULL
 #' @aliases NC
 #' @keywords neighborhood_connectivity
 #' @family centrality functions
-#' @export
+#' @export neighborhood.connectivity
 #' @examples
 #' MyData <- coexpression.data
 #' My_graph <- graph_from_data_frame(MyData)
@@ -98,8 +98,13 @@ NULL
 #'                                            mode = "all")
 neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") {
 
-  # Getting the names of vertices with the order in use
-  node.names <- as.character(igraph::as_ids(igraph::V(graph = graph)))
+  # Getting the names of vertices
+  if(class(vertices) == "igraph.vs") {
+    node.names <- as.character(igraph::as_ids(vertices))
+  } else {
+    node.names <- as.character(vertices)
+  }
+
 
   # Getting the first neighbors of each node
   node.neighbors <- sapply(as.list(node.names),
@@ -114,33 +119,26 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
                                                                          mode = mode,
                                                                          order = 1) - 1)
 
-  first.neighbors.size.sum <- sapply(first.neighbors.size, sum)
-
   # Calculation of neighborhood connectivity
-  temp.nc <- vector(mode = "numeric", length = length(vertices))
 
-  for (i in 1:length(vertices)) {
-    temp.nc[i] <- first.neighbors.size.sum[i]/length(node.neighbors[[i]])
+  if(length(vertices) == 1) {
+    first.neighbors.size.sum <- sum(first.neighbors.size)
+    temp.nc <- first.neighbors.size.sum/nrow(node.neighbors)
+  } else {
+
+    first.neighbors.size.sum <- sapply(first.neighbors.size, sum)
+    temp.nc <- vector(mode = "numeric", length = length(vertices))
+
+    for (i in 1:length(vertices)) {
+      temp.nc[i] <- first.neighbors.size.sum[i]/length(node.neighbors[[i]])
+    }
   }
 
-  nc.table <- data.frame(Neighborhood_connectivity = temp.nc)
+  temp.nc[c(which(is.nan(temp.nc)), which(is.na(temp.nc)))] <- 0
 
-  if (length(vertices) > 1) {
-    nc.table <- nc.table
-  } else if (length(vertices) == 1) {
-    nc.table <- data.frame(Neighborhood_connectivity =
-                             sum(nc.table$Neighborhood_connectivity)/
-                             nrow(nc.table))
-  }
+  names(temp.nc) <- node.names
 
-  rownames(nc.table) <- node.names
-
-  nc.table$Neighborhood_connectivity[c(which(is.nan(nc.table$Neighborhood_connectivity)),
-                                       which(is.na(nc.table$Neighborhood_connectivity)))] <- 0
-
-  nc.table <- nc.table[,1]
-
-  return(nc.table)
+  return(temp.nc)
 
 }
 
@@ -166,7 +164,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 #' @keywords h_index
 #' @family centrality functions
 #' @seealso \code{\link[influential]{lh_index}}
-#' @export
+#' @export h_index
 #' @examples
 #' \dontrun{
 #' MyData <- coexpression.data
@@ -206,6 +204,14 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 
     rm(temp.neighbors.size)
   }
+
+  # Getting the names of vertices
+  if(class(vertices) == "igraph.vs") {
+    node.names <- as.character(igraph::as_ids(vertices))
+  } else {
+    node.names <- as.character(vertices)
+  }
+  names(hindex) <- node.names
   return(hindex)
   }
 
@@ -230,7 +236,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases lh.index
   #' @keywords lh_index
   #' @family centrality functions
-  #' @export
+  #' @export lh_index
   #' @examples
   #' \dontrun{
   #' MyData <- coexpression.data
@@ -252,6 +258,13 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
                                 vertices = unlist(first.neighbors[i]),
                                 mode = mode))
     }
+    # Getting the names of vertices
+    if(class(vertices) == "igraph.vs") {
+      node.names <- as.character(igraph::as_ids(vertices))
+    } else {
+      node.names <- as.character(vertices)
+    }
+    names(lhindex) <- node.names
     return(lhindex)
   }
 
@@ -286,7 +299,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases CI
   #' @keywords collective.influence
   #' @family centrality functions
-  #' @export
+  #' @export collective.influence
   #' @examples
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
@@ -312,6 +325,13 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
       ci[i] <- rd * rd.neighbours
     }
 
+    # Getting the names of vertices
+    if(class(vertices) == "igraph.vs") {
+      node.names <- as.character(igraph::as_ids(vertices))
+    } else {
+      node.names <- as.character(vertices)
+    }
+    names(ci) <- node.names
     return(ci)
   }
 
@@ -336,7 +356,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases CR
   #' @keywords clusterRank
   #' @family centrality functions
-  #' @export
+  #' @export clusterRank
   #' @examples
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
@@ -433,7 +453,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 #' @aliases CPA
 #' @keywords conditional_probability association_assessment
 #' @family centrality association assessment functions
-#' @export
+#' @export cond.prob.analysis
 #' @examples
 #' MyData <- centrality.measures
 #' My.conditional.prob <- cond.prob.analysis(data = MyData,
@@ -547,7 +567,7 @@ cond.prob.analysis <- function(data, nodes.colname, Desired.colname, Condition.c
 #' \code{\link[stats]{lm}} for Fitting Linear Models,
 #' \code{\link[Hmisc]{hoeffd}} for Matrix of Hoeffding's D Statistics, and
 #' \code{\link[NNS]{NNS.dep}} for NNS Dependence
-#' @export
+#' @export double.cent.assess
 #' @examples
 #' \dontrun{
 #' MyData <- centrality.measures
@@ -812,7 +832,7 @@ double.cent.assess <- function(data, nodes.colname, dependent.colname, independe
 #' @seealso \code{\link[nortest]{ad.test}} for Anderson-Darling test for normality,
 #' \code{\link[Hmisc]{hoeffd}} for Matrix of Hoeffding's D Statistics, and
 #' \code{\link[NNS]{NNS.dep}} for NNS Dependence
-#' @export
+#' @export double.cent.assess.noRegression
 #' @examples
 #' \dontrun{
 #' MyData <- centrality.measures
@@ -1013,7 +1033,7 @@ double.cent.assess.noRegression <- function(data, nodes.colname,
 #' @family integrative ranking functions
 #' @seealso \code{\link[influential]{ivi}},
 #' \code{\link[influential]{exir}}
-#' @export
+#' @export ivi.from.indices
 #' @examples
 #' MyData <- centrality.measures
 #' My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,
@@ -1122,7 +1142,7 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE) {
 #' @family integrative ranking functions
 #' @seealso \code{\link[influential]{ivi.from.indices}},
 #' \code{\link[influential]{exir}}
-#' @export
+#' @export ivi
 #' @examples
 #' \dontrun{
 #' MyData <- coexpression.data
@@ -1242,7 +1262,7 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 #' @keywords spreading.score
 #' @family integrative ranking functions
 #' @seealso \code{\link[influential]{hubness.score}}
-#' @export
+#' @export spreading.score
 #' @examples
 #' \dontrun{
 #' MyData <- coexpression.data
@@ -1336,7 +1356,7 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
 #' @keywords hubness.score
 #' @family integrative ranking functions
 #' @seealso \code{\link[influential]{spreading.score}}
-#' @export
+#' @export hubness.score
 #' @examples
 #' \dontrun{
 #' MyData <- coexpression.data
@@ -1418,7 +1438,7 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 #' @aliases SIRIR
 #' @keywords sirir
 #' @seealso \code{\link[igraph]{sir}} for a complete description on SIR model.
-#' @export
+#' @export sirir
 #' @examples
 #' set.seed(1234)
 #' My_graph <- igraph::sample_gnp(n=50, p=0.05)
@@ -1501,7 +1521,7 @@ sirir <- function(graph, vertices = V(graph),
 #' @keywords graph_from_dataframe
 #' @family network_reconstruction functions
 #' @seealso \code{\link[igraph]{graph_from_adjacency_matrix}} for a complete description on this function
-#' @export
+#' @export graph_from_data_frame
 #' @examples
 #' MyData <- coexpression.data
 #' My_graph <- graph_from_data_frame(d=MyData)
@@ -1539,7 +1559,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @keywords graph_from_adjacencymatrices
   #' @family network_reconstruction functions
   #' @seealso \code{\link[igraph]{graph_from_adjacency_matrix}} for a complete description on this function
-  #' @export
+  #' @export graph_from_adjacency_matrix
   #' @examples
   #' MyData <- coexpression.adjacency
   #' My_graph <- graph_from_adjacency_matrix(MyData)
@@ -1556,7 +1576,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @aliases vertices
   #' @keywords graph_vertices
   #' @seealso \code{\link[igraph]{V}} for a complete description on this function
-  #' @export
+  #' @export V
   #' @examples
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
@@ -1583,7 +1603,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @keywords betweenness_centrality
   #' @family centrality functions
   #' @seealso \code{\link[igraph]{betweenness}} for a complete description on this function
-  #' @export
+  #' @export betweenness
   #' @examples
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
@@ -1611,7 +1631,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @keywords degree_centrality
   #' @family centrality functions
   #' @seealso \code{\link[igraph]{degree}} for a complete description on this function
-  #' @export
+  #' @export degree
   #' @examples
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
@@ -1637,7 +1657,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @return An igraph graph object.
   #' @keywords SIF.to.igraph
   #' @seealso \code{\link[influential]{graph_from_data_frame}}
-  #' @export
+  #' @export sif2igraph
   #' @examples
   #' \dontrun{
   #' MyGraph <- sif2igraph(Path = "/Users/User1/Desktop/mygraph.sif", directed=FALSE)
@@ -1653,9 +1673,9 @@ sirir <- function(graph, vertices = V(graph),
 #
 #=============================================================================
 
-  #' ExIR
+  #' Experimental data-based Integrated Ranking
   #'
-  #' This function runs the Experimental-data-based Integrated Ranking (ExIR)
+  #' This function runs the Experimental data-based Integrated Ranking (ExIR)
   #' model for the classification and ranking of top candidate features. The input
   #' data could come from any type of experiment such as transcriptomics and proteomics.
   #' @param Desired_list (Optional) A character vector of your desired features. This vector could be, for
@@ -1664,7 +1684,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @param Diff_data A dataframe of all significant differential/regression data and their
   #' statistical significance values (p-value/adjusted p-value).
   #' You may have selected a proportion of the differential data as the significant ones according
-  #' to your desired thresholds. A function, named diff.data.assembly, has also been
+  #' to your desired thresholds. A function, named diff_data.assembly, has also been
   #' provided for the convenient assembling of the Diff_data dataframe.
   #' @param Diff_value A numeric vector containing the column number(s) of the differential
   #' data in the Diff_data dataframe. The differential data could result from any type of
@@ -1706,13 +1726,13 @@ sirir <- function(graph, vertices = V(graph),
   #' @aliases ExIR
   #' @keywords exir
   #' @family integrative ranking functions
-  #' @seealso \code{\link[influential]{diff.data.assembly}},
+  #' @seealso \code{\link[influential]{diff_data.assembly}},
   #' \code{\link[influential]{ivi}},
   #' \code{\link[coop]{pcor}},
   #' \code{\link[stats]{prcomp}},
   #' \code{\link[ranger]{ranger}},
   #' \code{\link[ranger]{importance_pvalues}}
-  #' @export
+  #' @export exir
   #' @example
   #' \dontrun{
   #' MyDesired_list <- Desiredlist
@@ -2356,9 +2376,9 @@ sirir <- function(graph, vertices = V(graph),
   #
   #=============================================================================
 
-  #' Assembling the differential/regression
+  #' Assembling the differential/regression data
   #'
-  #' This function assembles a dataframe required for running the `ExIR` model. You may provide
+  #' This function assembles a dataframe required for running the \emph{\strong{\code{ExIR}}} model. You may provide
   #' as many differential/regression data as you wish. Also, the datasets should be filtered
   #' beforehand according to your desired thresholds and, consequently, should only include the significant data.
   #' Each dataset provided should be a dataframe with one or two columns.
@@ -2369,16 +2389,16 @@ sirir <- function(graph, vertices = V(graph),
   #' differential/regression data and their statistical significance in columns with the same
   #' order provided by the user.
   #' @aliases DDA
-  #' @keywords diff.data.assembly
+  #' @keywords diff_data.assembly
   #' @seealso \code{\link[influential]{exir}}
-  #' @export
+  #' @export diff_data.assembly
   #' @examples
   #' \dontrun{
-  #' my.Diff_data <- diff.data.assembly(Differential_data1,
+  #' my.Diff_data <- diff_data.assembly(Differential_data1,
   #'                                    Differential_data2,
-  #'                                    Regression_data1)
+  #'                                    Regression_data1))
   #' }
-  diff.data.assembly <- function(...) {
+  diff_data.assembly <- function(...) {
 
     #Getting the list of all datasets provided
     datasets <- lapply(list(...), as.data.frame)

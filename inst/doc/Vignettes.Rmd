@@ -527,7 +527,7 @@ knitr::kable(Influence.Ranks[c(order(Influence.Ranks$rank)[1:10]),])
 
 ********
 
-## Experimental-data-based classification and ranking of top candidate features based on the `ExIR` model
+## Experimental data-based classification and ranking of top candidate features based on the `ExIR` model
 
 **ExIR**
     : `ExIR` is a model for the classification and ranking of top candidate features. The input data could come from any type of experiment such as transcriptomics and proteomics. This model is based on multi-level filteration and scoring based on several supervised and unsupervised analyses followed by the classification and integrative ranking of top candidate features. Using this function and depending on the input data and specified arguments, the user can get 1 to four tables.

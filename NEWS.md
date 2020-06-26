@@ -3,6 +3,12 @@ influential
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit that file -->
 
+# influential 1.1.2 (CRAN version)
+
+  - The `NC` function is improved.
+
+  - The documentation of the `exir` function is updated.
+
 # influential 1.1.1 (CRAN version)
 
   - The DESCRIPTION file is updated according to all of the
