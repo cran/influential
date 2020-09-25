@@ -34,13 +34,17 @@ neighrhood.co <- neighborhood.connectivity(graph = My_graph,
                                            mode = "all")
 }
 \seealso{
+\code{\link[influential]{ivi}},
+\code{\link[influential]{cent_network.vis}}
+
 Other centrality functions: 
 \code{\link{betweenness}()},
 \code{\link{clusterRank}()},
 \code{\link{collective.influence}()},
 \code{\link{degree}()},
 \code{\link{h_index}()},
-\code{\link{lh_index}()}
+\code{\link{lh_index}()},
+\code{\link{sirir}()}
 }
 \concept{centrality functions}
 \keyword{neighborhood_connectivity}

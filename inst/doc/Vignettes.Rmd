@@ -1,12 +1,16 @@
 ---
-title: "Vignettes of the `influential`"
-output: 
-  rmarkdown::github_document:
+title: "Introduction to influential"
+subtitle: "*Identification and classification of the most influential nodes*"
+author: '`r paste("Adrian (Abbas) Salavaty",strftime(Sys.time(),format="%d-%b-%Y"))`'
+output:
+  rmarkdown::html_vignette:
+    css: influentialVignette.css
     toc: true
-    toc_depth: 2
-    keep_html: true
+    toc_depth: '2'
+    df_print: paged
+    number_sections: true
 vignette: >
-  %\VignetteIndexEntry{influential vignettes}
+  %\VignetteIndexEntry{Introduction to influential}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,44 +21,66 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 options(tibble.print_min = 4L, tibble.print_max = 4L)
+options(width=90)
+options(rmarkdown.html_vignette.check_title = FALSE)
 set.seed(60)
 ```
 
-## Overview
+```{r, echo=FALSE}
+spaces <- function (n) {
+  paste(rep("&nbsp;", n), collapse = "")
+}
+```
 
-The influential package contains several functions that could be categorized into four groups
-according to their purpose:
+# Overview 
+
+```{r fig.align="right", echo=FALSE, out.width="25%", out.extra='style="float:right; padding:10px"'}
+knitr::include_graphics(path = "../man/figures/Symbol.png", error = FALSE)
+```
+
+`influential` is an R package mainly for the identification of the most influential nodes in a network as well as the classification and ranking of top candidate features.The `influential` package contains several functions that could be categorized into five groups according to their purpose:
 
 * Network reconstruction
 * Calculation of centrality measures
 * Assessment of the association of centrality measures
 * Identification of the most `influential` network nodes
-    
+* Experimental data-based classification and ranking of features
+
+The sections below introduce these five categories. However, if you wish not going through all of the functions and their applications, you may skip to any of the novel methods proposed by the `influential`, including: 
+
+* [ExIR](#ExIR)
+* [IVI](#IVI)
+* [Hubness score](#HubnessScore)
+* [Spreading score](#SpreadingScore)
+* [SIRIR](#SIRIR)
+
 ********
 
 ```{r setup}
 library(influential)
 ```
 
-## Network reconstruction
+# Network reconstruction
 
-Two functions have been obtained from the `igraph` package for the reconstruction of networks.
+Three functions have been obtained from the `igraph`^[Csardi G., Nepusz T. *The igraph software package for complex network research*.
+InterJournal. 2006; (1695).] R package for the reconstruction of networks.
 
-- ### From a data frame
-    In the data frame the first and second columns should be composed of source and target nodes.
-    
-    A sample appropriate data frame is brought below:
+## From a data frame
+In the data frame the first and second columns should be composed of source and target nodes.  
+A sample appropriate data frame is brought below:
     
 ```{r, echo=FALSE}
 knitr::kable(head(coexpression.data))
 ```
     
-This is a co-expression dataset obtained from [PMID: 31211495](https://www.ncbi.nlm.nih.gov/pubmed/31211495).
+This is a co-expression dataset obtained from a paper by Salavaty et al.^[Salavaty A, Rezvani Z, Najafi A. *Survival analysis and functional annotation of long non-coding RNAs in lung adenocarcinoma*. J Cell Mol Med. 2019;23:5600–5617. ([PMID: 31211495](https://pubmed.ncbi.nlm.nih.gov/31211495/))]
 
 ```{r g_dataframe}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data
 
-My_graph <- graph_from_data_frame(d=MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(d=MyData)
 ```
 
 If you look at the class of `My_graph` you should see that it has an `igraph` class:
@@ -62,176 +88,272 @@ If you look at the class of `My_graph` you should see that it has an `igraph` cl
 class(My_graph)
 ```
 
-********
-
-- ### From an adjacency matrix
-
-A sample appropriate data frame is brought below:
+## From an adjacency matrix
+A sample appropriate adjacency matrix is brought below: 
 
 ```{r, echo=FALSE}
-knitr::kable(head(coexpression.adjacency)[,1:10])
+knitr::kable(head(coexpression.adjacency, n=15)[10:15,10:15])
 ```
+  
++ Note that the matrix has the same number of rows and columns.
 
 ```{r g_adj, eval=FALSE}
-MyData <- coexpression.adjacency        # Preparing the data
+# Preparing the data
+MyData <- coexpression.adjacency        
 
-My_graph <- graph_from_adjacency_matrix(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_adjacency_matrix(MyData)        
 ```
 
-********
+## From an incidence matrix
+A sample appropriate incidence matrix is brought below: 
+```{r, echo=FALSE}
+set.seed(60)
+My_Data <- matrix(data = sample(c(0,1), replace = TRUE, size = 20), 
+                  nrow = 4, ncol = 5,
+                  dimnames = list(c(paste("cell", c(1:4), sep = "_")),
+                                  c(paste("Gene", c(1:5), sep = "_"))))
 
-- ### Network vertices
+knitr::kable(My_Data)
+```
 
+```{r g_inc, eval=FALSE}
+# Reconstructing the graph
+My_graph <- graph_from_adjacency_matrix(MyData)        
+```
+
+## From a SIF file
+SIF is the common output format of the Cytoscape software.
+
+```{r g_sif, eval=FALSE}
+# Reconstructing the graph
+My_graph <- sif2igraph(Path = "Sample_SIF.sif")        
+
+class(My_graph)
+#> [1] "igraph"
+```
+
+<a href="#top">Back to top</a>
+
+# Calculation of centrality measures
+To calculate the centrality of nodes within a network several different options are available. The following sections describe how to obtain the names of network nodes and use different functions to calculate the centrality of nodes within a network. Although several centrality functions are provided, we recommend the [IVI](#IVI) for the identification of the most `influential` nodes within a network.
+
+> By the way, the results of all of the following centrality functions could be conveniently illustrated using the [centrality-based network visualization function](#NetVis).
+
+## Network vertices
 Network vertices (nodes) are required in order to calculate their centrality measures.
 Thus, before calculation of network centrality measures we need to obtain the name of required network vertices. To this end, we use the `V` function, which is obtained from the `igraph` package. However, you may provide a character vector of the name of your desired nodes manually.
 
++ Note in many of the centrality index functions the entire network nodes are assessed if no vector of desired vertices is provided.
+
 ```{r Vertices, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-My_graph_vertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+My_graph_vertices <- V(My_graph)        
+
+head(My_graph_vertices)
+#> + 6/794 vertices, named, from 775cff6:
+#> [1] ADAMTS9-AS2 C8orf34-AS1 CADM3-AS1   FAM83A-AS1  FENDRR      LANCL1-AS1
 ```
 
-********
-
-## Calculation of centrality measures
-
-- ### Degree centrality
+## Degree centrality
 Degree centrality is the most commonly used local centrality measure which could be calculated
 via the `degree` function obtained from the `igraph` package.
 
 ```{r DC, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE) # Calculating degree centrality
+# Calculating degree centrality
+My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE) 
+
+head(My_graph_degree)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>         172         121         168          26         189         176
 ```
 
 Degree centrality could be also calculated for *directed* graphs via specifying the `mode` parameter.
 
-- ### Betweenness centrality
+## Betweenness centrality
 Betweenness centrality, like degree centrality, is one of the most commonly used centrality measures but is representative of the global centrality of a node. This centrality metric could also be  calculated using a function obtained from the `igraph` package.
 
 ```{r BC, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,    # Calculating betweenness centrality
+# Calculating betweenness centrality
+My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,    
                                     directed = FALSE, normalized = FALSE)
+
+head(My_graph_betweenness)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>   21719.857   28185.199   26946.625    2940.467   33333.369   21830.511
 ```
 
 Betweenness centrality could be also calculated for *directed* and/or *weighted* graphs via specifying the `directed` and `weights` parameters, respectively.
 
-- ### Neighborhood connectivity
+## Neighborhood connectivity
 
-Neighborhood connectivity is one of the other important centrality measures that reflect the semi-local centrality of a node. This centrality measure was first represented in a [Science paper](https://www.ncbi.nlm.nih.gov/pubmed/11988575) in 2002 and is for the first time calculable in R environment via the `influential` package.
+Neighborhood connectivity is one of the other important centrality measures that reflect the semi-local centrality of a node. This centrality measure was first represented in a Science paper^[Maslov S., Sneppen K. *Specificity and stability in topology of protein networks*. Science. 2002; 296: 910-913 ([PMID:11988575 ](https://pubmed.ncbi.nlm.nih.gov/11988575/))] in 2002 and is for the first time calculable in R environment via the `influential` package.
 
 ```{r NC, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-neighrhood.co <- neighborhood.connectivity(graph = My_graph,    # Calculating neighborhood connectivity
+# Calculating neighborhood connectivity
+neighrhood.co <- neighborhood.connectivity(graph = My_graph,    
                                            vertices = GraphVertices,
                                            mode = "all")
+
+head(neighrhood.co)
+#>  ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>   11.290698    4.983471    7.970238    3.000000   15.153439   13.465909
 ```
 
 Neighborhood connectivity could be also calculated for *directed* graphs via specifying the `mode` parameter.
 
-- ### H-index
+## H-index
 
 H-index is H-index is another semi-local centrality measure that was inspired from its application in assessing the impact of researchers and is for the first time calculable in R environment via the `influential` package.
 
 ```{r H_index, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-h.index <- h_index(graph = My_graph,    # Calculating H-index
+# Calculating H-index
+h.index <- h_index(graph = My_graph,    
                    vertices = GraphVertices,
                    mode = "all")
+
+head(h.index)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>          11           9          11           2          12          12
 ```
 
 H-index could be also calculated for *directed* graphs via specifying the `mode` parameter.
 
-- ### Local H-index
+## Local H-index
 
 Local H-index (LH-index) is a semi-local centrality measure and an improved version of H-index centrality that leverages the H-index to the second order neighbors of a node and is for the first time calculable in R environment via the `influential` package.
 
 ```{r LH_index, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-lh.index <- lh_index(graph = My_graph,    # Calculating Local H-index
+# Calculating Local H-index
+lh.index <- lh_index(graph = My_graph,    
                    vertices = GraphVertices,
                    mode = "all")
+
+head(lh.index)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>        1165         446         994          34        1289        1265
 ```
 
 Local H-index could be also calculated for *directed* graphs via specifying the `mode` parameter.
 
-- ### Collective Influence
+## Collective Influence
 
 Collective Influence (CI) is a global centrality measure that calculates the product of the reduced degree (degree - 1) of a node and the total reduced degree of all nodes at a distance d from the node. This centrality measure is for the first time provided in an R package.
 
 ```{r CI, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-ci <- collective.influence(graph = My_graph,    # Calculating Collective Influence
+# Calculating Collective Influence
+ci <- collective.influence(graph = My_graph,    
                           vertices = GraphVertices,
                           mode = "all", d=3)
+
+head(ci)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>        9918       70560       39078         675       10716        7350
 ```
 
 Collective Influence could be also calculated for *directed* graphs via specifying the `mode` parameter.
 
-- ### ClusterRank
+## ClusterRank
 
 ClusterRank is a local centrality measure that makes a connection between local and semi-local characteristics of a node and at the same time removes the negative effects of local clustering.
 
 ```{r CR, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-cr <- clusterRank(graph = My_graph,    # Calculating ClusterRank
+# Calculating ClusterRank
+cr <- clusterRank(graph = My_graph,    
                   vids = GraphVertices,
                   directed = FALSE, loops = TRUE)
+
+head(cr)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>   63.459812    5.185675   21.111776    1.280000  135.098278   81.255195
 ```
 
 ClusterRank could be also calculated for *directed* graphs via specifying the `directed` parameter.
 
-********
+<a href="#top">Back to top</a>
 
-## Assessment of the association of centrality measures
+# Assessment of the association of centrality measures
 
-- ### Conditional probability of deviation from means
+## Conditional probability of deviation from means
 
 The function `cond.prob.analysis` assesses the conditional probability of deviation of two
 centrality measures (or any other two continuous variables) from their corresponding means in opposite directions.
 
 ```{r cond.prob}
-MyData <- centrality.measures        # Preparing the data
+# Preparing the data
+MyData <- centrality.measures        
 
-My.conditional.prob <- cond.prob.analysis(data = MyData,       # Assessing the conditional probability
+# Assessing the conditional probability
+My.conditional.prob <- cond.prob.analysis(data = MyData,       
                                           nodes.colname = rownames(MyData),
                                           Desired.colname = "BC",
                                           Condition.colname = "NC")
@@ -243,9 +365,7 @@ print(My.conditional.prob)
 to further test the validity of conditional probability assessments.
 - *The higher the conditional probability the more two centrality measures behave in contrary manners*.
 
-********
-
-- ### Nature of association (considering dependent and independent)
+## Nature of association (considering dependent and independent)
 
 The function `double.cent.assess` could be used to automatically assess both the distribution
 mode of centrality measures (two continuous variables) and the nature of their association. The analyses done through this formula are as follows:
@@ -268,11 +388,11 @@ mode of centrality measures (two continuous variables) and the nature of their a
     measure of deviation from independence which computes a D Statistics ranging from -0.5 to 1: Greater D values 
     indicate a higher dependence between variables.
     - *Descriptive non-linear non-parametric dependence test*: This assessment is based on non-linear non-parametric 
-    statistics (NNS) which outputs a dependence value ranging from 0 to 1. For further details please refer to [NNS: Nonlinear Nonparametric Statistics](https://cran.r-project.org/package=NNS): Greater values indicate a higher dependence between variables.
+    statistics (NNS) which outputs a dependence value ranging from 0 to 1. For further details please refer to the NNS R package^[NNS: Nonlinear Nonparametric Statistics. ([CRAN](https://cran.r-project.org/package=NNS))]: Greater values indicate a higher dependence between variables.
         <br><br>
 4. **Correlation assessment**:
 As the correlation between most of the centrality measures follows a non-monotonic form, this part of the assessment
-is done based on the non-linear non-parametric statistics (NNS) which itself calculates the correlation based on partial moments and outputs a correlation value ranging from -1 to 1. For further details please refer to [NNS: Nonlinear Nonparametric Statistics](https://cran.r-project.org/package=NNS).
+is done based on the NNS statistics which itself calculates the correlation based on partial moments and outputs a correlation value ranging from -1 to 1. For further details please refer to the NNS R package.
         <br><br>
 5. **Assessment of conditional probability of deviation from means**
 This step assesses the conditional probability of deviation of two centrality measures (or any other two continuous variables) from their corresponding means in opposite directions.
@@ -282,9 +402,11 @@ to further test the validity of conditional probability assessments.
     - *The higher the conditional probability the more two centrality measures behave in contrary manners*.
 
 ```{r double.cent.assess, eval=FALSE}
-MyData <- centrality.measures        # Preparing the data
+# Preparing the data
+MyData <- centrality.measures        
 
-My.metrics.assessment <- double.cent.assess(data = MyData,       # Association assessment
+# Association assessment
+My.metrics.assessment <- double.cent.assess(data = MyData,       
                                             nodes.colname = rownames(MyData),
                                             dependent.colname = "BC",
                                             independent.colname = "NC")
@@ -339,9 +461,7 @@ print(My.metrics.assessment)
 **Note**: It should also be noted that as a single regression line does not fit all models with a 
 certain degree of freedom, based on the size and correlation mode of the variables provided, this function might return an error due to incapability of running step 2. In this case, you may follow each step manually or as an alternative run the other function named `double.cent.assess.noRegression` which does not perform any regression test and consequently it is not required to determine the dependent and independent variables.
 
-********
-
-- ### Nature of association (without considering dependence direction)
+## Nature of association (without considering dependence direction)
 
 The function `double.cent.assess.noRegression` could be used to automatically assess both the distribution
 mode of centrality measures (two continuous variables) and the nature of their association. The analyses done through this formula are as follows:
@@ -355,11 +475,11 @@ mode of centrality measures (two continuous variables) and the nature of their a
     measure of deviation from independence which computes a D Statistics ranging from -0.5 to 1: Greater D values 
     indicate a higher dependence between variables.
     - *Descriptive non-linear non-parametric dependence test*: This assessment is based on non-linear non-parametric 
-    statistics (NNS) which outputs a dependence value ranging from 0 to 1. For further details please refer to [NNS: Nonlinear Nonparametric Statistics](https://cran.r-project.org/package=NNS): Greater values indicate a higher dependence between variables.
+    statistics (NNS) which outputs a dependence value ranging from 0 to 1. For further details please refer to the NNS R package: Greater values indicate a higher dependence between variables.
         <br><br>
 3. **Correlation assessment**:
 As the correlation between most of the centrality measures follows a non-monotonic form, this part of the assessment
-is done based on the non-linear non-parametric statistics (NNS) which itself calculates the correlation based on partial moments and outputs a correlation value ranging from -1 to 1. For further details please refer to [NNS: Nonlinear Nonparametric Statistics](https://cran.r-project.org/package=NNS).
+is done based on the NNS statistics which itself calculates the correlation based on partial moments and outputs a correlation value ranging from -1 to 1. For further details please refer to the NNS R package.
         <br><br>
 4. **Assessment of conditional probability of deviation from means**
 This step assesses the conditional probability of deviation of two centrality measures (or any other two continuous variables) from their corresponding means in opposite directions.
@@ -369,9 +489,11 @@ to further test the validity of conditional probability assessments.
     - *The higher the conditional probability the more two centrality measures behave in contrary manners*.
 
 ```{r double.cent.assess.noRegr., eval=FALSE}
-MyData <- centrality.measures        # Preparing the data
+# Preparing the data
+MyData <- centrality.measures        
 
-My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,       # Association assessment
+# Association assessment
+My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,       
                                                          nodes.colname = rownames(MyData),
                                                          centrality1.colname = "BC",
                                                          centrality2.colname = "NC")
@@ -416,141 +538,397 @@ print(My.metrics.assessment)
 #> [1] 55.68163
 ```
 
-********
+<a href="#top">Back to top</a>
 
-## Identification of the most `influential` network nodes
+# Identification of the most `influential` network nodes {#IVI}
 
 **IVI**
     : `IVI` is the first integrative method for the identification of network most influential
     nodes in a way that captures all network topological dimensions. The `IVI` formula integrates the most important local (i.e. degree centrality and ClusterRank), semi-local (i.e. neighborhood connectivity and local H-index) and global (i.e. betweenness centrality and collective influence) centrality measures in such a way that both synergize their effects and remove their biases.
 
-- ### Integrated Value of Influence (IVI) from centrality measures
+## Integrated Value of Influence (IVI) from centrality measures
 
 ```{r IVI.from.indices, eval=FALSE}
-MyData <- centrality.measures        # Preparing the data
+# Preparing the data
+MyData <- centrality.measures        
 
-My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
-                                   CR = centrality.measures$CR,
-                                   NC = centrality.measures$NC,
-                                   LH_index = centrality.measures$LH_index,
-                                   BC = centrality.measures$BC,
-                                   CI = centrality.measures$CI)
+# Calculation of IVI
+My.vertices.IVI <- ivi.from.indices(DC = MyData$DC,       
+                                   CR = MyData$CR,
+                                   NC = MyData$NC,
+                                   LH_index = MyData$LH_index,
+                                   BC = MyData$BC,
+                                   CI = MyData$CI)
+
+head(My.vertices.IVI)
+#> [1] 24.670056  8.344337 18.621049  1.017768 29.437028 33.512598
 ```
 
-- ### Integrated Value of Influence (IVI) from graph
+## Integrated Value of Influence (IVI) from a graph
 
 ```{r IVI, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices, # Calculation of IVI
+# Calculation of IVI
+My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices, 
                        weights = NULL, directed = FALSE, mode = "all",
                        loops = TRUE, d = 3, scaled = TRUE)
+
+head(My.vertices.IVI)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>    39.53878    19.94999    38.20524     1.12371   100.00000    47.49356
 ```
 
 IVI could be also calculated for *directed* and/or *weighted* graphs via specifying the `directed`, `mode`, and `weights` parameters.
 
-********
+Check out [our paper](https://doi.org/10.1016/j.patter.2020.100052)^[Salavaty A, Ramialison M, Currie PD. *Integrated Value of Influence: An Integrative Method for the Identification of the Most Influential Nodes within Networks*. Patterns. 2020.08.14. ([Read online](https://doi.org/10.1016/j.patter.2020.100052))] for a more complete description of the IVI formula and all of its underpinning methods and analyses.
 
-## Identification of the most important network spreaders
+The following tutorial video demonstrates how to simply calculate the IVI value of 
+all of the nodes within a network.  
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/nF9qe4dvuJc
+" frameborder="0" allowfullscreen></iframe> 
+
+## Network visualization {#NetVis}
+The `cent_network.vis` is a function for the visualization of a network based on applying a centrality measure to the size and color of network nodes. The centrality of network nodes could be calculated by any means and based on any centrality index. Here, we demonstrate the visualization of a network according to [IVI](#IVI) values.
+
+```{r net.for.vis, eval=FALSE}
+# Reconstructing the graph
+set.seed(70)
+My_graph <-  igraph::sample_gnm(n = 50, m = 120, directed = TRUE)
+
+# Calculating the IVI values
+My_graph_IVI <- ivi(My_graph, directed = TRUE)
+
+# Visualizing the graph based on IVI values
+My_graph_IVI_Vis <- cent_network.vis(graph = My_graph,
+                                     cent.metric = My_graph_IVI,
+                                     directed = TRUE,
+                                     plot.title = "IVI-based Network",
+                                     legend.title = "IVI value")
+
+My_graph_IVI_Vis
+```
+
+![](../man/figures/IVI_Net_Vis.png)
+
+The above figure illustrates a simple use case of the function `cent_network.vis`. You can apply this function to directed/undirected and/or weighted/unweighted networks. Also, a complete flexibility (list of arguments) have been provided for the adjustment of colors, transparencies, sizes, titles, etc. Additionally, several different layouts have been provided that could be conveniently applied to a network. 
+
+> In the case of highly crowded networks, the "**grid**" layout would be most appropriate.
+
+The following tutorial video demonstrates how to visualize a network based on the centrality of nodes (e.g. their `IVI` values).
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/kCmEdOoIUD4" frameborder="0" allowfullscreen></iframe>
+
+<a href="#top">Back to top</a>
+
+# Identification of the most important network spreaders {#SpreadingScore}
+Sometimes we seek to identify not necessarily the most influential nodes but the nodes
+with most potential in spreading of information throughout the network.
 
 **Spreading score**
     : `spreading.score` is an integrative score made up of four different centrality measures
     including ClusterRank, neighborhood connectivity, betweenness centrality, and 
     collective influence. Also, Spreading score reflects the spreading potential of 
-    each node within a network and is one of the major components of the `IVI`.
+    each node within a network and is one of the major components of the [`IVI`](#IVI).
     
 ```{r Spreading.score, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-Spreading.score <- spreading.score(graph = My_graph,     # Calculation of Spreading score
+# Calculation of Spreading score
+Spreading.score <- spreading.score(graph = My_graph,     
                                    vertices = GraphVertices, 
                                    weights = NULL, directed = FALSE, mode = "all",
                                    loops = TRUE, d = 3, scaled = TRUE)
+
+head(Spreading.score)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>   42.932497   38.094111   45.114648    1.587262  100.000000   49.193292 
 ```
 
-Spreading score could be also calculated for *directed* and/or *weighted* graphs via specifying the `directed`, `mode`, and `weights` parameters.
+Spreading score could be also calculated for *directed* and/or *weighted* graphs via specifying the `directed`, `mode`, and `weights` parameters. The results could be conveniently illustrated using the [centrality-based network visualization function](#NetVis).
 
-********
+<a href="#top">Back to top</a>
 
-## Identification of the most important network hubs
+# Identification of the most important network hubs {#HubnessScore}
+In some cases we want to identify not the nodes with the most sovereignty in their 
+surrounding local environments.
 
 **Hubness score**
     : `hubness.score` is an integrative score made up of two different centrality measures
     including degree centrality and local H-index. Also, Hubness score reflects the power 
-    of each node in its surrounding environment and is one of the major components of the `IVI`.
+    of each node in its surrounding environment and is one of the major components of the [`IVI`](#IVI).
     
 ```{r Hubness.score, eval=FALSE}
-MyData <- coexpression.data        # Preparing the data
+# Preparing the data
+MyData <- coexpression.data        
 
-My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(MyData)        
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-Hubness.score <- hubness.score(graph = My_graph,     # Calculation of Hubness score
+# Calculation of Hubness score
+Hubness.score <- hubness.score(graph = My_graph,     
                                    vertices = GraphVertices, 
                                    directed = FALSE, mode = "all",
                                    loops = TRUE, scaled = TRUE)
+
+head(Hubness.score)
+#> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1 
+#>   84.299719   46.741660   77.441514    8.437142   92.870451   88.734131
 ```
 
-Spreading score could be also calculated for *directed* graphs via specifying the `directed` and `mode` parameters.
+Spreading score could be also calculated for *directed* graphs via specifying the `directed` and `mode` parameters. The results could be conveniently illustrated using the [centrality-based network visualization function](#NetVis).
 
-********
+<a href="#top">Back to top</a>
 
-## Ranking the influence of network nodes based on the `SIRIR` model
+# Ranking the influence of nodes on the topology of a network based on the `SIRIR` model {#SIRIR}
 
 **SIRIR**
     : `SIRIR` is achieved by the integration susceptible-infected-recovered (SIR) model
     with the leave-one-out cross validation technique and ranks network nodes based on their 
-    true universal influence. One of the applications of this function is the assessment of 
+    true universal influence on the network topology and spread of information. One of the applications of this function is the assessment of 
     performance of a novel algorithm in identification of network influential nodes.
     
-```{r SIRIR}
-set.seed(1234)
-My_graph <- igraph::sample_gnp(n=50, p=0.05)        # Reconstructing the graph
+```{r SIRIR, eval=FALSE}
+# Reconstructing the graph
+My_graph <-  sif2igraph(Path = "Sample_SIF.sif")       
 
-GraphVertices <- V(My_graph)        # Extracting the vertices
+# Extracting the vertices
+GraphVertices <- V(My_graph)        
 
-Influence.Ranks <- sirir(graph = My_graph,     # Calculation of influence rank
+# Calculation of influence rank
+Influence.Ranks <- sirir(graph = My_graph,     
                                    vertices = GraphVertices, 
                                    beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
 
-knitr::kable(Influence.Ranks[c(order(Influence.Ranks$rank)[1:10]),])
 ```
 
-********
+|      | difference.value| rank|
+|:-----|----------------:|----:|
+|MRAP  |             49.7|    1|
+|FOXM1 |             49.5|    2|
+|ATAD2 |             49.5|    2|
+|POSTN |             49.4|    4|
+|CDC7  |             49.3|    5|
+|ZWINT |             42.1|    6|
+|MKI67 |             41.9|    7|
+|FN1   |             41.9|    7|
+|ASPM  |             41.8|    9|
+|ANLN  |             41.8|    9|
 
-## Experimental data-based classification and ranking of top candidate features based on the `ExIR` model
+<a href="#top">Back to top</a>
+
+# Experimental data-based classification and ranking of top candidate features based on the `ExIR` model {#ExIR}
 
 **ExIR**
-    : `ExIR` is a model for the classification and ranking of top candidate features. The input data could come from any type of experiment such as transcriptomics and proteomics. This model is based on multi-level filteration and scoring based on several supervised and unsupervised analyses followed by the classification and integrative ranking of top candidate features. Using this function and depending on the input data and specified arguments, the user can get 1 to four tables.
+    : `ExIR` is a model for the classification and ranking of top candidate features. The input data could come from any type of experiment such as transcriptomics and proteomics. This model is based on multi-level filtration and scoring based on several supervised and unsupervised analyses followed by the classification and integrative ranking of top candidate features. Using this function and depending on the input data and specified arguments, the user can get one to four tables including:
+    
++ **Drivers**: Prioritized drivers are supposed to have the highest impact on the progression of a biological process or disease under investigation.
++ **Biomarkers**: Prioritized biomarkers are supposed to have the highest sensitivity to different conditions under investigation and the severity of each condition.
++ **DE-mediators**: Prioritized DE-mediators are those features that are differentially expressed/abundant but in a fluctuating manner and play mediatory roles between drivers.
++ **nonDE-mediators**: Prioritized nonDE-mediators are those features that are not differentially expressed/abundant but have associations with and play mediatory roles between drivers.
+    
+First, prepare your data. Suppose we have the data for time-course transcriptomics and 
+we have previously performed differential expression analysis for each step-wise pair of
+time-points. Also, we have performed trajectory analysis to identify the genes that have significant alterations across all time-points.
+
+```{r exir.data, eval=FALSE}
+# Prepare sample data
+gene.names <- paste("gene", c(1:1000), sep = "_")
+
+set.seed(60)
+tp2.vs.tp1.DEGs <- data.frame(logFC = runif(n = 90, min = -5, max = 5),
+                              FDR = runif(n = 90, min = 0.0001, max = 0.049))
+
+set.seed(60)
+rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 90)
+
+set.seed(70)
+tp3.vs.tp2.DEGs <- data.frame(logFC = runif(n = 121, min = -3, max = 6),
+                              FDR = runif(n = 121, min = 0.0011, max = 0.039))
+
+set.seed(70)
+rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 121)
+
+set.seed(80)
+regression.data <- data.frame(R_squared = runif(n = 65, min = 0.1, max = 0.85))
+
+set.seed(80)
+rownames(regression.data) <- sample(gene.names, size = 65)
+```
+
+## Assembling the Diff_data
+Use the function `diff_data.assembly` to automatically generate the Diff_data table for 
+the `ExIR` model.
+
+```{r diff_data_assembl, eval=FALSE}
+my_Diff_data <- diff_data.assembly(tp2.vs.tp1.DEGs,
+                                   tp3.vs.tp2.DEGs,
+                                   regression.data)
+
+knitr::kable(my_Diff_data[c(1:10),])
+```
+
+## Preparing the Exptl_data
+Now, prepare a sample normalized experimental data matrix
+
+```{r exptl_data, eval=FALSE}
+set.seed(60)
+MyExptl_data <- matrix(data = runif(n = 50000, min = 2, max = 100), 
+                       nrow = 50, ncol = 1000, 
+                       dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
+                                         paste("normal_sample", c(1:25), sep = "_")), 
+                                       gene.names))
+
+# Log transform the data to bring them closer to normal distribution
+MyExptl_data <- log2(MyExptl_data)  
+
+knitr::kable(MyExptl_data[c(1:5),c(1:5)])
+```
+
+Now add the "condition" column to the Exptl_data table.
+```{r condition.col, eval=FALSE}
+MyExptl_data <- as.data.frame(MyExptl_data)
+MyExptl_data$condition <- c(rep("C", 25), rep("N", 25))
+```
+
+## Running the `ExIR` model
+Finally, prepare the other required input data for the `ExIR` model.
     
 ```{r ExIR, eval=FALSE}
 
-#Preparing the required arguments for the `exir` function
-MyDesired_list <- Desiredlist
-MyDiff_data <- Diffdata
-Diff_value <- c(1,3,5)
-Regr_value <- 7
-Sig_value <- c(2,4,6,8)
-MyExptl_data <- Exptldata
+#The table of differential/regression previously prepared
+my_Diff_data
+
+#The column indices of differential values in the Diff_data table
+Diff_value <- c(1,3) 
+
+#The column indices of regression values in the Diff_data table
+Regr_value <- 5
+
+#The column indices of significance (P-value/FDR) values in 
+# the Diff_data table
+Sig_value <- c(2,4) 
+
+#The matrix/data frame of normalized experimental
+# data previously prepared
+MyExptl_data
+
+#The name of the column delineating the conditions of
+# samples in the Exptl_data matrix
 Condition_colname <- "condition"
+
+#The desired list of features
+set.seed(60)
+MyDesired_list <- sample(gene.names, size = 200)  #Optional
 
 #Running the ExIR model
 My.exir <- exir(Desired_list = MyDesired_list,
-Diff_data = MyDiff_data, Diff_value = Diff_value,
+Diff_data = my_Diff_data, Diff_value = Diff_value,
 Regr_value = Regr_value, Sig_value = Sig_value,
 Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
-verbose = FALSE)
+seed = 60, verbose = FALSE)
 
 names(My.exir)
-#> [1] "Driver table"          "DE-mediator table"     "nonDE-mediators table"
+#> [1] "Driver table"          "DE-mediator table"     "nonDE-mediator table"
 #> [4] "Biomarker table"
+
+class(My.exir)
+#> [1] "ExIR_Result"
 ```
+
+Have a look at the heads of the outputs of ExIR:
+
++ **Drivers**
+
+|         |     Score|  Z.score| Rank|      P.value|     P.adj|Type        |
+|:--------|---------:|--------:|----:|------------:|---------:|:-----------|
+|gene_738 | 100.00000| 5.380024|    1| 3.723800e-08| 0.0000040|Decelerator |
+|gene_520 |  70.84240| 3.569259|    2| 1.789961e-04| 0.0095763|Accelerator |
+|gene_78  |  55.87662| 2.639844|    3| 4.147204e-03| 0.1479169|Decelerator |
+|gene_53  |  52.47212| 2.428416|    4| 7.582469e-03| 0.2028311|Accelerator |
+|gene_886 |  50.63736| 2.314472|    5| 1.032092e-02| 0.2208677|Accelerator |
+|gene_883 |  45.78593| 2.013185|    6| 2.204757e-02| 0.3527402|Accelerator |
+
+********
+
++ **Biomarkers**
+
+|         |      Score|   Z.score| Rank|      P.value|     P.adj|Type           |
+|:--------|----------:|---------:|----:|------------:|---------:|:--------------|
+|gene_711 | 100.000000| 9.1261490|    1| 3.548963e-20| 0.0000000|Up-regulated   |
+|gene_245 |  37.107082| 3.1933225|    2| 7.032290e-04| 0.0376227|Down-regulated |
+|gene_705 |  24.598890| 2.0133974|    3| 2.203642e-02| 0.5842342|Up-regulated   |
+|gene_910 |  23.430181| 1.9031504|    4| 2.851046e-02| 0.5842342|Down-regulated |
+|gene_895 |  13.919517| 1.0059887|    5| 1.572105e-01| 0.5842342|Down-regulated |
+|gene_800 |   5.843283| 0.2441399|    6| 4.035613e-01| 0.5842342|Down-regulated |
+
+********
+
++ **DE-mediators**
+
+|         |      Score|    Z.score| Rank|    P.value|     P.adj|
+|:--------|----------:|----------:|----:|----------:|---------:|
+|gene_315 | 100.000000|  1.6261374|    1| 0.05196021| 0.3117613|
+|gene_963 |  68.097002|  0.8442286|    2| 0.19927085| 0.5978125|
+|gene_49  |  19.104450| -0.3565272|    3| 0.63927712| 0.7882165|
+|gene_682 |  10.102668| -0.5771514|    4| 0.71808142| 0.7882165|
+|gene_493 |   3.603502| -0.7364391|    5| 0.76926825| 0.7882165|
+|gene_898 |   1.000000| -0.8002482|    6| 0.78821650| 0.7882165|
+
+********
+
++ **nonDE-mediators**
+
+|         |     Score|  Z.score| Rank|      P.value|     P.adj|
+|:--------|---------:|--------:|----:|------------:|---------:|
+|gene_117 | 100.00000| 5.236991|    1| 8.160804e-08| 0.0000071|
+|gene_516 |  57.59469| 2.693473|    2| 3.535593e-03| 0.1468437|
+|gene_262 |  54.38275| 2.500817|    3| 6.195351e-03| 0.1468437|
+|gene_974 |  53.87269| 2.470223|    4| 6.751434e-03| 0.1468437|
+|gene_441 |  46.60681| 2.034408|    5| 2.095524e-02| 0.3646212|
+|gene_533 |  40.91995| 1.693304|    6| 4.519882e-02| 0.6553829|
+
+The following tutorial video demonstrates how to run the `ExIR` model on a sample experimental data.
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/-08nn4_-OUE" frameborder="0" allowfullscreen></iframe>
+
+## ExIR visualization
+The `exir.vis` is a function for the visualization of the output of the [ExIR](#ExIR) model. The function simply gets the output of the ExIR model as a single argument and returns a plot of the top 10 prioritized features of all classes. Here, we visualize the top five candidates of the results of the `ExIR` model obtained in the previous step .
+
+```{r exir.vis, eval=FALSE}
+My.exir.Vis <- exir.vis(exir.results = My.exir, 
+                        n = 5,
+                        y.axis.title = "Gene")
+
+My.exir.Vis
+```
+
+![](../man/figures/ExIR_Vis.png)
+
+However, a complete flexibility (list of arguments) has been provided for the adjustment of all of the visual features of the plot and selection of the desired classes, feature types, and the number of top candidates.
+
+The following tutorial video demonstrates how to visualize the results of `ExIR` model.
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/Ie19y6PuBDg" frameborder="0" allowfullscreen></iframe>
+
+<a href="#top">Back to top</a>
+
+# References

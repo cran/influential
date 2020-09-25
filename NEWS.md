@@ -3,6 +3,46 @@ influential
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit that file -->
 
+# influential 2.0.0 (CRAN version)
+
+  - The ReadMe file is updated.
+
+  - The citation details of the package is updated.
+
+  - Vignettes of the package are updated and extended.
+
+  - A new function named `exir.vis` is added for the visualization of
+    the results of the function `exir.`
+
+  - A new function named `cent_network.vis` is added for the
+    visualization of a network based on a centrality measure.
+
+  - A new function named `graph_from_incidence_matrix` is added
+    (imported from the *igraph* package) for the network reconstruction
+    from an incidence matrix.
+
+  - A new column named **Type** is added to the *Biomarker* tabel of the
+    function `ExIR`.
+
+  - The Z-score and statistical significance is added to the results of
+    function `ExIR`.
+
+  - The function `ExIR` is updated so that the experimental data are
+    ranked prior to correlation analysis. This will result in the
+    assessment of the association based on the Spearman method, a more
+    robust algorithm in variable conditions and/or non-parametric
+    distributions.
+
+  - The version of Roxygen2 is updated in the DESCRIPTION file.
+
+  - The documentation of the `ExIR` function is updated.
+
+  - The `ExIR` function is updated to prevent outputting NULL results.
+
+  - Package logo is updated in accordance with the design of R packages.
+
+  - Some documentations in the Read Me file are corrected.
+
 # influential 1.1.2 (CRAN version)
 
   - The `NC` function is improved.

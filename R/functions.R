@@ -35,8 +35,8 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 1.1.2
-#'   \item Date: 27-06-2020
+#'   \item Version: 2.0.0
+#'   \item Date: 25-09-2020
 #'   \item License: GPL-3
 #' }
 #'
@@ -55,7 +55,7 @@
 #' \itemize{
 #'   \item Fred Viole and David Nawrocki (2013, ISBN:1490523995).
 #'   \item Csardi G, Nepusz T (2006). “The igraph software package for complex network research.”
-#' InterJournal, Complex Systems, 1695. \url{http://igraph.org}.
+#' InterJournal, Complex Systems, 1695. \url{https://igraph.org/}.
 #' }
 #'
 #' \strong{Note:} Adopted algorithms and sources are referenced in function document.
@@ -88,6 +88,8 @@ NULL
 #' @aliases NC
 #' @keywords neighborhood_connectivity
 #' @family centrality functions
+#' @seealso \code{\link[influential]{ivi}},
+#' \code{\link[influential]{cent_network.vis}}
 #' @export neighborhood.connectivity
 #' @examples
 #' MyData <- coexpression.data
@@ -163,7 +165,8 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 #' @aliases h.index
 #' @keywords h_index
 #' @family centrality functions
-#' @seealso \code{\link[influential]{lh_index}}
+#' @seealso \code{\link[influential]{ivi}},
+#' \code{\link[influential]{cent_network.vis}}
 #' @export h_index
 #' @examples
 #' \dontrun{
@@ -236,6 +239,8 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases lh.index
   #' @keywords lh_index
   #' @family centrality functions
+  #' @seealso \code{\link[influential]{ivi}},
+  #' \code{\link[influential]{cent_network.vis}}
   #' @export lh_index
   #' @examples
   #' \dontrun{
@@ -299,6 +304,8 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases CI
   #' @keywords collective.influence
   #' @family centrality functions
+  #' @seealso \code{\link[influential]{ivi}},
+  #' \code{\link[influential]{cent_network.vis}}
   #' @export collective.influence
   #' @examples
   #' MyData <- coexpression.data
@@ -356,6 +363,8 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   #' @aliases CR
   #' @keywords clusterRank
   #' @family centrality functions
+  #' @seealso \code{\link[influential]{ivi}},
+  #' \code{\link[influential]{cent_network.vis}}
   #' @export clusterRank
   #' @examples
   #' MyData <- coexpression.data
@@ -428,7 +437,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 
 #=============================================================================
 #
-#    Code chunk 6: Calculation of conditional probability of deviation from
+#    Code chunk 6: Calculation of the conditional probability of deviation from
 #                  means in opposite directions
 #
 #=============================================================================
@@ -1031,8 +1040,7 @@ double.cent.assess.noRegression <- function(data, nodes.colname,
 #' @aliases IVI.FI
 #' @keywords ivi.from.indices
 #' @family integrative ranking functions
-#' @seealso \code{\link[influential]{ivi}},
-#' \code{\link[influential]{exir}}
+#' @seealso \code{\link[influential]{cent_network.vis}}
 #' @export ivi.from.indices
 #' @examples
 #' MyData <- centrality.measures
@@ -1092,16 +1100,24 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE) {
 
   spreading.rank <- ((temp.NC+temp.CR)*(temp.BC+temp.CI))
 
+  if(sum(spreading.rank) == 0) {
+    spreading.rank[] <- 1
+  }
+
   hubness.rank <- (temp.DC+temp.LH_index)
 
+  if(sum(hubness.rank) == 0) {
+    hubness.rank[] <- 1
+  }
   temp.ivi <- (hubness.rank)*(spreading.rank)
 
   #1-100 normalization of IVI
 
   if(scaled == TRUE) {
 
-    temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
-
+    if(length(unique(temp.ivi)) > 1) {
+      temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
+    }
   }
 
   return(temp.ivi)
@@ -1140,8 +1156,7 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE) {
 #' @aliases IVI
 #' @keywords IVI integrated_value_of_influence
 #' @family integrative ranking functions
-#' @seealso \code{\link[influential]{ivi.from.indices}},
-#' \code{\link[influential]{exir}}
+#' @seealso \code{\link[influential]{cent_network.vis}}
 #' @export ivi
 #' @examples
 #' \dontrun{
@@ -1212,16 +1227,24 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 
   spreading.rank <- ((temp.NC+temp.CR)*(temp.BC+temp.CI))
 
+  if(sum(spreading.rank) == 0) {
+    spreading.rank[] <- 1
+  }
+
   hubness.rank <- (temp.DC+temp.LH_index)
 
+  if(sum(hubness.rank) == 0) {
+    hubness.rank[] <- 1
+  }
   temp.ivi <- (hubness.rank)*(spreading.rank)
 
   #1-100 normalization of IVI
 
   if(scaled == TRUE) {
 
-    temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
-
+    if(length(unique(temp.ivi)) > 1) {
+      temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
+    }
   }
 
   return(temp.ivi)
@@ -1261,7 +1284,7 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 #' @return A numeric vector with Spreading scores.
 #' @keywords spreading.score
 #' @family integrative ranking functions
-#' @seealso \code{\link[influential]{hubness.score}}
+#' @seealso \code{\link[influential]{cent_network.vis}}
 #' @export spreading.score
 #' @examples
 #' \dontrun{
@@ -1355,7 +1378,7 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
 #' @return A numeric vector with the Hubness scores.
 #' @keywords hubness.score
 #' @family integrative ranking functions
-#' @seealso \code{\link[influential]{spreading.score}}
+#' @seealso \code{\link[influential]{cent_network.vis}}
 #' @export hubness.score
 #' @examples
 #' \dontrun{
@@ -1420,7 +1443,8 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 #' This function is achieved by the integration susceptible-infected-recovered (SIR) model
 #' with the leave-one-out cross validation technique and ranks network nodes based on their
 #' true universal influence. One of the applications of this function is the assessment of
-#' performance of a novel algorithm in identification of network influential nodes.
+#' performance of a novel algorithm in identification of network influential nodes by considering
+#' the SIRIR ranks as the ground truth (gold standard).
 #' @param graph A graph (network) of the igraph class.
 #' @param vertices A vector of desired vertices, which could be obtained by the V function.
 #' @param beta Non-negative scalar. The rate of infection of an individual that is susceptible
@@ -1432,12 +1456,14 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 #' @param no.sim Integer scalar, the number of simulation runs to perform SIR model on for the
 #' original network as well perturbed networks generated by leave-one-out technique.
 #' You may choose a different no.sim based on the available memory on your system.
-#' @param seed A single value, interpreted as an integer to be used for random number generation
+#' @param seed A single value, interpreted as an integer to be used for random number generation.
 #' @return A two-column dataframe; a column containing the difference values of the original and
 #' perturbed networks and a column containing node influence rankings
 #' @aliases SIRIR
 #' @keywords sirir
-#' @seealso \code{\link[igraph]{sir}} for a complete description on SIR model.
+#' @family centrality functions
+#' @seealso \code{\link[influential]{cent_network.vis}},
+#' and \code{\link[igraph]{sir}} for a complete description on SIR model
 #' @export sirir
 #' @examples
 #' set.seed(1234)
@@ -1508,8 +1534,6 @@ sirir <- function(graph, vertices = V(graph),
 #' Creating igraph graphs from data frames
 #'
 #' This function and all of its descriptions have been obtained from the igraph package.
-#' For a complete description if the function and its arguments try this:
-#' ?igraph::graph_from_data_frame
 #' @param d A data frame containing a symbolic edge list in the first two columns.
 #' Additional columns are considered as edge attributes.
 #' Since version 0.7 this argument is coerced to a data frame with as.data.frame.
@@ -1534,8 +1558,6 @@ sirir <- function(graph, vertices = V(graph),
   #' Creating igraph graphs from adjacency matrices
   #'
   #' This function and all of its descriptions have been obtained from the igraph package.
-  #' For a complete description if the function and its arguments try this:
-  #' ?igraph::graph_from_adjacency_matrix
   #' @param adjmatrix A square adjacency matrix. From igraph version 0.5.1 this
   #' can be a sparse matrix created with the Matrix package.
   #' @param mode Character scalar, specifies how igraph should interpret the supplied matrix.
@@ -1565,6 +1587,53 @@ sirir <- function(graph, vertices = V(graph),
   #' My_graph <- graph_from_adjacency_matrix(MyData)
   #' @importFrom igraph graph_from_adjacency_matrix
   graph_from_adjacency_matrix <- igraph::graph_from_adjacency_matrix
+
+  #*****************************************************************#
+
+  #' Creating igraph graphs from incidence matrices
+  #'
+  #' This function and all of its descriptions have been obtained from the igraph package.
+  #' @param incidence The input incidence matrix. It can also be a sparse matrix from the \code{Matrix} package.
+  #' @param directed Logical scalar, whether to create a directed graph.
+  #' @param mode A character constant, defines the direction of the edges in directed graphs,
+  #' ignored for undirected graphs. If ‘out’, then edges go from vertices of the first
+  #' kind (corresponding to rows in the incidence matrix) to vertices of the second
+  #' kind (columns in the incidence matrix). If ‘in’, then the opposite direction is used.
+  #' If ‘all’ or ‘total’, then mutual edges are created.
+  #' @param multiple Logical scalar, specifies how to interpret the matrix elements. See details below.
+  #' @param weighted This argument specifies whether to create a weighted graph from
+  #' the incidence matrix. If it is NULL then an unweighted graph is created and the
+  #' multiple argument is used to determine the edges of the graph. If it is a character
+  #' constant then for every non-zero matrix entry an edge is created and the value of
+  #' the entry is added as an edge attribute named by the weighted argument. If it is
+  #' TRUE then a weighted graph is created and the name of the edge attribute will be ‘weight’.
+  #' @param add.names A character constant, NA or NULL. \code{graph_from_incidence_matrix}
+  #' can add the row and column names of the incidence matrix as vertex attributes.
+  #' If this argument is NULL (the default) and the incidence matrix has both row
+  #' and column names, then these are added as the ‘name’ vertex attribute. If you want a different vertex attribute for this, then give the name of the attributes as a character string. If this argument is NA, then no vertex attributes (other than type) will be added.
+  #' @details Bipartite graphs have a ‘type’ vertex attribute in igraph, this is boolean
+  #' and FALSE for the vertices of the first kind and TRUE for vertices of the second kind.
+  #'
+  #' graph_from_incidence_matrix can operate in two modes, depending on the multiple
+  #' argument. If it is FALSE then a single edge is created for every non-zero element
+  #' in the incidence matrix. If multiple is TRUE, then the matrix elements are
+  #' rounded up to the closest non-negative integer to get the number of edges to
+  #' create between a pair of vertices.
+  #' @return A bipartite igraph graph. In other words, an igraph graph that has a vertex attribute type.
+  #' @aliases incidencematrix2graph
+  #' @keywords graph_from_incidencematrices
+  #' @family network_reconstruction functions
+  #' @seealso \code{\link[igraph]{graph_from_incidence_matrix}} for a complete description on this function
+  #' @export graph_from_incidence_matrix
+  #' @examples
+  #' \dontrun{
+  #' inc <- matrix(sample(0:1, 15, repl=TRUE), 3, 5)
+  #' colnames(inc) <- letters[1:5]
+  #' rownames(inc) <- LETTERS[1:3]
+  #' My_graph <- graph_from_incidence_matrix(inc)
+  #' }
+  #' @importFrom igraph graph_from_incidence_matrix
+  graph_from_incidence_matrix <- igraph::graph_from_incidence_matrix
 
   #*****************************************************************#
 
@@ -1602,7 +1671,9 @@ sirir <- function(graph, vertices = V(graph),
   #' @aliases BC
   #' @keywords betweenness_centrality
   #' @family centrality functions
-  #' @seealso \code{\link[igraph]{betweenness}} for a complete description on this function
+  #' @seealso \code{\link[influential]{ivi}},
+  #' \code{\link[influential]{cent_network.vis}},
+  #' and \code{\link[igraph]{betweenness}} for a complete description on this function
   #' @export betweenness
   #' @examples
   #' MyData <- coexpression.data
@@ -1630,7 +1701,9 @@ sirir <- function(graph, vertices = V(graph),
   #' @aliases DC
   #' @keywords degree_centrality
   #' @family centrality functions
-  #' @seealso \code{\link[igraph]{degree}} for a complete description on this function
+  #' @seealso \code{\link[influential]{ivi}},
+  #' \code{\link[influential]{cent_network.vis}},
+  #' and \code{\link[igraph]{degree}} for a complete description on this function
   #' @export degree
   #' @examples
   #' MyData <- coexpression.data
@@ -1650,13 +1723,13 @@ sirir <- function(graph, vertices = V(graph),
   #'
   #' This function imports and converts a SIF file from your local hard drive, cloud space,
   #' or internet into a graph with an igraph class, which can then be used for the identification
-  #' of most influential nodes via the ivi function.
+  #' of most influential nodes via the ivi function, for instance.
   #' @param Path A string or character vector indicating the path to the desired SIF file. The SIF file
   #' could be on your local hard drive, cloud space, or on the internet.
   #' @param directed Logical scalar, whether or not to create a directed graph.
   #' @return An igraph graph object.
   #' @keywords SIF.to.igraph
-  #' @seealso \code{\link[influential]{graph_from_data_frame}}
+  #' @family network_reconstruction functions
   #' @export sif2igraph
   #' @examples
   #' \dontrun{
@@ -1682,34 +1755,46 @@ sirir <- function(graph, vertices = V(graph),
   #' instance, a list of features obtained from cluster analysis, time-course analysis,
   #' or a list of dysregulated features with a specific sign.
   #' @param Diff_data A dataframe of all significant differential/regression data and their
-  #' statistical significance values (p-value/adjusted p-value).
+  #' statistical significance values (p-value/adjusted p-value). Note that the differential data
+  #' should be in the log fold-change (log2FC) format.
   #' You may have selected a proportion of the differential data as the significant ones according
-  #' to your desired thresholds. A function, named diff_data.assembly, has also been
+  #' to your desired thresholds. A function, named \code{\link[influential]{diff_data.assembly}}, has also been
   #' provided for the convenient assembling of the Diff_data dataframe.
-  #' @param Diff_value A numeric vector containing the column number(s) of the differential
+  #' @param Diff_value An integer vector containing the column number(s) of the differential
   #' data in the Diff_data dataframe. The differential data could result from any type of
   #' differential data analysis. One example could be the fold changes (FCs) obtained from differential
   #' expression analyses. The user may provide as many differential data as he/she wish.
-  #' @param Regr_value (Optional) A numeric vector containing the column number(s) of the regression
+  #' @param Regr_value (Optional) An integer vector containing the column number(s) of the regression
   #' data in the Diff_data dataframe. The regression data could result from any type of regression
   #' data analysis or other analyses such as time-course data analyses that are based on regression models.
-  #' @param Sig_value A numeric vector containing the column number(s) of the significance values (p-value/adjusted p-value) of
+  #' @param Sig_value An integer vector containing the column number(s) of the significance values (p-value/adjusted p-value) of
   #' both differential and regression data (if provided). Providing significance values for the regression data is optional.
-  #' @param Exptl_data A dataframe containing all of the experimental including a column for specifying the conditions.
+  #' @param Exptl_data A dataframe containing all of the experimental data including a column for specifying the conditions.
   #' The features/variables of the dataframe should be as the columns and the samples should come in the rows.
   #' The condition column should be of the character class. For example, if the study includes several replicates of
   #' cancer and normal samples, the condition column should include "cancer" and "normal" as the conditions of different samples.
   #' Also, the prior normalization of the experimental data is highly recommended. Otherwise,
   #' the user may set the Normalize argument to TRUE for a simple log2 transformation of the data.
   #' The experimental data could come from a variety sources such as transcriptomics and proteomics assays.
-  #' @param Condition_colname A string or character vector specifying the name of the condition column of the Exptl_data dataframe.
+  #' @param Condition_colname A string or character vector specifying the name of the column "condition" of the Exptl_data dataframe.
   #' @param Normalize Logical; whether the experimental data should be normalized or not (default is FALSE). If TRUE, the
   #' experimental data will be log2 transformed.
-  #' @param r The threshold of Pearson correlation coefficient for the selection of correlated features (default is 0).
-  #' @param alpha The threshold of the statistical significance (p-value) used throughout the entir model (default is 0.05)
-  #' @param num_trees Number of trees to be used for the random forest classification (supervised machine learning) Default is set to 10000.
-  #' @param num_permutations Number of permutations to be used for computation of the statistical significances (p-values) of
-  #' the importance scores resulted from random forest classification (default is 100).
+  #' @param r The threshold of Spearman correlation coefficient for the selection of correlated features (default is 0.3).
+  #' @param max.connections The maximum number of connections to be included in the association network.
+  #' Higher max.connections might increase the computation time, cost, and accuracy of the results (default is 20000).
+  #' @param alpha The threshold of the statistical significance (p-value) used throughout the entire model (default is 0.05)
+  #' @param num_trees Number of trees to be used for the random forests classification (supervised machine learning). Default is set to 10000.
+  #' @param mtry Number of features to possibly split at in each node. Default is the (rounded down) square root of the
+  #' number of variables. Alternatively, a single argument function returning an integer, given the number of independent variables.
+  #' @param num_permutations Number of permutations to be used for computation of the statistical significance (p-values) of
+  #' the importance scores resulted from random forests classification (default is 100).
+  #' @param inf_const The constant value to be multiplied by the maximum absolute value of differential (logFC)
+  #' values for the substitution with infinite differential values. This results in noticeably high biomarker values for features
+  #' with infinite differential values compared with other features. Having said that, the user can still use the
+  #' biomarker rank to compare all of the features. This parameter is ignored if no infinite value
+  #' is present within Diff_data. However, this is used in the case of sc-seq experiments where some genes are uniquely
+  #' expressed in a specific cell-type and consequently get infinite differential values. Note that the sign of differential
+  #' value is preserved (default is 10^10).
   #' @param seed The seed to be used for all of the random processes throughout the model (default is 1234).
   #' @param verbose Logical; whether the accomplishment of different stages of the model should be printed (default is TRUE).
   #' @return A list of one to four tables including:
@@ -1718,7 +1803,7 @@ sirir <- function(graph, vertices = V(graph),
   #'
   #' - DE-mediator table: Top candidate differentially expressed/abundant mediators
   #'
-  #' - nonDE-mediators table: Top candidate non-differentially expressed/abundant mediators
+  #' - nonDE-mediator table: Top candidate non-differentially expressed/abundant mediators
   #'
   #' - Biomarker table: Top candidate biomarkers
   #'
@@ -1726,8 +1811,8 @@ sirir <- function(graph, vertices = V(graph),
   #' @aliases ExIR
   #' @keywords exir
   #' @family integrative ranking functions
-  #' @seealso \code{\link[influential]{diff_data.assembly}},
-  #' \code{\link[influential]{ivi}},
+  #' @seealso \code{\link[influential]{exir.vis}},
+  #' \code{\link[influential]{diff_data.assembly}},
   #' \code{\link[coop]{pcor}},
   #' \code{\link[stats]{prcomp}},
   #' \code{\link[ranger]{ranger}},
@@ -1750,8 +1835,9 @@ sirir <- function(graph, vertices = V(graph),
   exir <- function(Desired_list = NULL,
                    Diff_data, Diff_value, Regr_value = NULL, Sig_value,
                    Exptl_data, Condition_colname, Normalize = FALSE,
-                   r = 0, alpha = 0.05, num_trees = 10000, num_permutations = 100,
-                   seed = 1234, verbose = TRUE) {
+                   r = 0.3, max.connections = 20000, alpha = 0.05,
+                   num_trees = 10000, mtry = NULL, num_permutations = 100,
+                   inf_const = 10^10, seed = 1234, verbose = TRUE) {
 
     # Setup progress bar
     if(verbose) {
@@ -1761,15 +1847,40 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Preparing the input data
     if(verbose) {
-      print("Preparing the input data", quote = FALSE)
+      print(unname(as.data.frame("Preparing the input data")),quote = FALSE, row.names = FALSE)
     }
 
     #make sure the input data is of data frame class
     Diff_data <- as.data.frame(Diff_data)
     Exptl_data <- as.data.frame(Exptl_data)
 
+    #change the colnames of Diff_data
+    base::colnames(Diff_data) <- base::paste("source",
+                                             base::colnames(Diff_data),
+                                             sep = ".")
+
+    #change the Inf/-Inf diff values (applicable to sc-Data)
+    for(i in 1:base::length(Diff_value)) {
+
+      if(any(base::is.infinite(Diff_data[,Diff_value[i]]))) {
+
+        temp.max.abs.diff.value <-
+      base::max(base::abs(Diff_data[,Diff_value[i]][!base::is.infinite(Diff_data[,Diff_value[i]])]))
+
+        temp.inf.index <- base::which(base::is.infinite(Diff_data[,Diff_value[i]]))
+
+        Diff_data[temp.inf.index, Diff_value[i]] <-
+          base::ifelse(base::unlist(Diff_data[temp.inf.index,Diff_value[i]]) > 0,
+                 temp.max.abs.diff.value*inf_const,
+                 -1*temp.max.abs.diff.value*inf_const)
+      }
+    }
+
     # Get the column number of condition column
     condition.index <- match(Condition_colname, colnames(Exptl_data))
+
+    # Transform the condition column to a factor
+    Exptl_data[,condition.index] <- base::as.factor(Exptl_data[,condition.index])
 
     # Normalize the experimental data (if required)
     if(Normalize) {
@@ -1783,7 +1894,7 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Calculating the differential score
     if(verbose) {
-      print("Calculating the differential score", quote = FALSE)
+      print(unname(as.data.frame("Calculating the differential score")),quote = FALSE, row.names = FALSE)
     }
 
     #1 Calculate differential score
@@ -1799,7 +1910,7 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Calculating the regression/time-course R-squared score
     if(verbose & !is.null(Regr_value)) {
-      print("Calculating the regression/time-course R-squared score", quote = FALSE)
+      print(unname(as.data.frame("Calculating the regression/time-course R-squared score")),quote = FALSE, row.names = FALSE)
     }
 
     #2 Calculate regression/time-course R-squared score (if provided)
@@ -1817,7 +1928,7 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Calculating the collective statistical significance of differential/regression factors
     if(verbose) {
-      print("Calculating the collective statistical significance of differential/regression factors", quote = FALSE)
+      print(unname(as.data.frame("Calculating the collective statistical significance of differential/regression factors")),quote = FALSE, row.names = FALSE)
     }
 
     #3 Calculate statistical significance of differential/regression factors
@@ -1825,11 +1936,16 @@ sirir <- function(graph, vertices = V(graph),
       stop("input Sig-values (p-value/padj) must all be in the range 0 to 1!")
     }
 
-    if(min(Diff_data[,Sig_value])==0) {
-      Diff_data[,Sig_value, drop = FALSE] <- Diff_data[,Sig_value, drop = FALSE] + sort(as.matrix(Diff_data[,Sig_value, drop = FALSE]))[2]
+    for(m in 1:length(Sig_value)) {
 
-      for (i in 1:ncol(Diff_data[,Sig_value, drop = FALSE])) {
-        Diff_data[,Sig_value, drop = FALSE][which(Diff_data[,Sig_value, drop = FALSE][,i] > 1),i] <- 1
+      if(min(Diff_data[,Sig_value[m]])==0) {
+
+        #range normalize the primitive Sig_value
+        temp.min_Sig_value <- base::sort(base::unique(Diff_data[,Sig_value[m]]))[2]
+
+        Diff_data[,Sig_value[m]] <- temp.min_Sig_value+
+          (((Diff_data[,Sig_value[m]]-min(Diff_data[,Sig_value[m]]))*(max(Diff_data[,Sig_value[m]])-temp.min_Sig_value))/
+             (max(Diff_data[,Sig_value[m]])-min(Diff_data[,Sig_value[m]])))
       }
     }
 
@@ -1843,9 +1959,9 @@ sirir <- function(graph, vertices = V(graph),
       utils::setTxtProgressBar(pb = pb, value = 20)
     }
 
-    #ProgressBar: Performing random forest classification (supervised machine learning)
+    #ProgressBar: Performing the random forests classification (supervised machine learning)
     if(verbose) {
-      print("Performing random forest classification (supervised machine learning)", quote = FALSE)
+      print(unname(as.data.frame("Performing the random forests classification (supervised machine learning)")),quote = FALSE, row.names = FALSE)
     }
 
     #4 Calculation of the Integrated Value of Influence (IVI)
@@ -1862,144 +1978,80 @@ sirir <- function(graph, vertices = V(graph),
     exptl.for.super.learn <- Exptl_data[,sig.diff.index]
     exptl.for.super.learn$condition <- Exptl_data[,condition.index]
 
-    #b Perform random forest classification
-    rf.diff.exptl <- ranger::ranger(seed = seed,
-                                    formula = condition ~ .,
+    #b Perform random forests classification
+    base::set.seed(seed = seed)
+    rf.diff.exptl <- ranger::ranger(formula = condition ~ .,
                                     data = exptl.for.super.learn,
-                                    num.trees = num_trees, importance = "permutation",
+                                    num.trees = num_trees,
+                                    mtry = mtry,
+                                    importance = "impurity_corrected",
                                     write.forest = FALSE)
 
-    rf.diff.exptl.pvalue <- as.data.frame(ranger::importance_pvalues(seed = seed,
-                                                                     x = rf.diff.exptl,
+    base::set.seed(seed = seed)
+    rf.diff.exptl.pvalue <- as.data.frame(ranger::importance_pvalues(x = rf.diff.exptl,
                                                                      formula = condition ~ .,
                                                                      num.permutations = num_permutations,
                                                                      data = exptl.for.super.learn,
                                                                      method = "altmann"))
 
-    rf.diff.exptl.pvalue <- base::subset(rf.diff.exptl.pvalue, rf.diff.exptl.pvalue$pvalue <alpha)
-
-    if(min(rf.diff.exptl.pvalue[,"pvalue"])==0) {
-      rf.diff.exptl.pvalue[,"pvalue"] <- rf.diff.exptl.pvalue[,"pvalue"] + sort(as.matrix(rf.diff.exptl.pvalue[,"pvalue"]))[2]
+    if(any(is.na(rf.diff.exptl.pvalue[,"pvalue"])) |
+       any(is.nan(rf.diff.exptl.pvalue[,"pvalue"]))) {
+      rf.diff.exptl.pvalue[c(which(is.na(rf.diff.exptl.pvalue[,"pvalue"])),
+                             which(is.nan(rf.diff.exptl.pvalue[,"pvalue"]))),
+                           "pvalue"] <- 1
     }
 
-    #ProgressBar: Performing random forest classification (supervised machine learning)
+    # filtering the RF output data
+    select.number <- ifelse(!is.null(Desired_list),
+                            round(length(Desired_list)/2),
+                            100)
+
+      if(length(which(rf.diff.exptl.pvalue[,"pvalue"] <alpha)) >= select.number) {
+        rf.diff.exptl.pvalue <- base::subset(rf.diff.exptl.pvalue, rf.diff.exptl.pvalue$pvalue < alpha)
+
+      } else {
+        rf.pval.select <- which(rf.diff.exptl.pvalue[,"pvalue"] <alpha)
+        rf.nonSig <- seq(nrow(rf.diff.exptl.pvalue))[-rf.pval.select]
+        required.pos.importance <- select.number - length(rf.pval.select)
+
+        temp.rf.diff.exptl.pvalue <- rf.diff.exptl.pvalue[rf.nonSig,]
+
+        rf.importance.select <- utils::tail(order(temp.rf.diff.exptl.pvalue[,"importance"]),
+                                           n = required.pos.importance)
+
+        temp.rf.diff.exptl.pvalue <- temp.rf.diff.exptl.pvalue[rf.importance.select,]
+
+        #combine pvalue-based and importance-based tables
+        rf.diff.exptl.pvalue <- rbind(rf.diff.exptl.pvalue[rf.pval.select,],
+                                      temp.rf.diff.exptl.pvalue)
+      }
+
+    # negative importance values could be considered as 0
+    if(any(rf.diff.exptl.pvalue[,"importance"] < 0)) {
+      rf.diff.exptl.pvalue[which(rf.diff.exptl.pvalue[,"importance"] < 0),
+                           "importance"] <- 0
+    }
+
+    # taking care of zero p-values
+    if(min(rf.diff.exptl.pvalue[,"pvalue"])==0) {
+
+      #range normalize the primitive pvalue
+      temp.min_pvalue <- base::sort(base::unique(rf.diff.exptl.pvalue[,"pvalue"]))[2]
+
+      rf.diff.exptl.pvalue[,"pvalue"] <- temp.min_pvalue+
+        (((rf.diff.exptl.pvalue[,"pvalue"]-min(rf.diff.exptl.pvalue[,"pvalue"]))*(max(rf.diff.exptl.pvalue[,"pvalue"])-temp.min_pvalue))/
+           (max(rf.diff.exptl.pvalue[,"pvalue"])-min(rf.diff.exptl.pvalue[,"pvalue"])))
+    }
+
+    #ProgressBar: Performing the random forests classification (supervised machine learning)
     if(verbose) {
       utils::setTxtProgressBar(pb = pb, value = 35)
     }
 
-    #ProgressBar: Performing the first round association analysis
-    if(verbose) {
-      print("Performing the first round association analysis", quote = FALSE)
-    }
-
-    #c Performing correlation analysis
-    temp.corr <- coop::pcor(Exptl_data[,-condition.index])
-
-    #filter corr data for only those corr between diff features and themselves/others
-    filter.corr.index <- stats::na.omit(base::unique(base::match(rownames(rf.diff.exptl.pvalue),
-                                                                 colnames(temp.corr))))
-    temp.corr <- temp.corr[,filter.corr.index]
-
-    temp.corr <- reshape2::melt(data = temp.corr, value.name = "cor")
-
-    #filterring low level correlations
-    cor.thresh <- r
-    temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
-
-    temp.corr <- temp.corr[-which(as.character(temp.corr$Var1)==
-                                    as.character(temp.corr$Var2)),]
-
-    if(nrow(temp.corr)>20000) {
-
-      repeat {
-
-        cor.thresh <- cor.thresh+((1-cor.thresh)/2)
-        temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
-
-        if(nrow(temp.corr)<=20000) {
-          break
-        }
-      }
-    }
-
-    #getting the list of diff features and their correlated features
-    diff.plus.corr.features <- base::unique(c(base::as.character(temp.corr[,1]),
-                                              base::as.character(temp.corr[,2])))
-
-    #ProgressBar: Performing first round association analysis
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 45)
-    }
-
-    #ProgressBar: Performing the second round association analysis
-    if(verbose) {
-      print("Performing the second round association analysis", quote = FALSE)
-    }
-
-    #redo correlation analysis
-    temp.corr <- coop::pcor(Exptl_data[,-condition.index])
-
-    #filter corr data for only those corr between diff.plus.corr.features and themselves/others
-    filter.corr.index <- stats::na.omit(match(diff.plus.corr.features,
-                                              colnames(temp.corr)))
-    temp.corr <- temp.corr[,filter.corr.index]
-
-    temp.corr <- reshape2::melt(data = temp.corr, value.name = "cor")
-
-    #filterring low level correlations
-    cor.thresh <- r
-    temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
-
-    temp.corr <- temp.corr[-which(as.character(temp.corr$Var1)==
-                                    as.character(temp.corr$Var2)),]
-
-    if(nrow(temp.corr)>20000) {
-
-      repeat {
-
-        cor.thresh <- cor.thresh+((1-cor.thresh)/2)
-        temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
-
-        if(nrow(temp.corr)<=20000) {
-          break
-        }
-      }
-    }
-
-    #ProgressBar: Performing second round association analysis
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 55)
-    }
-
-    #ProgressBar: Network reconstruction
-    if(verbose) {
-      print("Network reconstruction", quote = FALSE)
-    }
-
-    #d Graph reconstruction
-    temp.corr.graph <- igraph::graph_from_data_frame(temp.corr[,c(1:2)])
-
-    #ProgressBar: Network reconstruction
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 60)
-    }
-
-    #ProgressBar: Calculation of the integrated value of influence (IVI)
-    if(verbose) {
-      print("Calculation of the integrated value of influence (IVI)", quote = FALSE)
-    }
-
-    #e Calculation of IVI
-    temp.corr.ivi <- ivi(temp.corr.graph)
-
-    #ProgressBar: Calculation of the integrated value of influence (IVI)
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 65)
-    }
 
     #ProgressBar: Performing PCA (unsupervised machine learning)
     if(verbose) {
-      print("Performing PCA (unsupervised machine learning)", quote = FALSE)
+      print(unname(as.data.frame("Performing PCA (unsupervised machine learning)")),quote = FALSE, row.names = FALSE)
     }
 
     #5 Unsupervised machine learning (PCA)
@@ -2017,12 +2069,148 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Performing PCA (unsupervised machine learning)
     if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 40)
+    }
+
+    #ProgressBar: Performing the first round of association analysis
+    if(verbose) {
+      print(unname(as.data.frame("Performing the first round of association analysis")),quote = FALSE, row.names = FALSE)
+    }
+
+    #c Performing correlation analysis
+
+    #make ranked experimental data
+    Exptl_data[,-condition.index] <- base::t(base::apply(X = Exptl_data[,-condition.index],
+                                                         MARGIN = 1, base::rank))
+
+    temp.corr <- coop::pcor(Exptl_data[,-condition.index])
+    temp.corr.for.sec.round <- temp.corr
+
+    #filter corr data for only those corr between diff features and themselves/others
+    filter.corr.index <- stats::na.omit(base::unique(base::match(rownames(rf.diff.exptl.pvalue),
+                                                                 colnames(temp.corr))))
+    temp.corr <- temp.corr[,filter.corr.index]
+
+    temp.corr <- reshape2::melt(data = temp.corr, value.name = "cor")
+
+    #filtering low level correlations
+    cor.thresh <- r
+    temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
+
+    # removing self-correlations
+    temp.corr <- temp.corr[-which(as.character(temp.corr$Var1)==
+                                    as.character(temp.corr$Var2)),]
+
+    if(nrow(temp.corr)> (max.connections*0.95)) {
+
+      temp.corr.select.index <- utils::tail(order(temp.corr$cor),
+                                            n = round(max.connections*0.95))
+
+      temp.corr <- temp.corr[temp.corr.select.index,]
+
+    }
+
+    diff.only.temp.corr.nrow <- nrow(temp.corr)
+
+    #getting the list of diff features and their correlated features
+    diff.plus.corr.features <- base::unique(c(base::as.character(temp.corr[,1]),
+                                              base::as.character(temp.corr[,2])))
+
+    #find the diff features amongst diff.plus.corr.features
+    diff.only.features.index <- stats::na.omit(base::unique(base::match(rownames(rf.diff.exptl.pvalue),
+                                                                        diff.plus.corr.features)))
+    diff.only.features <- diff.plus.corr.features[diff.only.features.index]
+
+    #ProgressBar: Performing first round of association analysis
+    if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 50)
+    }
+
+    #ProgressBar: Performing the second round of association analysis
+    if(verbose) {
+      print(unname(as.data.frame("Performing the second round of association analysis")),quote = FALSE, row.names = FALSE)
+    }
+
+    #redo correlation analysis
+    temp.corr <- temp.corr.for.sec.round
+    rm(temp.corr.for.sec.round)
+
+    #filter corr data for only those corr between diff.plus.corr.features and themselves/others
+    filter.corr.index <- stats::na.omit(match(diff.plus.corr.features,
+                                              colnames(temp.corr)))
+    temp.corr <- temp.corr[,filter.corr.index]
+
+    temp.corr <- reshape2::melt(data = temp.corr, value.name = "cor")
+
+    #filtering low level correlations
+    cor.thresh <- r
+    temp.corr <- base::subset(temp.corr, temp.corr[,3]>cor.thresh)
+
+    # removing self-correlations
+    temp.corr <- temp.corr[-which(as.character(temp.corr$Var1)==
+                                    as.character(temp.corr$Var2)),]
+
+    # separate diff.only features
+    temp.corr.diff.only.index <- base::unique(c(which(temp.corr$Var1 %in% diff.only.features),
+                                                which(temp.corr$Var2 %in% diff.only.features)))
+    temp.corr.diff.only <- temp.corr[temp.corr.diff.only.index,]
+
+    if(nrow(temp.corr.diff.only)>diff.only.temp.corr.nrow) {
+
+      temp.corr.diff.only.select.index <- utils::tail(order(temp.corr.diff.only$cor),
+                                                      n = diff.only.temp.corr.nrow)
+
+      temp.corr.diff.only <- temp.corr.diff.only[temp.corr.diff.only.select.index,]
+    }
+
+    # remove diff.only features from temp.corr
+    temp.corr <- temp.corr[-temp.corr.diff.only.index,]
+
+    if(nrow(temp.corr)>(max.connections-nrow(temp.corr.diff.only))) {
+
+      temp.corr.select.index <- utils::tail(order(temp.corr$cor),
+                                            n = (max.connections-nrow(temp.corr.diff.only)))
+
+      temp.corr <- temp.corr[temp.corr.select.index,]
+    }
+
+    # recombine the temp.corr.diff.only data and temp.corr
+    temp.corr <- base::rbind(temp.corr, temp.corr.diff.only)
+
+    #ProgressBar: Performing second round of association analysis
+    if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 60)
+    }
+
+    #ProgressBar: Network reconstruction
+    if(verbose) {
+      print(unname(as.data.frame("Network reconstruction")),quote = FALSE, row.names = FALSE)
+    }
+
+    #d Graph reconstruction
+    temp.corr.graph <- igraph::graph_from_data_frame(temp.corr[,c(1:2)])
+
+    #ProgressBar: Network reconstruction
+    if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 65)
+    }
+
+    #ProgressBar: Calculation of the integrated value of influence (IVI)
+    if(verbose) {
+      print(unname(as.data.frame("Calculation of the integrated value of influence (IVI)")),quote = FALSE, row.names = FALSE)
+    }
+
+    #e Calculation of IVI
+    temp.corr.ivi <- ivi(temp.corr.graph)
+
+    #ProgressBar: Calculation of the integrated value of influence (IVI)
+    if(verbose) {
       utils::setTxtProgressBar(pb = pb, value = 70)
     }
 
     #ProgressBar: Calculation of the primitive driver score
     if(verbose) {
-      print("Calculation of the primitive driver score", quote = FALSE)
+      print(unname(as.data.frame("Calculation of the primitive driver score")),quote = FALSE, row.names = FALSE)
     }
 
     ## Driver score and ranking
@@ -2050,9 +2238,14 @@ sirir <- function(graph, vertices = V(graph),
         Diff_data$first.Driver.Rank[i] <- Diff_data$sum.Sig_value[i]*Diff_data$IVI[i]
       }
     }
-    #range normalize (0,100) the first driver rank
-    Diff_data$first.Driver.Rank <- 0+(((Diff_data$first.Driver.Rank-min(Diff_data$first.Driver.Rank))*(100-0))/
-                                        (max(Diff_data$first.Driver.Rank)-min(Diff_data$first.Driver.Rank)))
+    #range normalize the first driver rank
+    if(any(Diff_data$first.Driver.Rank == 0)) {
+      Diff_data$first.Driver.Rank <- 0+(((Diff_data$first.Driver.Rank-min(Diff_data$first.Driver.Rank))*(100-0))/
+                                          (max(Diff_data$first.Driver.Rank)-min(Diff_data$first.Driver.Rank)))
+    } else {
+      Diff_data$first.Driver.Rank <- 1+(((Diff_data$first.Driver.Rank-min(Diff_data$first.Driver.Rank))*(100-1))/
+                                          (max(Diff_data$first.Driver.Rank)-min(Diff_data$first.Driver.Rank)))
+    }
 
     #ProgressBar: Calculation of the primitive driver score
     if(verbose) {
@@ -2061,13 +2254,13 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Calculation of the neighborhood driver score
     if(verbose) {
-      print("Calculation of the neighborhood driver score", quote = FALSE)
+      print(unname(as.data.frame("Calculation of the neighborhood driver score")),quote = FALSE, row.names = FALSE)
     }
 
     #b (#6) calculate neighborhood score
 
     #get the list of network nodes
-    network.nodes <- igraph::as_ids(igraph::V(temp.corr.graph))
+    network.nodes <- base::as.character(igraph::as_ids(V(temp.corr.graph)))
 
     neighborehood.score.table <- data.frame(node = network.nodes,
                                             N.score = 0)
@@ -2088,7 +2281,7 @@ sirir <- function(graph, vertices = V(graph),
 
     #ProgressBar: Preparation of the driver table
     if(verbose) {
-      print("Preparation of the driver table", quote = FALSE)
+      print(unname(as.data.frame("Preparation of the driver table")),quote = FALSE, row.names = FALSE)
     }
 
     Diff_data$N.score <- 0
@@ -2101,8 +2294,9 @@ sirir <- function(graph, vertices = V(graph),
     Diff_data$N.score[Diff_data.N.score.index] <- neighborehood.score.table$N.score[neighborehood.score.table.for.Diff_data.N.score.index]
 
     #range normalize (1,100) the neighborhood score
-    Diff_data$N.score <- 1+(((Diff_data$N.score-min(Diff_data$N.score))*(100-1))/
-                              (max(Diff_data$N.score)-min(Diff_data$N.score)))
+    Diff_data$N.score <- ifelse(sum(Diff_data$N.score) == 0, 1,
+                                1+(((Diff_data$N.score-min(Diff_data$N.score))*(100-1))/
+                                     (max(Diff_data$N.score)-min(Diff_data$N.score))))
 
     #c calculate the final driver score
 
@@ -2116,24 +2310,35 @@ sirir <- function(graph, vertices = V(graph),
     #remove the rows/features with NA in the final driver score
     Driver.table <- Driver.table[stats::complete.cases(Driver.table),]
 
-    #filter the driver table by either the desired list or the list of network nodes
+    #filter the driver table by the desired list (if provided)
     if(!is.null(Desired_list)) {
       Driver.table.row.index <- stats::na.omit(match(Desired_list,
                                                      rownames(Driver.table)))
-    } else {
-      Driver.table.row.index <- stats::na.omit(match(network.nodes,
-                                                     rownames(Driver.table)))
+      Driver.table <- Driver.table[Driver.table.row.index,]
     }
 
-    Driver.table <- Driver.table[Driver.table.row.index,]
-    if(nrow(Driver.table)==0) {Driver.table <- NULL} else {
+    if(nrow(as.data.frame(Driver.table))==0) {Driver.table <- NULL} else {
 
       #range normalize final driver score
-      Driver.table$final.Driver.score <- 1+(((Driver.table$final.Driver.score-min(Driver.table$final.Driver.score))*(100-1))/
-                                              (max(Driver.table$final.Driver.score)-min(Driver.table$final.Driver.score)))
+      ifelse(length(unique(Driver.table$final.Driver.score)) > 1,
+             Driver.table$final.Driver.score <- 1+(((Driver.table$final.Driver.score-min(Driver.table$final.Driver.score))*(100-1))/
+                                                     (max(Driver.table$final.Driver.score)-min(Driver.table$final.Driver.score))),
+             Driver.table$final.Driver.score <- 1)
+
+      #add Z.score
+      Driver.table$Z.score <- base::scale(Driver.table$final.Driver.score)
 
       #add driver rank
-      Driver.table$rank <- rank(-Driver.table$final.Driver.score, ties.method = "min")
+      Driver.table$rank <- rank(-Driver.table$final.Driver.score,
+                                ties.method = "min")
+
+      #add P-value
+      Driver.table$p.value <- stats::pnorm(Driver.table$Z.score,
+                                           lower.tail = FALSE)
+
+      #add adjusted pvalue
+      Driver.table$padj <- stats::p.adjust(p = Driver.table$p.value,
+                                           method = "BH")
 
       #add driver type
       Driver.table$driver.type <- ""
@@ -2154,16 +2359,21 @@ sirir <- function(graph, vertices = V(graph),
 
       #remove redundent columns
       Driver.table <- Driver.table[,c("final.Driver.score",
+                                      "Z.score",
                                       "rank",
+                                      "p.value",
+                                      "padj",
                                       "driver.type")]
 
       #rename column names
-      colnames(Driver.table) <- c("Score", "Rank", "Type")
+      colnames(Driver.table) <- c("Score", "Z.score",
+                                  "Rank", "P.value",
+                                  "P.adj", "Type")
 
       #filtering redundant (NaN) results
       Driver.table <- Driver.table[stats::complete.cases(Driver.table),]
 
-      if(nrow(Driver.table)==0) {Driver.table <- NULL}
+      if(nrow(as.data.frame(Driver.table))==0) {Driver.table <- NULL}
 
     }
 
@@ -2172,143 +2382,40 @@ sirir <- function(graph, vertices = V(graph),
       utils::setTxtProgressBar(pb = pb, value = 85)
     }
 
-    #ProgressBar: Preparation of the DE-mediator table
-    if(verbose) {
-      print("Preparation of the DE-mediator table", quote = FALSE)
-    }
-
-    # Create the DE mediators table
-
-    DE.mediator.table <- Diff_data
-
-    #include only rows/features with NA in the final driver score (which are mediators)
-    DE.mediator.index <- which(is.na(DE.mediator.table$final.Driver.score))
-
-    DE.mediator.table <- DE.mediator.table[DE.mediator.index,]
-
-    DE.mediator.table$DE.mediator.score <- DE.mediator.table$sum.Sig_value*
-      DE.mediator.table$IVI*
-      DE.mediator.table$N.score
-
-    #filter the DE mediators table by either the desired list or the list of network nodes
-    if(!is.null(Desired_list)) {
-      DE.mediator.row.index <- stats::na.omit(match(Desired_list,
-                                                    rownames(DE.mediator.table)))
-    } else {
-      DE.mediator.row.index <- stats::na.omit(match(network.nodes,
-                                                    rownames(DE.mediator.table)))
-    }
-
-    DE.mediator.table <- DE.mediator.table[DE.mediator.row.index,]
-    if(nrow(DE.mediator.table)==0) {DE.mediator.table <- NULL} else {
-
-      #range normalize DE mediators score
-      DE.mediator.table$DE.mediator.score <- 1+(((DE.mediator.table$DE.mediator.score-min(DE.mediator.table$DE.mediator.score))*(100-1))/
-                                                  (max(DE.mediator.table$DE.mediator.score)-min(DE.mediator.table$DE.mediator.score)))
-
-      #add DE mediators rank
-      DE.mediator.table$rank <- rank(-DE.mediator.table$DE.mediator.score, ties.method = "min")
-
-      #remove redundent columns
-      DE.mediator.table <- DE.mediator.table[,c("DE.mediator.score", "rank")]
-
-      #rename column names
-      colnames(DE.mediator.table) <- c("Score", "Rank")
-
-      #filtering redundant (NaN) results
-      DE.mediator.table <- DE.mediator.table[stats::complete.cases(DE.mediator.table),]
-
-      if(nrow(DE.mediator.table)==0) {DE.mediator.table <- NULL}
-
-    }
-
-    #ProgressBar: Preparation of the DE-mediator table
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 90)
-    }
-
-    #ProgressBar: Preparation of the nonDE-mediator table
-    if(verbose) {
-      print("Preparation of the nonDE-mediator table", quote = FALSE)
-    }
-
-    # Create the non-DE mediators table
-    non.DE.mediators.index <- stats::na.omit(unique(match(rownames(Diff_data),
-                                                          neighborehood.score.table$node)))
-
-    non.DE.mediators.table <- neighborehood.score.table[-c(non.DE.mediators.index),]
-    if(nrow(non.DE.mediators.table)==0) {non.DE.mediators.table <- NULL} else {
-
-      #filter the non-DE mediators table by either the desired list or the list of network nodes
-      if(!is.null(Desired_list)) {
-        non.DE.mediator.row.index <- stats::na.omit(match(Desired_list,
-                                                          non.DE.mediators.table$node))
-        non.DE.mediators.table <- non.DE.mediators.table[non.DE.mediator.row.index,]
-      }
-    }
-
-    if(nrow(non.DE.mediators.table)==0) {non.DE.mediators.table <- NULL} else {
-
-      rownames(non.DE.mediators.table) <- non.DE.mediators.table$node
-
-      non.DE.mediators.ivi.index <- stats::na.omit(match(rownames(non.DE.mediators.table),
-                                                         names(temp.corr.ivi)))
-
-      non.DE.mediators.table$ivi <- temp.corr.ivi[non.DE.mediators.ivi.index]
-
-      non.DE.mediators.table$non.DE.mediator.score <- non.DE.mediators.table$N.score*non.DE.mediators.table$ivi
-
-      #range normalize DE mediators score
-      non.DE.mediators.table$non.DE.mediator.score <- 1+(((non.DE.mediators.table$non.DE.mediator.score-min(non.DE.mediators.table$non.DE.mediator.score))*(100-1))/
-                                                           (max(non.DE.mediators.table$non.DE.mediator.score)-min(non.DE.mediators.table$non.DE.mediator.score)))
-
-      #add non-DE mediators rank
-      non.DE.mediators.table$rank <- rank(-non.DE.mediators.table$non.DE.mediator.score, ties.method = "min")
-
-      #remove redundent columns
-      non.DE.mediators.table <- non.DE.mediators.table[,c("non.DE.mediator.score", "rank")]
-
-      #rename column names
-      colnames(non.DE.mediators.table) <- c("Score", "Rank")
-
-      #filtering redundant (NaN) results
-      non.DE.mediators.table <- non.DE.mediators.table[stats::complete.cases(non.DE.mediators.table),]
-
-      if(nrow(non.DE.mediators.table)==0) {non.DE.mediators.table <- NULL}
-
-    }
-
-    #ProgressBar: Preparation of the nonDE-mediator table
-    if(verbose) {
-      utils::setTxtProgressBar(pb = pb, value = 95)
-    }
 
     #ProgressBar: Preparation of the biomarker table
     if(verbose) {
-      print("Preparation of the biomarker table", quote = FALSE)
+      print(unname(as.data.frame("Preparation of the biomarker table")),quote = FALSE, row.names = FALSE)
     }
 
-    # Create the Biomarkers table
+    # Create the Biomarker table
 
     Biomarker.table <- Diff_data
 
     #remove the rows/features with NA in the final driver score
     Biomarker.table <- Biomarker.table[stats::complete.cases(Biomarker.table),]
 
-    #filter by random forest table
-    Biomarker.rf.index <- stats::na.omit(match(rownames(rf.diff.exptl.pvalue),
-                                               rownames(Biomarker.table)))
+    #filter the biomarker table by the desired list (if provided)
+    if(!is.null(Desired_list)) {
+      Biomarker.table.row.index <- stats::na.omit(match(Desired_list,
+                                                     rownames(Biomarker.table)))
+      Biomarker.table <- Biomarker.table[Biomarker.table.row.index,]
+    }
 
-    Biomarker.table <- Biomarker.table[Biomarker.rf.index,]
-
-    if(nrow(Biomarker.table)==0) {Biomarker.table <- NULL} else {
+    if(nrow(as.data.frame(Biomarker.table))==0) {Biomarker.table <- NULL} else {
 
       #add RF importance score and p-value
-      rf.for.Biomarker.table <- stats::na.omit(match(rownames(Biomarker.table),
+      Biomarker.table$rf.importance <- 0
+      Biomarker.table$rf.pvalue <- 1
+
+      Biomarker.table.rf.index <- stats::na.omit(match(rownames(rf.diff.exptl.pvalue),
+                                                       rownames(Biomarker.table)))
+
+      rf.for.Biomarker.table <- stats::na.omit(match(rownames(Biomarker.table)[Biomarker.table.rf.index],
                                                      rownames(rf.diff.exptl.pvalue)))
 
-      Biomarker.table$rf.importance <- rf.diff.exptl.pvalue$importance[rf.for.Biomarker.table]
-      Biomarker.table$rf.pvalue <- rf.diff.exptl.pvalue$pvalue[rf.for.Biomarker.table]
+      Biomarker.table$rf.importance[Biomarker.table.rf.index] <- rf.diff.exptl.pvalue$importance[rf.for.Biomarker.table]
+      Biomarker.table$rf.pvalue[Biomarker.table.rf.index] <- rf.diff.exptl.pvalue$pvalue[rf.for.Biomarker.table]
 
       #range normalize rf.importance and rf.pvalue
       Biomarker.table$rf.importance <- 1+(((Biomarker.table$rf.importance-min(Biomarker.table$rf.importance))*(100-1))/
@@ -2319,10 +2426,18 @@ sirir <- function(graph, vertices = V(graph),
                                         (max(Biomarker.table$rf.pvalue)-min(Biomarker.table$rf.pvalue)))
 
       #add rotation values
-      Biomarker.table.rotation.index <- stats::na.omit(match(rownames(Biomarker.table),
+      Biomarker.table$rotation <- 0
+      Biomarker.table.for.rotation <- stats::na.omit(match(names(temp.PCA.r),
+                                                           rownames(Biomarker.table)))
+
+      Biomarker.table.rotation.index <- stats::na.omit(match(rownames(Biomarker.table)[Biomarker.table.for.rotation],
                                                              names(temp.PCA.r)))
 
-      Biomarker.table$rotation <- temp.PCA.r[Biomarker.table.rotation.index]
+      Biomarker.table$rotation[Biomarker.table.for.rotation] <- temp.PCA.r[Biomarker.table.rotation.index]
+
+      #range normalize rotation values
+      Biomarker.table$rotation <- 1+(((Biomarker.table$rotation-min(Biomarker.table$rotation))*(100-1))/
+                                            (max(Biomarker.table$rotation)-min(Biomarker.table$rotation)))
 
       #calculate biomarker score
       if(!is.null(Regr_value)) {
@@ -2338,34 +2453,225 @@ sirir <- function(graph, vertices = V(graph),
       }
 
       #range normalize biomarker score
-      Biomarker.table$final.biomarker.score <- 1+(((Biomarker.table$final.biomarker.score-min(Biomarker.table$final.biomarker.score))*(100-1))/
-                                                    (max(Biomarker.table$final.biomarker.score)-min(Biomarker.table$final.biomarker.score)))
+      ifelse(length(unique(Biomarker.table$final.biomarker.score)) > 1,
+             Biomarker.table$final.biomarker.score <- 1+(((Biomarker.table$final.biomarker.score-min(Biomarker.table$final.biomarker.score))*(100-1))/
+                                                           (max(Biomarker.table$final.biomarker.score)-min(Biomarker.table$final.biomarker.score))),
+             Biomarker.table$final.biomarker.score <- 1)
+
+
+      #add biomarker Z.score
+      Biomarker.table$Z.score <- base::scale(Biomarker.table$final.biomarker.score)
 
       #add biomarker rank
       Biomarker.table$rank <- rank(-Biomarker.table$final.biomarker.score, ties.method = "min")
 
+      #add biomarker P-value
+      Biomarker.table$P.value <- stats::pnorm(Biomarker.table$Z.score,
+                                              lower.tail = FALSE)
+
+      #add biomarker adjusted p-value
+      Biomarker.table$padj <- stats::p.adjust(p = Biomarker.table$P.value,
+                                              method = "BH")
+
+      #add biomarker type
+      Biomarker.table$type <- ""
+
+      for (b in 1:nrow(Biomarker.table)) {
+
+        if(sum(Biomarker.table[b,Diff_value])<0) {
+          Biomarker.table$type[b] <- "Down-regulated"
+
+        } else if(sum(Biomarker.table[b,Diff_value])>0) {
+          Biomarker.table$type[b] <- "Up-regulated"
+        } else {
+          Biomarker.table$type[b] <- NA
+        }
+      }
+
       #remove redundent columns
-      Biomarker.table <- Biomarker.table[,c("final.biomarker.score", "rank")]
+      Biomarker.table <- Biomarker.table[,c("final.biomarker.score",
+                                            "Z.score", "rank",
+                                            "P.value", "padj", "type")]
 
       #rename column names
-      colnames(Biomarker.table) <- c("Score", "Rank")
+      colnames(Biomarker.table) <- c("Score", "Z.score",
+                                     "Rank", "P.value",
+                                     "P.adj", "Type")
 
       #filtering redundant (NaN) results
       Biomarker.table <- Biomarker.table[stats::complete.cases(Biomarker.table),]
 
-      if(nrow(Biomarker.table)==0) {Biomarker.table <- NULL}
+      if(nrow(as.data.frame(Biomarker.table))==0) {Biomarker.table <- NULL}
 
     }
 
     #ProgressBar: Preparation of the biomarker table
     if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 90)
+    }
+
+    #ProgressBar: Preparation of the DE-mediator table
+    if(verbose) {
+      print(unname(as.data.frame("Preparation of the DE-mediator table")),quote = FALSE, row.names = FALSE)
+    }
+
+    # Create the DE mediators table
+
+    DE.mediator.table <- Diff_data
+
+    #include only rows/features with NA in the final driver score (which are mediators)
+    DE.mediator.index <- which(is.na(DE.mediator.table$final.Driver.score))
+
+    DE.mediator.table <- DE.mediator.table[DE.mediator.index,]
+
+    DE.mediator.table$DE.mediator.score <- DE.mediator.table$sum.Sig_value*
+                                            DE.mediator.table$IVI*
+                                            DE.mediator.table$N.score
+
+    #filter the DE mediators table by either the desired list or the list of network nodes
+
+      DE.mediator.row.index <- stats::na.omit(match(network.nodes,
+                                                    rownames(DE.mediator.table)))
+
+      if(!is.null(Desired_list)) {
+        desired.DE.mediator.row.index <- stats::na.omit(match(Desired_list,
+                                                           rownames(DE.mediator.table)[DE.mediator.row.index]))
+        DE.mediator.row.index <- DE.mediator.row.index[desired.DE.mediator.row.index]
+      }
+
+    DE.mediator.table <- DE.mediator.table[DE.mediator.row.index,]
+    if(nrow(as.data.frame(DE.mediator.table))==0) {DE.mediator.table <- NULL} else {
+
+      #range normalize DE mediators score
+      ifelse(length(unique(DE.mediator.table$DE.mediator.score)) > 1,
+             DE.mediator.table$DE.mediator.score <- 1+(((DE.mediator.table$DE.mediator.score-min(DE.mediator.table$DE.mediator.score))*(100-1))/
+                                                         (max(DE.mediator.table$DE.mediator.score)-min(DE.mediator.table$DE.mediator.score))),
+             DE.mediator.table$DE.mediator.score <- 1)
+
+      #add DE mediators Z score
+      DE.mediator.table$Z.score <- base::scale(DE.mediator.table$DE.mediator.score)
+
+      #add DE mediators rank
+      DE.mediator.table$rank <- rank(-DE.mediator.table$DE.mediator.score, ties.method = "min")
+
+      #add DE mediators P-value
+      DE.mediator.table$P.value <- stats::pnorm(DE.mediator.table$Z.score,
+                                                lower.tail = FALSE)
+
+      #add DE mediators adjusted P-value
+      DE.mediator.table$padj <- stats::p.adjust(p = DE.mediator.table$P.value,
+                                                method = "BH")
+
+      #remove redundent columns
+      DE.mediator.table <- DE.mediator.table[,c("DE.mediator.score", "Z.score",
+                                                "rank", "P.value", "padj")]
+
+      #rename column names
+      colnames(DE.mediator.table) <- c("Score", "Z.score",
+                                       "Rank", "P.value",
+                                       "P.adj")
+
+      #filtering redundant (NaN) results
+      DE.mediator.table <- DE.mediator.table[stats::complete.cases(DE.mediator.table),]
+
+      if(nrow(as.data.frame(DE.mediator.table))==0) {DE.mediator.table <- NULL}
+
+    }
+
+    #ProgressBar: Preparation of the DE-mediator table
+    if(verbose) {
+      utils::setTxtProgressBar(pb = pb, value = 95)
+    }
+
+    #ProgressBar: Preparation of the nonDE-mediator table
+    if(verbose) {
+      print(unname(as.data.frame("Preparation of the nonDE-mediator table")),quote = FALSE, row.names = FALSE)
+    }
+
+    # Create the non-DE mediators table
+    non.DE.mediators.index <- stats::na.omit(unique(match(rownames(Diff_data),
+                                                          neighborehood.score.table$node)))
+
+    non.DE.mediators.table <- neighborehood.score.table[-c(non.DE.mediators.index),]
+    if(nrow(as.data.frame(non.DE.mediators.table))==0) {non.DE.mediators.table <- NULL} else {
+
+      #filter the non-DE mediators table by either the desired list
+      if(!is.null(Desired_list)) {
+        non.DE.mediator.row.index <- stats::na.omit(match(Desired_list,
+                                                          non.DE.mediators.table$node))
+        non.DE.mediators.table <- non.DE.mediators.table[non.DE.mediator.row.index,]
+      }
+    }
+
+    if(nrow(as.data.frame(non.DE.mediators.table))==0) {non.DE.mediators.table <- NULL} else {
+
+      rownames(non.DE.mediators.table) <- non.DE.mediators.table$node
+
+      non.DE.mediators.ivi.index <- stats::na.omit(match(rownames(non.DE.mediators.table),
+                                                         names(temp.corr.ivi)))
+
+      non.DE.mediators.table$ivi <- temp.corr.ivi[non.DE.mediators.ivi.index]
+
+      non.DE.mediators.table$non.DE.mediator.score <- non.DE.mediators.table$N.score*non.DE.mediators.table$ivi
+
+      #range normalize nonDE mediators score
+      ifelse(length(unique(non.DE.mediators.table$non.DE.mediator.score)) > 1,
+             non.DE.mediators.table$non.DE.mediator.score <- 1+(((non.DE.mediators.table$non.DE.mediator.score-min(non.DE.mediators.table$non.DE.mediator.score))*(100-1))/
+                                                                  (max(non.DE.mediators.table$non.DE.mediator.score)-min(non.DE.mediators.table$non.DE.mediator.score))),
+             non.DE.mediators.table$non.DE.mediator.score <- 1)
+
+      #add non-DE mediators Z.score
+      non.DE.mediators.table$Z.score <- base::scale(non.DE.mediators.table$non.DE.mediator.score)
+
+      #add non-DE mediators P-value
+      non.DE.mediators.table$P.value <- stats::pnorm(non.DE.mediators.table$Z.score,
+                                                     lower.tail = FALSE)
+
+      #add non-DE mediators adjusted p-value
+      non.DE.mediators.table$padj <- stats::p.adjust(p = non.DE.mediators.table$P.value,
+                                                     method = "BH")
+
+      #add non-DE mediators rank
+      non.DE.mediators.table$rank <- rank(-non.DE.mediators.table$non.DE.mediator.score, ties.method = "min")
+
+      #remove redundent columns
+      non.DE.mediators.table <- non.DE.mediators.table[,c("non.DE.mediator.score",
+                                                          "Z.score", "rank",
+                                                          "P.value", "padj")]
+
+      #rename column names
+      colnames(non.DE.mediators.table) <- c("Score", "Z.score",
+                                            "Rank", "P.value",
+                                            "P.adj")
+
+      #filtering redundant (NaN) results
+      non.DE.mediators.table <- non.DE.mediators.table[stats::complete.cases(non.DE.mediators.table),]
+
+      if(nrow(as.data.frame(non.DE.mediators.table))==0) {non.DE.mediators.table <- NULL}
+
+    }
+
+    #ProgressBar: Preparation of the nonDE-mediator table
+    if(verbose) {
       utils::setTxtProgressBar(pb = pb, value = 100)
     }
 
+
     Results <- list("Driver table" = Driver.table,
                     "DE-mediator table" = DE.mediator.table,
-                    "nonDE-mediators table" = non.DE.mediators.table,
+                    "nonDE-mediator table" = non.DE.mediators.table,
                     "Biomarker table" = Biomarker.table)
+
+    Results.Non.Null.vector <- vector()
+
+    for (i in 1:length(Results)) {
+      Results.Non.Null.vector[i] <- !is.null(Results[[i]])
+    }
+
+    Results <- Results[Results.Non.Null.vector]
+
+    # set the class of Results
+    base::class(Results) <- "ExIR_Result"
 
     return(Results)
   }
@@ -2433,3 +2739,969 @@ sirir <- function(graph, vertices = V(graph),
 
     return(Diff_data)
   }
+
+  #=============================================================================
+  #
+  #    Code chunk 18: Visualization of a graph based on centrality measures
+  #
+  #=============================================================================
+
+  #' Centrality-based network visualization
+  #'
+  #' This function has been developed for the visualization of a network based on
+  #' applying a centrality measure to the size and color of network nodes. You are
+  #' also able to adjust the directedness and weight of connections. Some of the documentations
+  #' of the arguments of this function have been adapted from ggplot2 and igraph packages.
+  #' @param graph A graph (network) of the igraph class.
+  #' @param cent.metric A numeric vector of the desired centrality measure previously
+  #' calculated by any means. For example, you may use the function \code{\link[influential]{ivi}}
+  #' for the calculation of the Integrated Value of Influence (IVI) of network nodes. Please note that
+  #' if the centrality measure has been calculated by any means other than the \code{influential} package, make
+  #' sure that the order of the values in the \code{cent.metric} vector is consistent with the order of vertices
+  #' in the network \code{(V(graph))}.
+  #' @param layout The layout to be used for organizing network nodes. Current available layouts include
+  #' \code{"kk", "star", "tree", "components", "circle", "automatic", "grid",
+  #' "sphere", "random", "dh", "drl", "fr", "gem", "graphopt", "lgl", "mds", and "sugiyama"}
+  #' (default is set to "kk"). For a complete description of different layouts and their
+  #' underlying algorithms please refer to the function \code{\link[igraph]{layout_}}.
+  #' @param node.color A character string indicating the colormap option to use.
+  #' Five options are available: "magma" (or "A"), "inferno" (or "B"), "plasma"
+  #' (or "C"), "viridis" (or "D", the default option) and "cividis" (or "E").
+  #' @param node.size.min The size of nodes with the lowest value of the centrality measure (default is set to 3).
+  #' @param node.size.max The size of nodes with the highest value of the centrality measure (default is set to 15).
+  #' @param dist.power The power to be used to visualize more distinction between nodes with high and low
+  #' centrality measure values. The higher the power, the smaller the nodes with lower values of the centrality
+  #' measure will become. Default is set to 1, meaning the relative sizes of nodes are reflective of their
+  #' actual centrality measure values.
+  #' @param node.shape The shape of nodes. Current available shapes include \code{"circle",
+  #' "square", "diamond", "triangle", and "inverted triangle"} (default is set to "circle"). You can also
+  #' set different shapes to different groups of nodes by providing a character vector of shapes of nodes with
+  #' the same length and order of network vertices. This is useful when plotting a network that include different
+  #' type of node (for example, up- and down-regulated features).
+  #' @param stroke.size The size of stroke (border) around the nodes (default is set to 1.5).
+  #' @param stroke.color The color of stroke (border) around the nodes (default is set to "identical" meaning that the
+  #' stroke color of a node will be identical to its corresponding node color). You can also
+  #' set different colors to different groups of nodes by providing a character vector of colors of nodes with
+  #' the same length and order of network vertices. This is useful when plotting a network that include different
+  #' type of node (for example, up- and down-regulated features).
+  #' @param stroke.alpha The transparency of the stroke (border) around the nodes which should
+  #' be a number between 0 and 1 (default is set to 0.6).
+  #' @param show.labels Logical scalar, whether to show node labels or not (default is set to TRUE).
+  #' @param label.cex The amount by which node labels should be scaled relative to the node sizes (default is set to 0.4).
+  #' @param label.color The color of node labels (default is set to "black").
+  #' @param directed Logical scalar, whether to draw the network as directed or not (default is set to FALSE).
+  #' @param arrow.width The width of arrows in the case the network is directed (default is set to 25).
+  #' @param arrow.length The length of arrows in inch in the case the network is directed (default is set to 0.07).
+  #' @param edge.width The constant width of edges if the network is unweighted (default is set to 0.5).
+  #' @param weighted Logical scalar, whether the network is a weighted network or not (default is set to FALSE).
+  #' @param edge.width.min The width of edges with the lowest weight (default is set to 0.2).
+  #' This parameter is ignored for unweighted networks.
+  #' @param edge.width.max The width of edges with the highest weight (default is set to 1).
+  #' This parameter is ignored for unweighted networks.
+  #' @param edge.color The color of edges (default is set to "grey75").
+  #' @param edge.linetype The line type of edges. Current available linetypes include
+  #' \code{"twodash", "longdash", "dotdash", "dotted", "dashed", and "solid"} (default is set to "solid").
+  #' @param legend.position The position of legends ("none", "left", "right",
+  #' "bottom", "top", or two-element numeric vector). The default is set to "right".
+  #' @param legend.direction layout of items in legends ("horizontal" or "vertical").
+  #' The default is set to "vertical".
+  #' @param legend.title The legend title in the string format (default is set to "Centrality measure").
+  #' @param boxed.legend Logical scalar, whether to draw a box around the legend or not (default is set to TRUE).
+  #' @param show.plot.title Logical scalar, whether to show the plot title or not (default is set to TRUE).
+  #' @param plot.title The plot title in the string format (default is set to "Centrality Measure-based Network").
+  #' @param title.position The position of title ("left", "center", or "right"). The default is set to "center".
+  #' @param show.bottom.border Logical scalar, whether to draw the bottom border line (default is set to TRUE).
+  #' @param show.left.border Logical scalar, whether to draw the left border line (default is set to TRUE).
+  #' @param seed A single value, interpreted as an integer to be used for random number generation for preparing
+  #' the network layout (default is set to 1234).
+  #' @return A plot with the class ggplot.
+  #' @keywords cent_network.vis
+  #' @family visualization functions
+  #' @seealso \code{\link[influential]{ivi}}
+  #' @export cent_network.vis
+  #' @examples
+  #' \dontrun{
+  #' MyData <- coexpression.data
+  #' My_graph <- graph_from_data_frame(MyData)
+  #' Graph_IVI <- ivi(graph = My_graph, mode = "all")
+  #' Graph_IVI_plot <- cent_network.vis(graph = My_graph, cent.metric = Graph_IVI,
+  #'                                    legend.title = "IVI",
+  #'                                    plot.title = "IVI-based Network")
+  #' }
+  cent_network.vis <- function(graph,
+                               cent.metric,
+                               layout = "kk",
+                               node.color = "viridis",
+                               node.size.min = 3,
+                               node.size.max = 15,
+                               dist.power = 1,
+                               node.shape = "circle",
+                               stroke.size = 1.5,
+                               stroke.color = "identical",
+                               stroke.alpha = 0.6,
+                               show.labels = TRUE,
+                               label.cex = 0.4,
+                               label.color = "black",
+                               directed = FALSE,
+                               arrow.width = 25,
+                               arrow.length = 0.07,
+                               edge.width = 0.5,
+                               weighted = FALSE,
+                               edge.width.min = 0.2,
+                               edge.width.max = 1,
+                               edge.color = "grey75",
+                               edge.linetype = "solid",
+                               legend.position = "right",
+                               legend.direction = "vertical",
+                               legend.title = "Centrality\nmeasure",
+                               boxed.legend = TRUE,
+                               show.plot.title = TRUE,
+                               plot.title = "Centrality Measure-based Network",
+                               title.position = "center",
+                               show.bottom.border = TRUE,
+                               show.left.border = TRUE,
+                               seed = 1234) {
+
+  # preparing the layout
+  if(layout == "kk") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_kk(graph))
+  } else if(layout == "star") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_as_star(graph))
+  } else if(layout == "tree") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_as_tree(graph))
+  } else if(layout == "components") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_components(graph))
+  } else if(layout == "circle") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_in_circle(graph))
+  } else if(layout == "automatic") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_nicely(graph))
+  } else if(layout == "grid") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_on_grid(graph))
+  } else if(layout == "dh") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_dh(graph))
+  } else if(layout == "sphere") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_on_sphere(graph))
+  } else if(layout == "random") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_randomly(graph))
+  } else if(layout == "drl") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_drl(graph))
+  } else if(layout == "fr") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_fr(graph))
+  } else if(layout == "gem") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_gem(graph))
+  } else if(layout == "graphopt") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_graphopt(graph))
+  } else if(layout == "lgl") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_lgl(graph))
+  } else if(layout == "mds") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_mds(graph))
+  } else if(layout == "sugiyama") {
+    base::set.seed(seed = seed)
+    plotcord <- base::data.frame(igraph::layout_with_sugiyama(graph))
+  }
+
+  ####*******************************####
+
+  # preparing the plotcord table
+  base::rownames(plotcord) <- igraph::as_ids(V(graph))
+  base::colnames(plotcord) = c("X","Y")
+
+  # add the centrality measure
+  plotcord$cent.metric <- cent.metric
+
+  # range normalize the Node size based on the centrality measure
+  plotcord$Node.size <- node.size.min+((((cent.metric)^dist.power-min((cent.metric)^dist.power))*(node.size.max-node.size.min))/
+                       (max((cent.metric)^dist.power)-min((cent.metric)^dist.power)))
+
+  # add the Node name
+  plotcord$Node.name <- base::as.character(igraph::as_ids(V(graph)))
+
+  ####*******************************####
+
+  # get edges (pairs of node IDs)
+  edgelist <- base::data.frame(igraph::get.edgelist(graph))
+
+  # prepare a four column edge data frame with source and destination coordinates
+  edges.cord <- base::data.frame(base::matrix(nrow = nrow(edgelist),
+                                 ncol = 4), stringsAsFactors = FALSE)
+  base::colnames(edges.cord) <- c("X1", "Y1", "X2", "Y2")
+  for(i in 1:nrow(edges.cord)) {
+    edges.cord$X1[i] <- plotcord[which(igraph::as_ids(V(graph)) %in% edgelist[i,1]),1]
+    edges.cord$Y1[i] <- plotcord[which(igraph::as_ids(V(graph)) %in% edgelist[i,1]),2]
+    edges.cord$X2[i] <- plotcord[which(igraph::as_ids(V(graph)) %in% edgelist[i,2]),1]
+    edges.cord$Y2[i] <- plotcord[which(igraph::as_ids(V(graph)) %in% edgelist[i,2]),2]
+  }
+
+  # refine end positions of edges for directerd networks
+  if(directed) {
+    for (i in 1:nrow(edges.cord)) {
+
+      # correct the x coordinate of arrow
+      if(edges.cord$X1[i]>edges.cord$X2[i]) {
+        edges.cord$X2[i] <- edges.cord$X2[i]+0.115
+      } else if(edges.cord$X1[i]<edges.cord$X2[i]) {
+        edges.cord$X2[i] <- edges.cord$X2[i]-0.115
+      }
+
+      # correct the y coordinate of arrow
+      if(edges.cord$Y1[i]>edges.cord$Y2[i]) {
+        edges.cord$Y2[i] <- edges.cord$Y2[i]+0.115
+      } else if(edges.cord$Y1[i]<edges.cord$Y2[i]) {
+        edges.cord$Y2[i] <- edges.cord$Y2[i]-0.115
+      }
+    }
+  }
+
+  # set the edge width
+  if(weighted) {
+    edges.cord$Weight <- igraph::E(graph)$weight
+    #range normalize the weight
+    edges.cord$Weight <- edge.width.min+(((edges.cord$Weight-min(edges.cord$Weight))*(edge.width.max-edge.width.min))/
+                                (max(edges.cord$Weight)-min(edges.cord$Weight)))
+  } else {
+    edges.cord$Weight <- edge.width
+  }
+
+  ####*******************************####
+
+  # draw the plot
+  temp.plot <- ggplot2::ggplot(data = plotcord, ggplot2::aes(x = X, y = Y))
+
+  ##***********##
+
+    # add the edges
+  if(directed) {
+    temp.plot <- temp.plot +
+      ggplot2::geom_segment(data=edges.cord, ggplot2::aes(x=X1, y=Y1, xend = X2, yend = Y2),
+                            size = edges.cord$Weight,
+                            arrow = ggplot2::arrow(angle = arrow.width,
+                                          length = ggplot2::unit(arrow.length, "in"),
+                                          type = "closed"),
+                            colour = edge.color,
+                            linetype = edge.linetype)
+  } else {
+    temp.plot <- temp.plot +
+      ggplot2::geom_segment(data=edges.cord, ggplot2::aes(x=X1, y=Y1, xend = X2, yend = Y2),
+                            size = edges.cord$Weight,
+                            colour = edge.color,
+                            linetype = edge.linetype)
+  }
+
+  ##***********##
+
+  # add nodes
+
+  # define node shapes
+  node.shape <- base::as.data.frame(node.shape, stringsAsFactors = FALSE)
+  for (i in 1:nrow(node.shape)) {
+      if(node.shape[i,1] == "circle") {
+        node.shape[i,1] <- 21
+      } else if(node.shape[i,1] == "square") {
+        node.shape[i,1] <- 22
+      } else if(node.shape[i,1] == "diamond") {
+        node.shape[i,1] <- 23
+      } else if(node.shape[i,1] == "triangle") {
+        node.shape[i,1] <- 24
+      } else if(node.shape[i,1] == "inverted triangle") {
+        node.shape[i,1] <- 25
+      }
+  }
+
+  node.shape <- base::as.numeric(node.shape[,1])
+
+  # add stroke color
+  base::suppressWarnings(
+  if(stroke.color == "identical") {
+    temp.plot <- temp.plot +
+      ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y, colour = cent.metric),
+                          shape = node.shape,
+                          size = plotcord$Node.size,
+                          stroke = stroke.size,
+                          alpha = stroke.alpha,
+                          show.legend = FALSE) +
+      ggplot2::scale_color_viridis_c(option = node.color,
+                                     begin = 0.15)
+  } else {
+    temp.plot <- temp.plot +
+      ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y),
+                          shape = node.shape,
+                          colour = stroke.color,
+                          size = plotcord$Node.size,
+                          stroke = stroke.size,
+                          alpha = stroke.alpha,
+                          show.legend = FALSE)
+  }
+  )
+
+  # add node objects
+  temp.plot <- temp.plot +
+    ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y, fill = cent.metric),
+                        shape = node.shape,
+                        stroke = 0,
+                        size = plotcord$Node.size) +
+
+    ##***********##
+
+    # add node color
+    ggplot2::scale_fill_viridis_c(option = node.color,
+                                  begin = 0.15)
+
+    ##***********##
+
+    # add node labels
+    if(show.labels) {
+      temp.plot <- temp.plot +
+        ggplot2::geom_text(data = plotcord,
+                           ggplot2::aes(x = X, y = Y, label=Node.name),
+                           size = plotcord$Node.size*label.cex,
+                           color = label.color)
+    }
+
+      ##***********##
+    # expand the x and y limits
+    temp.plot <- temp.plot +
+    ggplot2::scale_x_continuous(expand=c(0,1)) +
+    ggplot2::scale_y_continuous(expand=c(0,1))
+
+      ##***********##
+
+    # add title
+    if(show.plot.title) {
+      temp.plot <- temp.plot +
+        ggplot2::ggtitle(label = plot.title)
+    }
+
+    # define title position
+    if(title.position == "left") {
+      title.position <- 0
+    } else if(title.position == "center") {
+      title.position <- 0.5
+    } else if(title.position == "right") {
+      title.position <- 1
+    }
+
+    title.position <- base::as.numeric(title.position)
+
+    ##***********##
+
+    # add theme elements
+
+    # add main plot theme
+    temp.plot <- temp.plot +
+      ggplot2::theme_void() +
+
+      # add legend specifications
+      ggplot2::theme(legend.position = legend.position,
+                     legend.direction = legend.direction,
+                     legend.spacing.y = ggplot2::unit(0.12, "in"),
+                     plot.margin = ggplot2::unit(c(0.2,0.2,0.2,0.2),
+                                                 units = "cm"),
+                     panel.border = ggplot2::element_blank()) +
+      ggplot2::labs(fill = legend.title)
+
+    if(boxed.legend) {
+      temp.plot <- temp.plot +
+        ggplot2::theme(legend.box.background = ggplot2::element_rect(color="black", size=0.5),
+                       legend.margin = ggplot2::margin(c(3,3,3,3)),
+                       legend.box.margin = ggplot2::margin(c(3,1,3,3)),
+                       legend.box.spacing = ggplot2::unit(0, "cm"))
+    }
+
+    # add border lines
+    if(show.bottom.border) {
+      temp.plot <- temp.plot +
+        ggplot2::theme(axis.line.x.bottom = ggplot2::element_line(color = 'black'))
+    }
+
+    if(show.left.border) {
+      temp.plot <- temp.plot +
+        ggplot2::theme(axis.line.y.left = ggplot2::element_line(color = 'black'))
+    }
+
+    # set title position
+    if(show.plot.title) {
+        temp.plot <- temp.plot +
+          ggplot2::theme(plot.title = ggplot2::element_text(hjust = title.position))
+      }
+    return(temp.plot)
+  }
+
+  #=============================================================================
+  #
+  #    Code chunk 19: Visualization of ExIR results
+  #
+  #=============================================================================
+
+  #' Visualization of ExIR results
+  #'
+  #' This function has been developed for the visualization of ExIR results. Some of the documentations
+  #' of the arguments of this function have been adapted from ggplot2 package.
+  #' @param exir.results An object of class \code{"ExIR_Result"} which is the output of the function \code{"exir"}.
+  #' @param synonyms.table (Optional) A data frame or matrix with two columns including a column for the used feature
+  #' names in the input data of the \code{"exir"} model and the other column their synonyms. Note, the original feature names should
+  #' always come as the first column and the synonyms as the second one. For example, if
+  #' the original feature names used for running the \code{"exir"} model are Ensembl gene
+  #' symbols, you can use their HGNC synonyms in the second column to be used for the visualization of the ExIR results
+  #' @param n An integer specifying the number of top candidates to be selected from each category of ExIR results (default is set to 10).
+  #' @param driver.type A string specifying the type of drivers to be used for the selection of top N candidates. The possible types
+  #' include \code{"combined"} (meaning both driver types), \code{"accelerator"} and \code{"decelerator"} (default is set to "combined").
+  #' @param biomarker.type A string specifying the type of biomarkers to be used for the selection of top N candidates. Possible types
+  #' include \code{"combined"} (meaning both biomarker types), \code{"up-regulated"} and \code{"down-regulated"} (default is set to "combined").
+  #' @param show.drivers Logical scalar, whether to show Drivers or not (default is set to TRUE).
+  #' @param show.biomarkers Logical scalar, whether to show Biomarkers or not (default is set to TRUE).
+  #' @param show.de.mediators Logical scalar, whether to show DE-mediators or not (default is set to TRUE).
+  #' @param show.nonDE.mediators Logical scalar, whether to show nonDE-mediators or not (default is set to TRUE).
+  #' @param basis A string specifying the basis for the selection of top N candidates from each category of the results. Possible options include
+  #' \code{"Rank"} and \code{"Adjusted p-value"} (default is set to "Rank").
+  #' @param dot.size.min The size of dots with the lowest statistical significance (default is set to 2).
+  #' @param dot.size.max The size of dots with the highest statistical significance (default is set to 5).
+  #' @param type.color A character string or function indicating the color palette to be used for the visualization of
+  #' different types of candidates. You may choose one of the Viridis palettes including "magma" (or "A"),
+  #' "inferno" (or "B"), "plasma" (or "C"), "viridis" (or "D", the default option) and "cividis" (or "E"), use a function specifying
+  #' your desired palette, or manually specify the vector of colors for different types.
+  #' @param stroke.size The size of stroke (border) around the dots (default is set to 1.5).
+  #' @param stroke.alpha The transparency of the stroke (border) around the dots which should
+  #' be a number between 0 and 1 (default is set to 1).
+  #' @param dot.color.low The color to be used for the visualization of dots (features) with the lowest Z-score values (default is set to "blue").
+  #' @param dot.color.high The color to be used for the visualization of dots (features) with the highest Z-score values (default is set to "blue").
+  #' @param legend.position The position of legends ("none", "left", "right",
+  #' "bottom", "top", or two-element numeric vector). The default is set to "bottom".
+  #' @param legend.direction Layout of items in legends ("horizontal" or "vertical").
+  #' The default is set to "vertical".
+  #' @param legends.layout Layout of different legends of the plot ("horizontal" or "vertical").
+  #' The default is set to "horizontal".
+  #' @param boxed.legend Logical scalar, whether to draw a box around the legend or not (default is set to TRUE).
+  #' @param show.plot.title Logical scalar, whether to show the plot title or not (default is set to TRUE).
+  #' @param plot.title The plot title in the string format (default is set to "auto" which automatically generates a title for the plot).
+  #' @param title.position The position of title ("left", "center", or "right"). The default is set to "left".
+  #' @param plot.title.size The font size of the plot title (default is set to 12).
+  #' @param show.plot.subtitle Logical scalar, whether to show the plot subtitle or not (default is set to TRUE).
+  #' @param plot.subtitle The plot subtitle in the string format (default is set to "auto" which automatically generates a subtitle for the plot).
+  #' @param subtitle.position The position of subtitle ("left", "center", or "right"). The default is set to "left".
+  #' @param y.axis.title The title of the y axis (features title). Default is set to "Features".
+  #' @param show.y.axis.grid Logical scalar, whether to draw y axis grid lines (default is set to TRUE).
+  #' @return A plot with the class ggplot.
+  #' @keywords exir.vis
+  #' @family visualization functions
+  #' @seealso \code{\link[influential]{exir}}
+  #' @export exir.vis
+  #' @examples
+  #' \dontrun{
+  #' MyResults <- exir.results
+  #' ExIR.plot <- exir.vis(exir.results = MyResults, n = 5)
+  #' }
+  exir.vis <- function(exir.results,
+                       synonyms.table = NULL,
+                       n = 10,
+                       driver.type = "combined",
+                       biomarker.type = "combined",
+                       show.drivers = TRUE,
+                       show.biomarkers = TRUE,
+                       show.de.mediators = TRUE,
+                       show.nonDE.mediators = TRUE,
+                       basis = "Rank",
+                       dot.size.min = 2,
+                       dot.size.max = 5,
+                       type.color = "viridis",
+                       stroke.size = 1.5,
+                       stroke.alpha = 1,
+                       dot.color.low = "blue",
+                       dot.color.high = "red",
+                       legend.position = "bottom",
+                       legend.direction = "vertical",
+                       legends.layout = "horizontal",
+                       boxed.legend = TRUE,
+                       show.plot.title = TRUE,
+                       plot.title = "auto",
+                       title.position = "left",
+                       plot.title.size = 12,
+                       show.plot.subtitle = TRUE,
+                       plot.subtitle = "auto",
+                       subtitle.position = "left",
+                       y.axis.title = "Feature",
+                       show.y.axis.grid = TRUE) {
+
+    if(base::identical(base::inherits(exir.results, "ExIR_Result"), FALSE)) {
+      stop("The provided ExIR model-result is wrong. The exir.results should be
+           the output of the exir model and have a 'ExIR_Result' class.",
+           call. = FALSE)
+    }
+
+    # prepare a list for storing the results
+    exir.for.plot <- base::list()
+
+    # select top N features
+
+    # for driver tabel
+    if(any(base::names(exir.results) == "Driver table")) {
+      top.N.driver.table <- exir.results[[which(names(exir.results) %in% "Driver table")]]
+      top.N.driver.table$Feature <- base::rownames(top.N.driver.table)
+      top.N.driver.table$Class <- "Driver"
+
+      # top N combined
+      if(driver.type == "combined" & nrow(top.N.driver.table)> n) {
+
+        if(basis == "Rank") {
+          top.drivers.index <- utils::head(order(top.N.driver.table$Rank),
+                                           n = n)
+
+        } else if(basis == "Adjusted p-value") {
+          top.drivers.index <- utils::head(order(top.N.driver.table$P.adj),
+                                           n = n)
+        }
+        top.N.driver.table <- top.N.driver.table[top.drivers.index,]
+        top.N.driver.table$Rank <- base::rank(top.N.driver.table$Rank,
+                                              ties.method = "min")
+
+        # top N accelerator
+      } else if(driver.type == "accelerator") {
+        top.N.driver.table <- base::subset(top.N.driver.table,
+                                           Type == "Accelerator")
+        if(nrow(top.N.driver.table)> n) {
+          if(basis == "Rank") {
+            top.drivers.index <- utils::head(order(top.N.driver.table$Rank),
+                                             n = n)
+
+          } else if(basis == "Adjusted p-value") {
+            top.drivers.index <- utils::head(order(top.N.driver.table$P.adj),
+                                             n = n)
+          }
+          top.N.driver.table <- top.N.driver.table[top.drivers.index,]
+          top.N.driver.table$Rank <- base::rank(top.N.driver.table$Rank,
+                                                ties.method = "min")
+        }
+      } else if(driver.type == "decelerator") {
+        top.N.driver.table <- base::subset(top.N.driver.table,
+                                           Type == "Decelerator")
+        if(nrow(top.N.driver.table)> n) {
+          if(basis == "Rank") {
+            top.drivers.index <- utils::head(order(top.N.driver.table$Rank),
+                                             n = n)
+
+          } else if(basis == "Adjusted p-value") {
+            top.drivers.index <- utils::head(order(top.N.driver.table$P.adj),
+                                             n = n)
+          }
+          top.N.driver.table <- top.N.driver.table[top.drivers.index,]
+          top.N.driver.table$Rank <- base::rank(top.N.driver.table$Rank,
+                                                ties.method = "min")
+        }
+      }
+      base::rownames(top.N.driver.table) <- NULL
+      top.N.driver.table$Type[top.N.driver.table$Type == "Accelerator"] <- "Accelerator\ndriver"
+      top.N.driver.table$Type[top.N.driver.table$Type == "Decelerator"] <- "Decelerator\ndriver"
+      exir.for.plot <- base::append(x = exir.for.plot,
+                                    values = base::list(top.N.driver.table))
+    }
+
+    ####********************####
+
+    # for biomarker tabel
+    if(any(base::names(exir.results) == "Biomarker table")) {
+      top.N.biomarker.table <- exir.results[[which(names(exir.results) %in% "Biomarker table")]]
+      top.N.biomarker.table$Feature <- base::rownames(top.N.biomarker.table)
+      top.N.biomarker.table$Class <- "Biomarker"
+
+      # top N combined
+      if(biomarker.type == "combined" & nrow(top.N.biomarker.table)> n) {
+
+        if(basis == "Rank") {
+          top.biomarkers.index <- utils::head(order(top.N.biomarker.table$Rank),
+                                              n = n)
+
+        } else if(basis == "Adjusted p-value") {
+          top.biomarkers.index <- utils::head(order(top.N.biomarker.table$P.adj),
+                                              n = n)
+        }
+        top.N.biomarker.table <- top.N.biomarker.table[top.biomarkers.index,]
+        top.N.biomarker.table$Rank <- base::rank(top.N.biomarker.table$Rank,
+                                                 ties.method = "min")
+
+        # top N up-regulated
+      } else if(biomarker.type == "up-regulated") {
+        top.N.biomarker.table <- base::subset(top.N.biomarker.table,
+                                              Type == "Up-regulated")
+        if(nrow(top.N.biomarker.table)> n) {
+          if(basis == "Rank") {
+            top.biomarkers.index <- utils::head(order(top.N.biomarker.table$Rank),
+                                                n = n)
+
+          } else if(basis == "Adjusted p-value") {
+            top.biomarkers.index <- utils::head(order(top.N.biomarker.table$P.adj),
+                                                n = n)
+          }
+          top.N.biomarker.table <- top.N.biomarker.table[top.biomarkers.index,]
+          top.N.biomarker.table$Rank <- base::rank(top.N.biomarker.table$Rank,
+                                                ties.method = "min")
+        }
+      } else if(biomarker.type == "down-regulated") {
+        top.N.biomarker.table <- base::subset(top.N.biomarker.table,
+                                              Type == "Down-regulated")
+        if(nrow(top.N.biomarker.table)> n) {
+          if(basis == "Rank") {
+            top.biomarkers.index <- utils::head(order(top.N.biomarker.table$Rank),
+                                                n = n)
+
+          } else if(basis == "Adjusted p-value") {
+            top.biomarkers.index <- utils::head(order(top.N.biomarker.table$P.adj),
+                                                n = n)
+          }
+          top.N.biomarker.table <- top.N.biomarker.table[top.biomarkers.index,]
+          top.N.biomarker.table$Rank <- base::rank(top.N.biomarker.table$Rank,
+                                                   ties.method = "min")
+        }
+      }
+      base::rownames(top.N.biomarker.table) <- NULL
+      top.N.biomarker.table$Type[top.N.biomarker.table$Type == "Up-regulated"] <- "Up-regulated\nbiomarker"
+      top.N.biomarker.table$Type[top.N.biomarker.table$Type == "Down-regulated"] <- "Down-regulated\nbiomarker"
+
+      exir.for.plot <- base::append(x = exir.for.plot,
+                                    values = base::list(top.N.biomarker.table))
+    }
+
+    ####********************####
+
+    # for nonDE-mediator table
+    if(any(base::names(exir.results) == "nonDE-mediator table")) {
+      top.N.nonDE.mediator.table <- exir.results[[which(names(exir.results) %in% "nonDE-mediator table")]]
+      top.N.nonDE.mediator.table$Type <- "nonDE-mediator"
+      top.N.nonDE.mediator.table$Feature <- base::rownames(top.N.nonDE.mediator.table)
+      top.N.nonDE.mediator.table$Class <- "nonDE-mediator"
+
+      # top N combined
+      if(nrow(top.N.nonDE.mediator.table)> n) {
+
+        if(basis == "Rank") {
+          top.nonDE.mediators.index <- utils::head(order(top.N.nonDE.mediator.table$Rank),
+                                                   n = n)
+
+        } else if(basis == "Adjusted p-value") {
+          top.nonDE.mediators.index <- utils::head(order(top.N.nonDE.mediator.table$P.adj),
+                                                   n = n)
+        }
+        top.N.nonDE.mediator.table <- top.N.nonDE.mediator.table[top.nonDE.mediators.index,]
+        top.N.nonDE.mediator.table$Rank <- base::rank(top.N.nonDE.mediator.table$Rank,
+                                                 ties.method = "min")
+      }
+      base::rownames(top.N.nonDE.mediator.table) <- NULL
+      exir.for.plot <- base::append(x = exir.for.plot,
+                                    values = base::list(top.N.nonDE.mediator.table))
+    }
+
+    ####********************####
+
+    # for DE-mediator table
+    if(any(base::names(exir.results) == "DE-mediator table")) {
+      top.N.DE.mediator.table <- exir.results[[which(names(exir.results) %in% "DE-mediator table")]]
+      top.N.DE.mediator.table$Type <- "DE-mediator"
+      top.N.DE.mediator.table$Feature <- base::rownames(top.N.DE.mediator.table)
+      top.N.DE.mediator.table$Class <- "DE-mediator"
+
+      # top N combined
+      if(nrow(top.N.DE.mediator.table)> n) {
+
+        if(basis == "Rank") {
+          top.DE.mediators.index <- utils::head(order(top.N.DE.mediator.table$Rank),
+                                                n = n)
+
+        } else if(basis == "Adjusted p-value") {
+          top.DE.mediators.index <- utils::head(order(top.N.DE.mediator.table$P.adj),
+                                                n = n)
+        }
+        top.N.DE.mediator.table <- top.N.DE.mediator.table[top.DE.mediators.index,]
+        top.N.DE.mediator.table$Rank <- base::rank(top.N.DE.mediator.table$Rank,
+                                                      ties.method = "min")
+      }
+      base::rownames(top.N.DE.mediator.table) <- NULL
+      exir.for.plot <- base::append(x = exir.for.plot,
+                                    values = base::list(top.N.DE.mediator.table))
+    }
+
+    # combine the results for plotting
+    exir.for.plot <- base::Reduce(function(dtf1, dtf2) base::merge(dtf1, dtf2,
+                                                                   all = TRUE,
+                                                                   all.x = TRUE),
+                                  exir.for.plot)
+
+    # correct the features names
+    if(!is.null(synonyms.table)) {
+      synonyms.table <- base::as.data.frame(synonyms.table, stringsAsFactors = FALSE)
+      synonyms.index <- base::match(exir.for.plot$Feature,
+                                    synonyms.table[,1])
+      exir.for.plot$Feature <- synonyms.table[synonyms.index,2]
+    }
+
+    # correct the Type levels
+    driver.levels <- base::unique(exir.for.plot$Type[base::grep("driver", exir.for.plot$Type)])
+    biomarker.levels <- base::unique(exir.for.plot$Type[base::grep("biomarker", exir.for.plot$Type)])
+    mediators.levels <- base::unique(exir.for.plot$Type[base::seq_along(rownames(exir.for.plot))[-c(base::grep("driver", exir.for.plot$Type),
+                                                                                                    base::grep("biomarker", exir.for.plot$Type))]])
+    exir.for.plot$Type <- base::factor(exir.for.plot$Type,
+                                       levels = c(driver.levels,
+                                                  biomarker.levels,
+                                                  mediators.levels))
+
+    # correct the Class levels
+    mediators.class.levels <- base::unique(exir.for.plot$Class[base::seq_along(rownames(exir.for.plot))[-c(base::grep("Driver", exir.for.plot$Class),
+                                                                                                           base::grep("Biomarker", exir.for.plot$Class))]])
+    exir.for.plot$Class <- base::factor(exir.for.plot$Class,
+                                        levels = c("Driver",
+                                                   "Biomarker",
+                                                   mediators.class.levels))
+
+    # remove undesired classes
+    if(isFALSE(show.drivers) & any(exir.for.plot$Class == "Driver")) {
+      exir.for.plot <- exir.for.plot[-c(which(exir.for.plot$Class == "Driver")),]
+    }
+
+    if(isFALSE(show.biomarkers) & any(exir.for.plot$Class == "Biomarker")) {
+      exir.for.plot <- exir.for.plot[-c(which(exir.for.plot$Class == "Biomarker")),]
+    }
+
+    if(isFALSE(show.de.mediators) & any(exir.for.plot$Class == "DE-mediator")) {
+      exir.for.plot <- exir.for.plot[-c(which(exir.for.plot$Class == "DE-mediator")),]
+    }
+
+    if(isFALSE(show.nonDE.mediators) & any(exir.for.plot$Class == "nonDE-mediator")) {
+      exir.for.plot <- exir.for.plot[-c(which(exir.for.plot$Class == "nonDE-mediator")),]
+    }
+
+    # correct the P.adj to be used as the dot size
+    if(min(exir.for.plot$P.adj)==0) {
+
+      #range normalize the primitive P.adj
+      temp.min_P.adj <- base::sort(base::unique(exir.for.plot$P.adj))[2]
+
+      exir.for.plot$P.adj <- temp.min_P.adj+
+        (((exir.for.plot$P.adj-min(exir.for.plot$P.adj))*(max(exir.for.plot$P.adj)-temp.min_P.adj))/
+           (max(exir.for.plot$P.adj)-min(exir.for.plot$P.adj)))
+    }
+
+    exir.for.plot$P.adj <- dot.size.min+(((-log10(exir.for.plot$P.adj)-min(-log10(exir.for.plot$P.adj)))*(dot.size.max-dot.size.min))/
+                                           (max(-log10(exir.for.plot$P.adj))-min(-log10(exir.for.plot$P.adj))))
+
+    ####*******************************####
+
+    # draw the plot
+    temp.exir.plot <- ggplot2::ggplot(data = exir.for.plot,
+                                      ggplot2::aes(x = Rank, y = Feature)) +
+
+      # add node objects
+      ggplot2::geom_point(ggplot2::aes(fill = Z.score,
+                              colour = Type,
+                              size = P.adj),
+                          shape = 21,
+                          stroke = 0,
+                          alpha = 1) +
+
+      ##***********##
+
+      # add color of Type
+      ggplot2::geom_point(ggplot2::aes(colour = Type,
+                              size = P.adj),
+                          shape = 21,
+                          stroke = stroke.size,
+                          alpha = stroke.alpha)
+
+
+    ##***********##
+
+    # add node and stroke colors
+    if(base::inherits(type.color, "character") & base::length(type.color) == 1) {
+    if(base::length(base::grep(type.color,
+                               c("magma", "inferno",
+                                 "plasma", "viridis", "cividis",
+                                 "A", "B", "C", "D", "E"))) == 1) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::scale_colour_viridis_d(option = type.color)
+    } else {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::scale_colour_manual(values = type.color)
+    }
+    } else {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::scale_colour_manual(values = type.color)
+    }
+
+    temp.exir.plot <- temp.exir.plot +
+      ggplot2::scale_fill_gradient(name = "Z-score",
+                                   low = dot.color.low,
+                                   high = dot.color.high) +
+
+      ##***********##
+
+      # correct size identity inside of aes
+      ggplot2::scale_size_identity(guide = "legend") +
+
+
+      ##***********##
+
+      # add y axis title
+      ggplot2::ylab(y.axis.title) +
+
+
+      ##***********##
+
+      # add facets
+      ggplot2::facet_grid(. ~ Class,
+                          scales = "free_x",
+                          space = "free_x") +
+
+
+      ##***********##
+
+      # add theme elements
+
+      ggplot2::theme_bw()
+
+    # set the x axis breaks
+    by.x_continuous <- base::round(n/5)
+
+    # set the x axis numbers and start
+    x.axis.numbers <- function(x) {
+      if(by.x_continuous %% 2 == 0 & n > 7) {
+        base::seq(2, max(x), by = by.x_continuous)
+      } else if(n > 7) {
+        base::seq(1, max(x), by = by.x_continuous)
+      } else {
+        base::seq(1, max(x), by = 1)
+      }
+    }
+
+    # set the x axis limits
+    x.axis.limits <- function(x) {
+      c((min(x)-(n/50)), (max(x)+(n/50)))
+    }
+
+    temp.exir.plot <- temp.exir.plot +
+      ggplot2::scale_x_continuous(breaks = x.axis.numbers,
+                                  limits = x.axis.limits) +
+
+      ggplot2::theme(legend.title = ggplot2::element_text(size = 10),
+                     legend.box = legends.layout,
+                     legend.position = legend.position,
+                     legend.direction = legend.direction) +
+
+      ggplot2::guides(colour = ggplot2::guide_legend(keyheight = 1.5),
+                      fill = ggplot2::guide_colorbar(frame.colour = "black",
+                                            barwidth = 1.5),
+                      size = ggplot2::guide_legend(title = "Statistical\nsignificance"))
+
+    if(boxed.legend) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::theme(legend.box.background = ggplot2::element_rect(color="black", size=0.5),
+                       legend.margin = ggplot2::margin(c(3,3,3,3)),
+                       legend.box.margin = ggplot2::margin(c(3,1,3,3)))
+    }
+
+    ##***********##
+
+    # add title
+
+    if(plot.title == "auto") {
+      plot.title <- "ExIR model-based prioritized features"
+    }
+
+    if(show.plot.title) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::labs(title = plot.title)
+    }
+
+    # add subtitle
+
+    if(plot.subtitle == "auto") {
+      plot.subtitle <- base::paste(basis,
+                                   "-based selection of top ",
+                                   n,
+                                   " candidates", sep = "")
+    }
+
+    if(show.plot.subtitle) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::labs(subtitle = plot.subtitle)
+    }
+
+    # define title position
+    if(title.position == "left") {
+      title.position <- 0
+    } else if(title.position == "center") {
+      title.position <- 0.5
+    } else if(title.position == "right") {
+      title.position <- 1
+    }
+
+    title.position <- base::as.numeric(title.position)
+
+    # define subtitle position
+    if(subtitle.position == "left") {
+      subtitle.position <- 0
+    } else if(subtitle.position == "center") {
+      subtitle.position <- 0.5
+    } else if(subtitle.position == "right") {
+      subtitle.position <- 1
+    }
+
+    subtitle.position <- base::as.numeric(subtitle.position)
+
+    title.size <- plot.title.size - 2
+
+    # set title position
+    if(show.plot.title) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::theme(plot.title = ggplot2::element_text(size = title.size,
+                                                          hjust = title.position))
+    }
+
+    # set subtitle position
+    if(show.plot.subtitle) {
+      subtitle.size <- title.size - 2
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::theme(plot.subtitle = ggplot2::element_text(size = subtitle.size,
+                                                             hjust = subtitle.position))
+    }
+
+    ##***********##
+
+    if(base::identical(show.y.axis.grid, FALSE)) {
+      temp.exir.plot <- temp.exir.plot +
+        ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
+    }
+
+    return(temp.exir.plot)
+  }
+
+#=============================================================================
+#
+#    Code chunk ∞: Required global variables
+#
+#=============================================================================
+
+  utils::globalVariables(c("Feature",
+                           "Node.name",
+                           "P.adj",
+                           "Rank",
+                           "Type",
+                           "X",
+                           "X1",
+                           "X2",
+                           "Y",
+                           "Y1",
+                           "Y2",
+                           "Z.score"
+                           ))

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# influential
+# influential <a href='https://github.com/asalavaty/influential'><img src='man/figures/Symbol.png' align="right" height="221" /></a>
 
 <!-- badges: start -->
 
@@ -9,14 +9,11 @@
 status](https://ci.appveyor.com/api/projects/status/github/asalavaty/influential?branch=master&svg=true)](https://ci.appveyor.com/project/asalavaty/influential)
 [![](https://www.r-pkg.org/badges/version/influential?color=blue)](https://cran.r-project.org/package=influential)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/influential?color=green)](https://cran.r-project.org/package=influential)
-[![Rdoc](http://www.rdocumentation.org/badges/version/influential)](http://www.rdocumentation.org/packages/influential)
+[![Rdoc](http://www.rdocumentation.org/badges/version/influential)](https://www.rdocumentation.org/packages/influential)
 [![](https://img.shields.io/badge/Integrated%20Value%20of%20Influence-IVI-blue.svg)](https://doi.org/10.1016/j.patter.2020.100052)
 [![](https://img.shields.io/badge/SIR--based%20Influence%20Ranking-SIRIR-green.svg)](https://doi.org/10.1016/j.patter.2020.100052)
-[![](https://img.shields.io/badge/Experimental--data--based%20Integrative%20Ranking-ExIR-blue.svg)](https://github.com/asalavaty/influential)
+[![](https://img.shields.io/badge/Experimental%20data--based%20Integrative%20Ranking-ExIR-blue.svg)](https://github.com/asalavaty/influential)
 <!-- badges: end -->
-
-![The influential R package
-logo](https://github.com/asalavaty/influential/blob/master/logo.png)
 
 ## Overview
 
@@ -26,7 +23,7 @@ ranking of top candidate features. This package contains functions for
 the classification and ranking of features, reconstruction of networks
 from adjacency matrices and data frames, analysis of the topology of the
 network and calculation of centrality measures as well as a novel and
-powerful `influential` node ranking. The **Experimental-data-based
+powerful `influential` node ranking. The **Experimental data-based
 Integrative Ranking (ExIR)** is a sophisticated model for classification
 and ranking of the top candidate features based on only the experimental
 data. The first integrative method, namely the **Integrated Value of
@@ -51,7 +48,7 @@ underpinning methods and analyses.
 ## Author
 
 The `influential` package was written by [Adrian (Abbas)
-Salavaty](https://www.AbbasSalavaty.com)
+Salavaty](https://www.abbassalavaty.com/)
 
 ## Advisors
 
@@ -71,13 +68,15 @@ Or the development version from GitHub:
 
 ``` r
 ## install.packages("devtools")
-devtools::install_github("asalavaty/influential")
+devtools::install_github("asalavaty/influential", 
+                         build_vignettes = TRUE)
 ```
 
 ## Vignettes
 
-[Detailed description of the functions and their
-outputs](https://github.com/asalavaty/influential/blob/master/vignettes/Vignettes.md)
+A comprehensive introduction to `influential` and all of its functions
+is available in the
+[vignette](https://cran.r-project.org/package=influential/vignettes/Vignettes.html).
 
 You may browse Vignettes from within R using the following code.
 
@@ -85,33 +84,17 @@ You may browse Vignettes from within R using the following code.
 browseVignettes("influential")
 ```
 
-## An Example for Calculation of IVI
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(influential)
-
-MyData <- centrality.measures # A data frame of centrality measures
-
-# This function calculates the Integrated Value of Influence (IVI)
-My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
-                                   CR = centrality.measures$CR,
-                                   NC = centrality.measures$NC,
-                                   LH_index = centrality.measures$LH_index,
-                                   BC = centrality.measures$BC,
-                                   CI = centrality.measures$CI)
-
-print(head(My.vertices.IVI))
-#> [1] 24.670056  8.344337 18.621049  1.017768 29.437028 33.512598
-```
-
 ## How to cite `influential`
 
-To cite `influential`, please cite the [**associated
-paper**](https://doi.org/10.1016/j.patter.2020.100052). You can also
-refer to the package’s citation information using the citation()
-function.
+To cite `influential`, please cite its associated paper:
+
+  - Integrated Value of Influence: An Integrative Method for the
+    Identification of the Most Influential Nodes within Networks. Abbas
+    Salavaty, Mirana Ramialison, Peter D Currie. *Patterns*. 2020.08.14
+    ([Read online](https://doi.org/10.1016/j.patter.2020.100052)).
+
+You can also refer to the package’s citation information using the
+`citation()` function.
 
 ``` r
 citation("influential")

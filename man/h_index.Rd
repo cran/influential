@@ -34,7 +34,8 @@ h.index <- h_index(graph = My_graph, vertices = GraphVertices, mode = "all")
 }
 }
 \seealso{
-\code{\link[influential]{lh_index}}
+\code{\link[influential]{ivi}},
+\code{\link[influential]{cent_network.vis}}
 
 Other centrality functions: 
 \code{\link{betweenness}()},
@@ -42,7 +43,8 @@ Other centrality functions:
 \code{\link{collective.influence}()},
 \code{\link{degree}()},
 \code{\link{lh_index}()},
-\code{\link{neighborhood.connectivity}()}
+\code{\link{neighborhood.connectivity}()},
+\code{\link{sirir}()}
 }
 \concept{centrality functions}
 \keyword{h_index}

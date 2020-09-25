@@ -43,13 +43,17 @@ GraphVertices <- V(My_graph)
 ci <- collective.influence(graph = My_graph, vertices = GraphVertices, mode = "all", d=3)
 }
 \seealso{
+\code{\link[influential]{ivi}},
+\code{\link[influential]{cent_network.vis}}
+
 Other centrality functions: 
 \code{\link{betweenness}()},
 \code{\link{clusterRank}()},
 \code{\link{degree}()},
 \code{\link{h_index}()},
 \code{\link{lh_index}()},
-\code{\link{neighborhood.connectivity}()}
+\code{\link{neighborhood.connectivity}()},
+\code{\link{sirir}()}
 }
 \concept{centrality functions}
 \keyword{collective.influence}

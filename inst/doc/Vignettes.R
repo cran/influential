@@ -1,128 +1,229 @@
-## ---- include = FALSE---------------------------------------------------------
+## ---- include = FALSE-------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 options(tibble.print_min = 4L, tibble.print_max = 4L)
+options(width=90)
+options(rmarkdown.html_vignette.check_title = FALSE)
 set.seed(60)
 
-## ----setup--------------------------------------------------------------------
+## ---- echo=FALSE------------------------------------------------------------------------
+spaces <- function (n) {
+  paste(rep("&nbsp;", n), collapse = "")
+}
+
+## ----fig.align="right", echo=FALSE, out.width="25%", out.extra='style="float:right; padding:10px"'----
+knitr::include_graphics(path = "../man/figures/Symbol.png", error = FALSE)
+
+## ----setup------------------------------------------------------------------------------
 library(influential)
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ---- echo=FALSE------------------------------------------------------------------------
 knitr::kable(head(coexpression.data))
 
-## ----g_dataframe--------------------------------------------------------------
-MyData <- coexpression.data        # Preparing the data
+## ----g_dataframe------------------------------------------------------------------------
+# Preparing the data
+MyData <- coexpression.data
 
-My_graph <- graph_from_data_frame(d=MyData)        # Reconstructing the graph
+# Reconstructing the graph
+My_graph <- graph_from_data_frame(d=MyData)
 
-## -----------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------
 class(My_graph)
 
-## ---- echo=FALSE--------------------------------------------------------------
-knitr::kable(head(coexpression.adjacency)[,1:10])
+## ---- echo=FALSE------------------------------------------------------------------------
+knitr::kable(head(coexpression.adjacency, n=15)[10:15,10:15])
 
-## ----g_adj, eval=FALSE--------------------------------------------------------
-#  MyData <- coexpression.adjacency        # Preparing the data
+## ----g_adj, eval=FALSE------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.adjacency
 #  
-#  My_graph <- graph_from_adjacency_matrix(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_adjacency_matrix(MyData)
 
-## ----Vertices, eval=FALSE-----------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
-#  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
-#  
-#  My_graph_vertices <- V(My_graph)        # Extracting the vertices
+## ---- echo=FALSE------------------------------------------------------------------------
+set.seed(60)
+My_Data <- matrix(data = sample(c(0,1), replace = TRUE, size = 20), 
+                  nrow = 4, ncol = 5,
+                  dimnames = list(c(paste("cell", c(1:4), sep = "_")),
+                                  c(paste("Gene", c(1:5), sep = "_"))))
 
-## ----DC, eval=FALSE-----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
-#  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
-#  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
-#  
-#  My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE) # Calculating degree centrality
+knitr::kable(My_Data)
 
-## ----BC, eval=FALSE-----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----g_inc, eval=FALSE------------------------------------------------------------------
+#  # Reconstructing the graph
+#  My_graph <- graph_from_adjacency_matrix(MyData)
+
+## ----g_sif, eval=FALSE------------------------------------------------------------------
+#  # Reconstructing the graph
+#  My_graph <- sif2igraph(Path = "Sample_SIF.sif")
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  class(My_graph)
+#  #> [1] "igraph"
+
+## ----Vertices, eval=FALSE---------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,    # Calculating betweenness centrality
+#  # Extracting the vertices
+#  My_graph_vertices <- V(My_graph)
+#  
+#  head(My_graph_vertices)
+#  #> + 6/794 vertices, named, from 775cff6:
+#  #> [1] ADAMTS9-AS2 C8orf34-AS1 CADM3-AS1   FAM83A-AS1  FENDRR      LANCL1-AS1
+
+## ----DC, eval=FALSE---------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
+#  
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
+#  
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
+#  
+#  # Calculating degree centrality
+#  My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE)
+#  
+#  head(My_graph_degree)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>         172         121         168          26         189         176
+
+## ----BC, eval=FALSE---------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
+#  
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
+#  
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
+#  
+#  # Calculating betweenness centrality
+#  My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,
 #                                      directed = FALSE, normalized = FALSE)
+#  
+#  head(My_graph_betweenness)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>   21719.857   28185.199   26946.625    2940.467   33333.369   21830.511
 
-## ----NC, eval=FALSE-----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----NC, eval=FALSE---------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  neighrhood.co <- neighborhood.connectivity(graph = My_graph,    # Calculating neighborhood connectivity
+#  # Calculating neighborhood connectivity
+#  neighrhood.co <- neighborhood.connectivity(graph = My_graph,
 #                                             vertices = GraphVertices,
 #                                             mode = "all")
+#  
+#  head(neighrhood.co)
+#  #>  ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>   11.290698    4.983471    7.970238    3.000000   15.153439   13.465909
 
-## ----H_index, eval=FALSE------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----H_index, eval=FALSE----------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  h.index <- h_index(graph = My_graph,    # Calculating H-index
+#  # Calculating H-index
+#  h.index <- h_index(graph = My_graph,
 #                     vertices = GraphVertices,
 #                     mode = "all")
+#  
+#  head(h.index)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>          11           9          11           2          12          12
 
-## ----LH_index, eval=FALSE-----------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----LH_index, eval=FALSE---------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  lh.index <- lh_index(graph = My_graph,    # Calculating Local H-index
+#  # Calculating Local H-index
+#  lh.index <- lh_index(graph = My_graph,
 #                     vertices = GraphVertices,
 #                     mode = "all")
+#  
+#  head(lh.index)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>        1165         446         994          34        1289        1265
 
-## ----CI, eval=FALSE-----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----CI, eval=FALSE---------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  ci <- collective.influence(graph = My_graph,    # Calculating Collective Influence
+#  # Calculating Collective Influence
+#  ci <- collective.influence(graph = My_graph,
 #                            vertices = GraphVertices,
 #                            mode = "all", d=3)
+#  
+#  head(ci)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>        9918       70560       39078         675       10716        7350
 
-## ----CR, eval=FALSE-----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----CR, eval=FALSE---------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  cr <- clusterRank(graph = My_graph,    # Calculating ClusterRank
+#  # Calculating ClusterRank
+#  cr <- clusterRank(graph = My_graph,
 #                    vids = GraphVertices,
 #                    directed = FALSE, loops = TRUE)
+#  
+#  head(cr)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>   63.459812    5.185675   21.111776    1.280000  135.098278   81.255195
 
-## ----cond.prob----------------------------------------------------------------
-MyData <- centrality.measures        # Preparing the data
+## ----cond.prob--------------------------------------------------------------------------
+# Preparing the data
+MyData <- centrality.measures        
 
-My.conditional.prob <- cond.prob.analysis(data = MyData,       # Assessing the conditional probability
+# Assessing the conditional probability
+My.conditional.prob <- cond.prob.analysis(data = MyData,       
                                           nodes.colname = rownames(MyData),
                                           Desired.colname = "BC",
                                           Condition.colname = "NC")
 
 print(My.conditional.prob)
 
-## ----double.cent.assess, eval=FALSE-------------------------------------------
-#  MyData <- centrality.measures        # Preparing the data
+## ----double.cent.assess, eval=FALSE-----------------------------------------------------
+#  # Preparing the data
+#  MyData <- centrality.measures
 #  
-#  My.metrics.assessment <- double.cent.assess(data = MyData,       # Association assessment
+#  # Association assessment
+#  My.metrics.assessment <- double.cent.assess(data = MyData,
 #                                              nodes.colname = rownames(MyData),
 #                                              dependent.colname = "BC",
 #                                              independent.colname = "NC")
@@ -173,10 +274,12 @@ print(My.conditional.prob)
 #  #> $ConditionalProbability_split.half.sample
 #  #> [1] 55.90331
 
-## ----double.cent.assess.noRegr., eval=FALSE-----------------------------------
-#  MyData <- centrality.measures        # Preparing the data
+## ----double.cent.assess.noRegr., eval=FALSE---------------------------------------------
+#  # Preparing the data
+#  MyData <- centrality.measures
 #  
-#  My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,       # Association assessment
+#  # Association assessment
+#  My.metrics.assessment <- double.cent.assess.noRegression(data = MyData,
 #                                                           nodes.colname = rownames(MyData),
 #                                                           centrality1.colname = "BC",
 #                                                           centrality2.colname = "NC")
@@ -220,82 +323,203 @@ print(My.conditional.prob)
 #  #> $ConditionalProbability_split.half.sample
 #  #> [1] 55.68163
 
-## ----IVI.from.indices, eval=FALSE---------------------------------------------
-#  MyData <- centrality.measures        # Preparing the data
+## ----IVI.from.indices, eval=FALSE-------------------------------------------------------
+#  # Preparing the data
+#  MyData <- centrality.measures
 #  
-#  My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,       # Calculation of IVI
-#                                     CR = centrality.measures$CR,
-#                                     NC = centrality.measures$NC,
-#                                     LH_index = centrality.measures$LH_index,
-#                                     BC = centrality.measures$BC,
-#                                     CI = centrality.measures$CI)
+#  # Calculation of IVI
+#  My.vertices.IVI <- ivi.from.indices(DC = MyData$DC,
+#                                     CR = MyData$CR,
+#                                     NC = MyData$NC,
+#                                     LH_index = MyData$LH_index,
+#                                     BC = MyData$BC,
+#                                     CI = MyData$CI)
+#  
+#  head(My.vertices.IVI)
+#  #> [1] 24.670056  8.344337 18.621049  1.017768 29.437028 33.512598
 
-## ----IVI, eval=FALSE----------------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----IVI, eval=FALSE--------------------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices, # Calculation of IVI
+#  # Calculation of IVI
+#  My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices,
 #                         weights = NULL, directed = FALSE, mode = "all",
 #                         loops = TRUE, d = 3, scaled = TRUE)
+#  
+#  head(My.vertices.IVI)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>    39.53878    19.94999    38.20524     1.12371   100.00000    47.49356
 
-## ----Spreading.score, eval=FALSE----------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----net.for.vis, eval=FALSE------------------------------------------------------------
+#  # Reconstructing the graph
+#  set.seed(70)
+#  My_graph <-  igraph::sample_gnm(n = 50, m = 120, directed = TRUE)
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Calculating the IVI values
+#  My_graph_IVI <- ivi(My_graph, directed = TRUE)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Visualizing the graph based on IVI values
+#  My_graph_IVI_Vis <- cent_network.vis(graph = My_graph,
+#                                       cent.metric = My_graph_IVI,
+#                                       directed = TRUE,
+#                                       plot.title = "IVI-based Network",
+#                                       legend.title = "IVI value")
 #  
-#  Spreading.score <- spreading.score(graph = My_graph,     # Calculation of Spreading score
+#  My_graph_IVI_Vis
+
+## ----Spreading.score, eval=FALSE--------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
+#  
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
+#  
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
+#  
+#  # Calculation of Spreading score
+#  Spreading.score <- spreading.score(graph = My_graph,
 #                                     vertices = GraphVertices,
 #                                     weights = NULL, directed = FALSE, mode = "all",
 #                                     loops = TRUE, d = 3, scaled = TRUE)
+#  
+#  head(Spreading.score)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>   42.932497   38.094111   45.114648    1.587262  100.000000   49.193292
 
-## ----Hubness.score, eval=FALSE------------------------------------------------
-#  MyData <- coexpression.data        # Preparing the data
+## ----Hubness.score, eval=FALSE----------------------------------------------------------
+#  # Preparing the data
+#  MyData <- coexpression.data
 #  
-#  My_graph <- graph_from_data_frame(MyData)        # Reconstructing the graph
+#  # Reconstructing the graph
+#  My_graph <- graph_from_data_frame(MyData)
 #  
-#  GraphVertices <- V(My_graph)        # Extracting the vertices
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
 #  
-#  Hubness.score <- hubness.score(graph = My_graph,     # Calculation of Hubness score
+#  # Calculation of Hubness score
+#  Hubness.score <- hubness.score(graph = My_graph,
 #                                     vertices = GraphVertices,
 #                                     directed = FALSE, mode = "all",
 #                                     loops = TRUE, scaled = TRUE)
-
-## ----SIRIR--------------------------------------------------------------------
-set.seed(1234)
-My_graph <- igraph::sample_gnp(n=50, p=0.05)        # Reconstructing the graph
-
-GraphVertices <- V(My_graph)        # Extracting the vertices
-
-Influence.Ranks <- sirir(graph = My_graph,     # Calculation of influence rank
-                                   vertices = GraphVertices, 
-                                   beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
-
-knitr::kable(Influence.Ranks[c(order(Influence.Ranks$rank)[1:10]),])
-
-## ----ExIR, eval=FALSE---------------------------------------------------------
 #  
-#  #Preparing the required arguments for the `exir` function
-#  MyDesired_list <- Desiredlist
-#  MyDiff_data <- Diffdata
-#  Diff_value <- c(1,3,5)
-#  Regr_value <- 7
-#  Sig_value <- c(2,4,6,8)
-#  MyExptl_data <- Exptldata
+#  head(Hubness.score)
+#  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
+#  #>   84.299719   46.741660   77.441514    8.437142   92.870451   88.734131
+
+## ----SIRIR, eval=FALSE------------------------------------------------------------------
+#  # Reconstructing the graph
+#  My_graph <-  sif2igraph(Path = "Sample_SIF.sif")
+#  
+#  # Extracting the vertices
+#  GraphVertices <- V(My_graph)
+#  
+#  # Calculation of influence rank
+#  Influence.Ranks <- sirir(graph = My_graph,
+#                                     vertices = GraphVertices,
+#                                     beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
+#  
+
+## ----exir.data, eval=FALSE--------------------------------------------------------------
+#  # Prepare sample data
+#  gene.names <- paste("gene", c(1:1000), sep = "_")
+#  
+#  set.seed(60)
+#  tp2.vs.tp1.DEGs <- data.frame(logFC = runif(n = 90, min = -5, max = 5),
+#                                FDR = runif(n = 90, min = 0.0001, max = 0.049))
+#  
+#  set.seed(60)
+#  rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 90)
+#  
+#  set.seed(70)
+#  tp3.vs.tp2.DEGs <- data.frame(logFC = runif(n = 121, min = -3, max = 6),
+#                                FDR = runif(n = 121, min = 0.0011, max = 0.039))
+#  
+#  set.seed(70)
+#  rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 121)
+#  
+#  set.seed(80)
+#  regression.data <- data.frame(R_squared = runif(n = 65, min = 0.1, max = 0.85))
+#  
+#  set.seed(80)
+#  rownames(regression.data) <- sample(gene.names, size = 65)
+
+## ----diff_data_assembl, eval=FALSE------------------------------------------------------
+#  my_Diff_data <- diff_data.assembly(tp2.vs.tp1.DEGs,
+#                                     tp3.vs.tp2.DEGs,
+#                                     regression.data)
+#  
+#  knitr::kable(my_Diff_data[c(1:10),])
+
+## ----exptl_data, eval=FALSE-------------------------------------------------------------
+#  set.seed(60)
+#  MyExptl_data <- matrix(data = runif(n = 50000, min = 2, max = 100),
+#                         nrow = 50, ncol = 1000,
+#                         dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
+#                                           paste("normal_sample", c(1:25), sep = "_")),
+#                                         gene.names))
+#  
+#  # Log transform the data to bring them closer to normal distribution
+#  MyExptl_data <- log2(MyExptl_data)
+#  
+#  knitr::kable(MyExptl_data[c(1:5),c(1:5)])
+
+## ----condition.col, eval=FALSE----------------------------------------------------------
+#  MyExptl_data <- as.data.frame(MyExptl_data)
+#  MyExptl_data$condition <- c(rep("C", 25), rep("N", 25))
+
+## ----ExIR, eval=FALSE-------------------------------------------------------------------
+#  
+#  #The table of differential/regression previously prepared
+#  my_Diff_data
+#  
+#  #The column indices of differential values in the Diff_data table
+#  Diff_value <- c(1,3)
+#  
+#  #The column indices of regression values in the Diff_data table
+#  Regr_value <- 5
+#  
+#  #The column indices of significance (P-value/FDR) values in
+#  # the Diff_data table
+#  Sig_value <- c(2,4)
+#  
+#  #The matrix/data frame of normalized experimental
+#  # data previously prepared
+#  MyExptl_data
+#  
+#  #The name of the column delineating the conditions of
+#  # samples in the Exptl_data matrix
 #  Condition_colname <- "condition"
+#  
+#  #The desired list of features
+#  set.seed(60)
+#  MyDesired_list <- sample(gene.names, size = 200)  #Optional
 #  
 #  #Running the ExIR model
 #  My.exir <- exir(Desired_list = MyDesired_list,
-#  Diff_data = MyDiff_data, Diff_value = Diff_value,
+#  Diff_data = my_Diff_data, Diff_value = Diff_value,
 #  Regr_value = Regr_value, Sig_value = Sig_value,
 #  Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
-#  verbose = FALSE)
+#  seed = 60, verbose = FALSE)
 #  
 #  names(My.exir)
-#  #> [1] "Driver table"          "DE-mediator table"     "nonDE-mediators table"
+#  #> [1] "Driver table"          "DE-mediator table"     "nonDE-mediator table"
 #  #> [4] "Biomarker table"
+#  
+#  class(My.exir)
+#  #> [1] "ExIR_Result"
+
+## ----exir.vis, eval=FALSE---------------------------------------------------------------
+#  My.exir.Vis <- exir.vis(exir.results = My.exir,
+#                          n = 5,
+#                          y.axis.title = "Gene")
+#  
+#  My.exir.Vis
 

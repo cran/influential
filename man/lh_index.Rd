@@ -34,13 +34,17 @@ lh.index <- lh_index(graph = My_graph, vertices = GraphVertices, mode = "all")
 }
 }
 \seealso{
+\code{\link[influential]{ivi}},
+\code{\link[influential]{cent_network.vis}}
+
 Other centrality functions: 
 \code{\link{betweenness}()},
 \code{\link{clusterRank}()},
 \code{\link{collective.influence}()},
 \code{\link{degree}()},
 \code{\link{h_index}()},
-\code{\link{neighborhood.connectivity}()}
+\code{\link{neighborhood.connectivity}()},
+\code{\link{sirir}()}
 }
 \concept{centrality functions}
 \keyword{lh_index}
