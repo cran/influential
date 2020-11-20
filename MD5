@@ -1,8 +1,8 @@
-e5dacb80830c1942f3b0222d895e6030 *DESCRIPTION
+6b34ffe5b1fac201b06e5488ccaab7ff *DESCRIPTION
 b2231c1cf344d4b5f50547486ccd828c *NAMESPACE
-8a721ba009b2615a7649eeee5ced4c3c *NEWS.md
+3459bc6b18e70e2f0b4cdbd627f9016c *NEWS.md
 3b9373f8df1db0c257f3b5c05ebac2d6 *R/data.R
-d6c5bd875e047dfbe06240049d6b3992 *R/functions.R
+30bb02c10e19250d273d79a929cb372c *R/functions.R
 4ee282dc9cceb7e925a55c9c2ee7d278 *README.md
 6c8722218b3f55fb8552ed5b8c4e4a7b *build/vignette.rds
 f340b8acb4f7f1f8abdce7e463850109 *data/centrality.measures.rda
@@ -10,8 +10,8 @@ f340b8acb4f7f1f8abdce7e463850109 *data/centrality.measures.rda
 9b43777675a61d1b6a013a40e7320b25 *data/coexpression.data.rda
 b6f23a0ab8c137ed52ee67e97aa24289 *inst/CITATION
 1806f40375fd0941b6fd1ca27672c481 *inst/doc/Vignettes.R
-fc94ae5354ae18db95a9ac0259902a6e *inst/doc/Vignettes.Rmd
-9d7c572f88b3ec5a656b2c48a7af5464 *inst/doc/Vignettes.html
+ca4df16a502f951e0b81b7f46756e4fc *inst/doc/Vignettes.Rmd
+200d071439febfb0fcd3b9a06f6ffa86 *inst/doc/Vignettes.html
 f4294c2ba0b6595b9b5daa01fc9263e3 *man/V.Rd
 33958e57de40482d72339641ccd926a9 *man/betweenness.Rd
 a17853267e815847ef6924b90d7bc767 *man/cent_network.vis.Rd
@@ -35,7 +35,7 @@ a156e7b34d4253328a2b7ef960b25acf *man/graph_from_adjacency_matrix.Rd
 95479de2d800e62f2bb51f32c62e9c1d *man/graph_from_incidence_matrix.Rd
 422e17ac451705e617dae32ea35497a4 *man/h_index.Rd
 aee39fa05a9593176427a46a622df8cf *man/hubness.score.Rd
-a1c4c8a0cb38c5a6bfcd828ea02cf134 *man/influential-package.Rd
+5d04c039a21c6582bb993469ec50c699 *man/influential-package.Rd
 abb34b58c537c7cd9ea9df9dea599fac *man/ivi.Rd
 dc3dce000b5d082e5792fd4606ca0bf7 *man/ivi.from.indices.Rd
 2c148c1dd17c0c46ef063641e397ab14 *man/lh_index.Rd
@@ -44,5 +44,5 @@ d99928653ad17682f6721916cae949c8 *man/neighborhood.connectivity.Rd
 88000f6462b067928f46ecfe61613d2a *man/sirir.Rd
 39de23bb6d0bde88a2af29261e3a6477 *man/spreading.score.Rd
 df751b1caefc4843933b67d729bf44cc *vignettes/Sample_SIF.sif
-fc94ae5354ae18db95a9ac0259902a6e *vignettes/Vignettes.Rmd
+ca4df16a502f951e0b81b7f46756e4fc *vignettes/Vignettes.Rmd
 a020a8565691df6806c5d1871c8f9b7f *vignettes/influentialVignette.css

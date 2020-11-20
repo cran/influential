@@ -701,9 +701,7 @@ Spreading score could be also calculated for *directed* graphs via specifying th
 # Ranking the influence of nodes on the topology of a network based on the `SIRIR` model {#SIRIR}
 
 **SIRIR**
-    : `SIRIR` is achieved by the integration susceptible-infected-recovered (SIR) model
-    with the leave-one-out cross validation technique and ranks network nodes based on their 
-    true universal influence on the network topology and spread of information. One of the applications of this function is the assessment of 
+    : `SIRIR` is achieved by the integration of susceptible-infected-recovered (SIR) model with the leave-one-out cross validation technique and ranks network nodes based on their true universal influence on the network topology and spread of information. One of the applications of this function is the assessment of 
     performance of a novel algorithm in identification of network influential nodes.
     
 ```{r SIRIR, eval=FALSE}
