@@ -84,6 +84,19 @@ You may browse Vignettes from within R using the following code.
 browseVignettes("influential")
 ```
 
+## Shiny apps
+
+  - [IVI Shiny App](https://influential.erc.monash.edu/): A shiny app
+    for the calculation of the Integrated Value of Influence (IVI) of
+    network nodes as well as IVI-based visualization of the network.
+
+You can also access the IVI shiny app offline from within R and run it
+on your local machine using the following command.
+
+``` r
+influential::runExample("IVI")
+```
+
 ## How to cite `influential`
 
 To cite `influential`, please cite its associated paper:

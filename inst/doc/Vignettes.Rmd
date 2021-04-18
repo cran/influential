@@ -15,6 +15,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<style>
+body {
+text-align: justify}
+</style>
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -38,7 +43,7 @@ spaces <- function (n) {
 knitr::include_graphics(path = "../man/figures/Symbol.png", error = FALSE)
 ```
 
-`influential` is an R package mainly for the identification of the most influential nodes in a network as well as the classification and ranking of top candidate features.The `influential` package contains several functions that could be categorized into five groups according to their purpose:
+`influential` is an R package mainly for the identification of the most influential nodes in a network as well as the classification and ranking of top candidate features. The `influential` package contains several functions that could be categorized into five groups according to their purpose:
 
 * Network reconstruction
 * Calculation of centrality measures
@@ -53,6 +58,7 @@ The sections below introduce these five categories. However, if you wish not goi
 * [Hubness score](#HubnessScore)
 * [Spreading score](#SpreadingScore)
 * [SIRIR](#SIRIR)
+* [Computational manipulation](#CompManipulate)
 
 ********
 
@@ -544,7 +550,7 @@ print(My.metrics.assessment)
 
 **IVI**
     : `IVI` is the first integrative method for the identification of network most influential
-    nodes in a way that captures all network topological dimensions. The `IVI` formula integrates the most important local (i.e. degree centrality and ClusterRank), semi-local (i.e. neighborhood connectivity and local H-index) and global (i.e. betweenness centrality and collective influence) centrality measures in such a way that both synergize their effects and remove their biases.
+    nodes in a way that captures all network topological dimensions. The `IVI` formula integrates the most important local (i.e. degree centrality and ClusterRank), semi-local (i.e. neighborhood connectivity and local H-index) and global (i.e. betweenness centrality and collective influence) centrality measures in such a way that both synergizes their effects and removes their biases.
 
 ## Integrated Value of Influence (IVI) from centrality measures
 
@@ -626,6 +632,12 @@ The above figure illustrates a simple use case of the function `cent_network.vis
 The following tutorial video demonstrates how to visualize a network based on the centrality of nodes (e.g. their `IVI` values).
 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/kCmEdOoIUD4" frameborder="0" allowfullscreen></iframe>
+
+## IVI shiny app {#IVIShiny}
+A shiny app has also been developed for the calculation of IVI as well as IVI-based network 
+visualization, which is accessible using the following command.  
+`influential::runExample("IVI")`  
+You can also access the shiny app online at the [Influential Software Package server](https://influential.erc.monash.edu/).
 
 <a href="#top">Back to top</a>
 
@@ -733,10 +745,10 @@ Influence.Ranks <- sirir(graph = My_graph,
 
 <a href="#top">Back to top</a>
 
-# Experimental data-based classification and ranking of top candidate features based on the `ExIR` model {#ExIR}
+# Experimental data-based classification and ranking of top candidate features {#ExIR}
 
 **ExIR**
-    : `ExIR` is a model for the classification and ranking of top candidate features. The input data could come from any type of experiment such as transcriptomics and proteomics. This model is based on multi-level filtration and scoring based on several supervised and unsupervised analyses followed by the classification and integrative ranking of top candidate features. Using this function and depending on the input data and specified arguments, the user can get one to four tables including:
+    : `ExIR` is a model for the classification and ranking of top candidate features. The input data could come from any type of experiment such as transcriptomics and proteomics. This model is based on multi-level filtration and scoring based on several supervised and unsupervised analyses followed by the classification and integrative ranking of top candidate features. Using this function and depending on the input data and specified arguments, the user can get a graph object and one to four tables including:
     
 + **Drivers**: Prioritized drivers are supposed to have the highest impact on the progression of a biological process or disease under investigation.
 + **Biomarkers**: Prioritized biomarkers are supposed to have the highest sensitivity to different conditions under investigation and the severity of each condition.
@@ -749,27 +761,27 @@ time-points. Also, we have performed trajectory analysis to identify the genes t
 
 ```{r exir.data, eval=FALSE}
 # Prepare sample data
-gene.names <- paste("gene", c(1:1000), sep = "_")
+gene.names <- paste("gene", c(1:20000), sep = "_")
 
 set.seed(60)
-tp2.vs.tp1.DEGs <- data.frame(logFC = runif(n = 90, min = -5, max = 5),
-                              FDR = runif(n = 90, min = 0.0001, max = 0.049))
+tp2.vs.tp1.DEGs <- data.frame(logFC = rnorm(n = 700, mean = 2, sd = 4),
+                              FDR = runif(n = 700, min = 0.0001, max = 0.049))
 
 set.seed(60)
-rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 90)
+rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 700)
 
 set.seed(70)
-tp3.vs.tp2.DEGs <- data.frame(logFC = runif(n = 121, min = -3, max = 6),
-                              FDR = runif(n = 121, min = 0.0011, max = 0.039))
+tp3.vs.tp2.DEGs <- data.frame(logFC = rnorm(n = 1300, mean = -1, sd = 5),
+                              FDR = runif(n = 1300, min = 0.0011, max = 0.039))
 
 set.seed(70)
-rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 121)
+rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 1300)
 
 set.seed(80)
-regression.data <- data.frame(R_squared = runif(n = 65, min = 0.1, max = 0.85))
+regression.data <- data.frame(R_squared = runif(n = 800, min = 0.1, max = 0.85))
 
 set.seed(80)
-rownames(regression.data) <- sample(gene.names, size = 65)
+rownames(regression.data) <- sample(gene.names, size = 800)
 ```
 
 ## Assembling the Diff_data
@@ -781,25 +793,57 @@ my_Diff_data <- diff_data.assembly(tp2.vs.tp1.DEGs,
                                    tp3.vs.tp2.DEGs,
                                    regression.data)
 
-knitr::kable(my_Diff_data[c(1:10),])
+my_Diff_data[c(1:10),]
 ```
+
+Have a look at the top 10 rows of the `Diff_data` data frame:
+
+|           | Diff_value1| Sig_value1| Diff_value2| Sig_value2| Diff_value3|
+|:----------|-----------:|----------:|-----------:|----------:|-----------:|
+|gene_17331 |         4.9|          0|           0|          1|           0|
+|gene_12546 |         4.0|          0|           0|          1|           0|
+|gene_12837 |        -0.3|          0|           0|          1|           0|
+|gene_18522 |         1.4|          0|           0|          1|           0|
+|gene_6260  |        -4.9|          0|           0|          1|           0|
+|gene_2722  |        -4.9|          0|           0|          1|           0|
+|gene_19882 |         6.3|          0|           0|          1|           0|
+|gene_2790  |         3.3|          0|           0|          1|           0|
+|gene_17011 |        -1.6|          0|           0|          1|           0|
+|gene_8321  |         3.8|          0|           0|          1|           0|
+
 
 ## Preparing the Exptl_data
 Now, prepare a sample normalized experimental data matrix
 
 ```{r exptl_data, eval=FALSE}
 set.seed(60)
-MyExptl_data <- matrix(data = runif(n = 50000, min = 2, max = 100), 
-                       nrow = 50, ncol = 1000, 
+MyExptl_data <- matrix(data = runif(n = 1000000, min = 2, max = 300), 
+                       nrow = 50, ncol = 20000, 
                        dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
                                          paste("normal_sample", c(1:25), sep = "_")), 
                                        gene.names))
 
 # Log transform the data to bring them closer to normal distribution
-MyExptl_data <- log2(MyExptl_data)  
+MyExptl_data <- log2(MyExptl_data)
 
-knitr::kable(MyExptl_data[c(1:5),c(1:5)])
+MyExptl_data[c(1:5, 45:50),c(1:5)]
 ```
+
+Have a look at top 5 cancer and normal samples (rows) of the `Exptl_data`:
+
+|                 | gene_1| gene_2| gene_3| gene_4| gene_5|
+|:----------------|------:|------:|------:|------:|------:|
+|cancer_sample_1  |      8|      8|      8|      8|      8|
+|cancer_sample_2  |      7|      8|      6|      8|      8|
+|cancer_sample_3  |      8|      7|      8|      7|      8|
+|cancer_sample_4  |      8|      7|      7|      7|      8|
+|cancer_sample_5  |      6|      4|      8|      5|      4|
+|normal_sample_20 |      8|      7|      7|      8|      8|
+|normal_sample_21 |      8|      7|      8|      6|      8|
+|normal_sample_22 |      8|      8|      8|      7|      6|
+|normal_sample_23 |      7|      6|      8|      7|      8|
+|normal_sample_24 |      8|      8|      7|      5|      7|
+|normal_sample_25 |      5|      7|      8|      8|      6|
 
 Now add the "condition" column to the Exptl_data table.
 ```{r condition.col, eval=FALSE}
@@ -835,7 +879,7 @@ Condition_colname <- "condition"
 
 #The desired list of features
 set.seed(60)
-MyDesired_list <- sample(gene.names, size = 200)  #Optional
+MyDesired_list <- sample(gene.names, size = 1000)  #Optional
 
 #Running the ExIR model
 My.exir <- exir(Desired_list = MyDesired_list,
@@ -845,51 +889,50 @@ Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
 seed = 60, verbose = FALSE)
 
 names(My.exir)
-#> [1] "Driver table"          "DE-mediator table"     "nonDE-mediator table"
-#> [4] "Biomarker table"
+#> [1] "Driver table"         "nonDE-mediator table" "Biomarker table"      "Graph"
 
 class(My.exir)
 #> [1] "ExIR_Result"
 ```
 
-Have a look at the heads of the outputs of ExIR:
+Have a look at the heads of the output tables of ExIR:
 
 + **Drivers**
 
-|         |     Score|  Z.score| Rank|      P.value|     P.adj|Type        |
-|:--------|---------:|--------:|----:|------------:|---------:|:-----------|
-|gene_738 | 100.00000| 5.380024|    1| 3.723800e-08| 0.0000040|Decelerator |
-|gene_520 |  70.84240| 3.569259|    2| 1.789961e-04| 0.0095763|Accelerator |
-|gene_78  |  55.87662| 2.639844|    3| 4.147204e-03| 0.1479169|Decelerator |
-|gene_53  |  52.47212| 2.428416|    4| 7.582469e-03| 0.2028311|Accelerator |
-|gene_886 |  50.63736| 2.314472|    5| 1.032092e-02| 0.2208677|Accelerator |
-|gene_883 |  45.78593| 2.013185|    6| 2.204757e-02| 0.3527402|Accelerator |
+|           | Score| Z.score| Rank| P.value| P.adj|Type        |
+|:----------|-----:|-------:|----:|-------:|-----:|:-----------|
+|gene_9469  |   100|      13|    1|   1e-37|     0|Accelerator |
+|gene_339   |    73|       9|    2|   2e-20|     0|Accelerator |
+|gene_6518  |    67|       8|    3|   1e-17|     0|Decelerator |
+|gene_13429 |    60|       8|    4|   1e-14|     0|Accelerator |
+|gene_8733  |    58|       7|    5|   2e-13|     0|Accelerator |
+|gene_15640 |    57|       7|    6|   3e-13|     0|Accelerator |
 
 ********
 
 + **Biomarkers**
 
-|         |      Score|   Z.score| Rank|      P.value|     P.adj|Type           |
-|:--------|----------:|---------:|----:|------------:|---------:|:--------------|
-|gene_711 | 100.000000| 9.1261490|    1| 3.548963e-20| 0.0000000|Up-regulated   |
-|gene_245 |  37.107082| 3.1933225|    2| 7.032290e-04| 0.0376227|Down-regulated |
-|gene_705 |  24.598890| 2.0133974|    3| 2.203642e-02| 0.5842342|Up-regulated   |
-|gene_910 |  23.430181| 1.9031504|    4| 2.851046e-02| 0.5842342|Down-regulated |
-|gene_895 |  13.919517| 1.0059887|    5| 1.572105e-01| 0.5842342|Down-regulated |
-|gene_800 |   5.843283| 0.2441399|    6| 4.035613e-01| 0.5842342|Down-regulated |
+|           | Score| Z.score| Rank| P.value| P.adj|Type           |
+|:----------|-----:|-------:|----:|-------:|-----:|:--------------|
+|gene_27    |   100|    25.3|    1|  3e-141|   0.0|Up-regulated   |
+|gene_2464  |    32|     7.8|    2|   4e-15|   0.0|Down-regulated |
+|gene_6903  |     5|     0.9|    3|   2e-01|   0.5|Up-regulated   |
+|gene_3196  |     4|     0.7|    4|   2e-01|   0.5|Up-regulated   |
+|gene_13177 |     3|     0.6|    5|   3e-01|   0.5|Up-regulated   |
+|gene_2663  |     3|     0.5|    6|   3e-01|   0.5|Up-regulated   |
 
 ********
 
-+ **DE-mediators**
++ **nonDE-mediators**
 
-|         |      Score|    Z.score| Rank|    P.value|     P.adj|
-|:--------|----------:|----------:|----:|----------:|---------:|
-|gene_315 | 100.000000|  1.6261374|    1| 0.05196021| 0.3117613|
-|gene_963 |  68.097002|  0.8442286|    2| 0.19927085| 0.5978125|
-|gene_49  |  19.104450| -0.3565272|    3| 0.63927712| 0.7882165|
-|gene_682 |  10.102668| -0.5771514|    4| 0.71808142| 0.7882165|
-|gene_493 |   3.603502| -0.7364391|    5| 0.76926825| 0.7882165|
-|gene_898 |   1.000000| -0.8002482|    6| 0.78821650| 0.7882165|
+|           | Score| Z.score| Rank| P.value| P.adj|
+|:----------|-----:|-------:|----:|-------:|-----:|
+|gene_28    |   100|     2.0|    1|    0.02|   0.1|
+|gene_13648 |     1|    -0.4|    2|    0.66|   0.7|
+|gene_19101 |     1|    -0.4|    2|    0.66|   0.7|
+|gene_15735 |     1|    -0.4|    2|    0.66|   0.7|
+|gene_9637  |     1|    -0.4|    2|    0.66|   0.7|
+|gene_2841  |     1|    -0.4|    2|    0.66|   0.7|
 
 ********
 
@@ -907,6 +950,8 @@ Have a look at the heads of the outputs of ExIR:
 The following tutorial video demonstrates how to run the `ExIR` model on a sample experimental data.
 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/-08nn4_-OUE" frameborder="0" allowfullscreen></iframe>
+
+You can also [computationally simulate knockout and/or up-regulation](#CompManipulate) of the top candidate features outputted by ExIR to evaluate the impact of their manipulations on the flow of information/signaling and integrity of the network prior to taking them to your lab bench.
 
 ## ExIR visualization
 The `exir.vis` is a function for the visualization of the output of the [ExIR](#ExIR) model. The function simply gets the output of the ExIR model as a single argument and returns a plot of the top 10 prioritized features of all classes. Here, we visualize the top five candidates of the results of the `ExIR` model obtained in the previous step .
@@ -926,6 +971,67 @@ However, a complete flexibility (list of arguments) has been provided for the ad
 The following tutorial video demonstrates how to visualize the results of `ExIR` model.
 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/Ie19y6PuBDg" frameborder="0" allowfullscreen></iframe>
+
+## ExIR shiny app {#ExIRShiny}
+A shiny app has also been developed for Running the ExIR model, visualization of its results as well as computational simulation of knockout and/or up-regulation of its top candidate outputs, which is accessible using the following command.  
+`influential::runExample("ExIR")`  
+You can also access the shiny app online at the [Influential Software Package server](https://influential.erc.monash.edu/).
+
+<a href="#top">Back to top</a>
+
+# Computational manipulation of cells {#CompManipulate}
+The `comp_manipulate` is a function for the simulation of feature (gene, protein, etc.) knockout and/or up-regulation in cells. 
+This function works based on the [SIRIR](#SIRIR) (SIR-based Influence Ranking) model and could be applied on the output of the [ExIR](#ExIR) model or any other independent association network. For feature (gene/protein/etc.) knockout the [SIRIR](#SIRIR) model is used to remove the feature from the network and assess its impact on the flow of information (signaling) within the network. 
+On the other hand, in case of up-regulation a node similar to the desired node is added to the network with exactly the same connections (edges) as of the original node. Next, the [SIRIR](#SIRIR) model is used to evaluate the difference in the flow of information/signaling after adding (up-regulating) the desired feature/node compared with the original network. In case you are applying this function on the output of [ExIR](#ExIR) model, you may note that as the gene/protein knockout would impact on the integrity of the under-investigation network as well as the networks of other overlapping biological processes/pathways, it is recommended to select those features that simultaneously have the highest (most significant) [ExIR](#ExIR)-based rank and lowest knockout rank. In contrast, as the up-regulation would not affect the integrity of the network, you may select the features with highest (most significant) [ExIR](#ExIR)-based and up-regulation-based ranks. Altogether, it is recommended to select the features 
+with the highest (most significant) [ExIR](#ExIR)-based (major drivers or mediators of the under-investigation biological process/disease) and *Up-regulation*-based (having higher impact on the signaling within the under-investigation network when up-regulated) ranks, but with the lowest *Knockout*-based rank (having the lowest disturbance to the under-investigation as well as other overlapping networks). Below is an example of running this function on the same [ExIR](#ExIR) output generated above.
+
+```{r comp_manipulate, eval=FALSE}
+# Select which genes to knockout
+set.seed(60)
+ko_vertices <- sample(igraph::as_ids(V(My.exir$Graph)), size = 5)
+
+# Select which genes to up-regulate
+set.seed(1234)
+upregulate_vertices <- sample(igraph::as_ids(V(My.exir$Graph)), size = 5)
+
+Computational_manipulation <- comp_manipulate(exir_output = My.exir, 
+                                              ko_vertices = ko_vertices, 
+                                              upregulate_vertices = upregulate_vertices,
+                                              beta = 0.5, gamma = 1, no.sim = 100, seed = 1234)
+```
+
+Have a look at the heads of the output tables:
+
++ **Knockout**
+
+|   |Feature_name | Rank|Manipulation_type |
+|:--|:------------|----:|:-----------------|
+|1  |gene_1877    |    1|Knockout          |
+|5  |gene_9469    |    2|Knockout          |
+|4  |gene_2841    |    3|Knockout          |
+|2  |gene_13430   |    4|Knockout          |
+|3  |gene_6197    |    5|Knockout          |
+
++ **Up-regulation**
+
+|   |Feature_name | Rank|Manipulation_type |
+|:--|:------------|----:|:-----------------|
+|5  |gene_2841    |    1|Up-regulation     |
+|1  |gene_8733    |    2|Up-regulation     |
+|3  |gene_9469    |    2|Up-regulation     |
+|2  |gene_13430   |    4|Up-regulation     |
+|4  |gene_16640   |    5|Up-regulation     |
+
++ **Combined**
+
+|   |Feature_name | Rank|Manipulation_type |
+|:--|:------------|----:|:-----------------|
+|51 |gene_2841    |    1|Up-regulation     |
+|11 |gene_8733    |    2|Up-regulation     |
+|31 |gene_9469    |    2|Up-regulation     |
+|21 |gene_13430   |    4|Up-regulation     |
+|41 |gene_16640   |    5|Up-regulation     |
+|1  |gene_1877    |    6|Knockout          |
 
 <a href="#top">Back to top</a>
 

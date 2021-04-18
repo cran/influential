@@ -429,39 +429,39 @@ print(My.conditional.prob)
 
 ## ----exir.data, eval=FALSE--------------------------------------------------------------
 #  # Prepare sample data
-#  gene.names <- paste("gene", c(1:1000), sep = "_")
+#  gene.names <- paste("gene", c(1:20000), sep = "_")
 #  
 #  set.seed(60)
-#  tp2.vs.tp1.DEGs <- data.frame(logFC = runif(n = 90, min = -5, max = 5),
-#                                FDR = runif(n = 90, min = 0.0001, max = 0.049))
+#  tp2.vs.tp1.DEGs <- data.frame(logFC = rnorm(n = 700, mean = 2, sd = 4),
+#                                FDR = runif(n = 700, min = 0.0001, max = 0.049))
 #  
 #  set.seed(60)
-#  rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 90)
+#  rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 700)
 #  
 #  set.seed(70)
-#  tp3.vs.tp2.DEGs <- data.frame(logFC = runif(n = 121, min = -3, max = 6),
-#                                FDR = runif(n = 121, min = 0.0011, max = 0.039))
+#  tp3.vs.tp2.DEGs <- data.frame(logFC = rnorm(n = 1300, mean = -1, sd = 5),
+#                                FDR = runif(n = 1300, min = 0.0011, max = 0.039))
 #  
 #  set.seed(70)
-#  rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 121)
+#  rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 1300)
 #  
 #  set.seed(80)
-#  regression.data <- data.frame(R_squared = runif(n = 65, min = 0.1, max = 0.85))
+#  regression.data <- data.frame(R_squared = runif(n = 800, min = 0.1, max = 0.85))
 #  
 #  set.seed(80)
-#  rownames(regression.data) <- sample(gene.names, size = 65)
+#  rownames(regression.data) <- sample(gene.names, size = 800)
 
 ## ----diff_data_assembl, eval=FALSE------------------------------------------------------
 #  my_Diff_data <- diff_data.assembly(tp2.vs.tp1.DEGs,
 #                                     tp3.vs.tp2.DEGs,
 #                                     regression.data)
 #  
-#  knitr::kable(my_Diff_data[c(1:10),])
+#  my_Diff_data[c(1:10),]
 
 ## ----exptl_data, eval=FALSE-------------------------------------------------------------
 #  set.seed(60)
-#  MyExptl_data <- matrix(data = runif(n = 50000, min = 2, max = 100),
-#                         nrow = 50, ncol = 1000,
+#  MyExptl_data <- matrix(data = runif(n = 1000000, min = 2, max = 300),
+#                         nrow = 50, ncol = 20000,
 #                         dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
 #                                           paste("normal_sample", c(1:25), sep = "_")),
 #                                         gene.names))
@@ -469,7 +469,7 @@ print(My.conditional.prob)
 #  # Log transform the data to bring them closer to normal distribution
 #  MyExptl_data <- log2(MyExptl_data)
 #  
-#  knitr::kable(MyExptl_data[c(1:5),c(1:5)])
+#  MyExptl_data[c(1:5, 45:50),c(1:5)]
 
 ## ----condition.col, eval=FALSE----------------------------------------------------------
 #  MyExptl_data <- as.data.frame(MyExptl_data)
@@ -500,7 +500,7 @@ print(My.conditional.prob)
 #  
 #  #The desired list of features
 #  set.seed(60)
-#  MyDesired_list <- sample(gene.names, size = 200)  #Optional
+#  MyDesired_list <- sample(gene.names, size = 1000)  #Optional
 #  
 #  #Running the ExIR model
 #  My.exir <- exir(Desired_list = MyDesired_list,
@@ -510,8 +510,7 @@ print(My.conditional.prob)
 #  seed = 60, verbose = FALSE)
 #  
 #  names(My.exir)
-#  #> [1] "Driver table"          "DE-mediator table"     "nonDE-mediator table"
-#  #> [4] "Biomarker table"
+#  #> [1] "Driver table"         "nonDE-mediator table" "Biomarker table"      "Graph"
 #  
 #  class(My.exir)
 #  #> [1] "ExIR_Result"
@@ -522,4 +521,18 @@ print(My.conditional.prob)
 #                          y.axis.title = "Gene")
 #  
 #  My.exir.Vis
+
+## ----comp_manipulate, eval=FALSE--------------------------------------------------------
+#  # Select which genes to knockout
+#  set.seed(60)
+#  ko_vertices <- sample(igraph::as_ids(V(My.exir$Graph)), size = 5)
+#  
+#  # Select which genes to up-regulate
+#  set.seed(1234)
+#  upregulate_vertices <- sample(igraph::as_ids(V(My.exir$Graph)), size = 5)
+#  
+#  Computational_manipulation <- comp_manipulate(exir_output = My.exir,
+#                                                ko_vertices = ko_vertices,
+#                                                upregulate_vertices = upregulate_vertices,
+#                                                beta = 0.5, gamma = 1, no.sim = 100, seed = 1234)
 

@@ -30,6 +30,9 @@ This function calculates the IVI of the desired nodes from previously calculated
 measures. This function is not dependent to other packages and the required centrality
 measures, namely degree centrality, ClusterRank, betweenness centrality, Collective Influence,
 local H-index, and neighborhood connectivity could have been calculated by any means beforehand.
+A shiny app has also been developed for the calculation of IVI as well as IVI-based network
+visualization, which is accessible using the `influential::runExample("IVI")` command.
+You can also access the shiny app online at https://influential.erc.monash.edu/.
 }
 \examples{
 MyData <- centrality.measures
@@ -44,6 +47,7 @@ My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,
 \code{\link[influential]{cent_network.vis}}
 
 Other integrative ranking functions: 
+\code{\link{comp_manipulate}()},
 \code{\link{exir}()},
 \code{\link{hubness.score}()},
 \code{\link{ivi}()},
