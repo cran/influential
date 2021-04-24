@@ -2,7 +2,7 @@ Package: influential
 Type: Package
 Title: Identification and Classification of the Most Influential Nodes
 Language: en-US
-Version: 2.2.0
+Version: 2.2.1
 Author: Adrian (Abbas) Salavaty [aut, cre], Mirana Ramialison [ths], Peter D. Currie [ths]
 Maintainer: Adrian Salavaty <abbas.salavaty@gmail.com>
 Description: Contains functions for the classification and ranking of top candidate features, reconstruction of networks from
@@ -18,7 +18,8 @@ Description: Contains functions for the classification and ranking of top candid
 Imports: igraph, janitor, ranger, coop, ggplot2
 Suggests: Hmisc (>= 4.3-0), mgcv (>= 1.8-31), nortest (>= 1.0-4), NNS
         (>= 0.4.7.1), parallel, shiny, shinythemes, shinyWidgets,
-        shinyjs, shinycssloaders, colourpicker, DT, knitr, rmarkdown
+        shinyjs, shinycssloaders, colourpicker, magrittr, DT, knitr,
+        rmarkdown
 Depends: R (>= 2.10)
 URL: https://github.com/asalavaty/influential
 BugReports: https://github.com/asalavaty/influential/issues
@@ -28,6 +29,6 @@ LazyData: true
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-04-17 05:50:17 UTC; asal0019
+Packaged: 2021-04-23 23:44:41 UTC; asal0019
 Repository: CRAN
-Date/Publication: 2021-04-18 02:10:13 UTC
+Date/Publication: 2021-04-24 11:30:12 UTC

@@ -3,12 +3,27 @@ influential
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit that file -->
 
-# influential 2.2.0.9000 (Developmental version)
+# influential 2.2.1.9000 (Developmental version)
 
   - 
+# influential 2.2.1 (CRAN version)
+
+  - The DESCRIPTION file is updated.
+
+  - The name of the function for running shiny apps is changed to
+    `runShinyApp`.
+
+  - Shiny apps are updated in the package for local use.
+
+  - Documentations of several functions are updated.
+
+  - The Vignettes are updated.
+
+  - The Read Me file is updated.
+
 # influential 2.2.0 (CRAN version)
 
-  - Update package vignettes.
+  - Update package Vignettes.
 
   - Documentation on how to access ExIR shiny app is added to the Read
     Me file, vignettes, and the corresponding functions’ documentations.

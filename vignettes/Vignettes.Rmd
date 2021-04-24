@@ -636,7 +636,7 @@ The following tutorial video demonstrates how to visualize a network based on th
 ## IVI shiny app {#IVIShiny}
 A shiny app has also been developed for the calculation of IVI as well as IVI-based network 
 visualization, which is accessible using the following command.  
-`influential::runExample("IVI")`  
+`influential::runShinyApp("IVI")`  
 You can also access the shiny app online at the [Influential Software Package server](https://influential.erc.monash.edu/).
 
 <a href="#top">Back to top</a>
@@ -974,7 +974,7 @@ The following tutorial video demonstrates how to visualize the results of `ExIR`
 
 ## ExIR shiny app {#ExIRShiny}
 A shiny app has also been developed for Running the ExIR model, visualization of its results as well as computational simulation of knockout and/or up-regulation of its top candidate outputs, which is accessible using the following command.  
-`influential::runExample("ExIR")`  
+`influential::runShinyApp("ExIR")`  
 You can also access the shiny app online at the [Influential Software Package server](https://influential.erc.monash.edu/).
 
 <a href="#top">Back to top</a>
