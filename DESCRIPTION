@@ -2,7 +2,7 @@ Package: influential
 Type: Package
 Title: Identification and Classification of the Most Influential Nodes
 Language: en-US
-Version: 2.2.1
+Version: 2.2.2
 Author: Adrian (Abbas) Salavaty [aut, cre], Mirana Ramialison [ths], Peter D. Currie [ths]
 Maintainer: Adrian Salavaty <abbas.salavaty@gmail.com>
 Description: Contains functions for the classification and ranking of top candidate features, reconstruction of networks from
@@ -29,6 +29,6 @@ LazyData: true
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-04-23 23:44:41 UTC; asal0019
+Packaged: 2021-04-30 03:03:24 UTC; asal0019
 Repository: CRAN
-Date/Publication: 2021-04-24 11:30:12 UTC
+Date/Publication: 2021-04-30 10:10:02 UTC
