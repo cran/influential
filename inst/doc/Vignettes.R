@@ -510,7 +510,7 @@ print(My.conditional.prob)
 #  seed = 60, verbose = FALSE)
 #  
 #  names(My.exir)
-#  #> [1] "Driver table"         "nonDE-mediator table" "Biomarker table"      "Graph"
+#  #> [1] "Driver table"         "DE-mediator table"    "nonDE-mediator table" "Biomarker table"      "Graph"
 #  
 #  class(My.exir)
 #  #> [1] "ExIR_Result"

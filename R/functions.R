@@ -38,8 +38,8 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 2.2.3
-#'   \item Date: 18-06-2021
+#'   \item Version: 2.2.4
+#'   \item Date: 02-11-2021
 #'   \item License: GPL-3
 #' }
 #'
@@ -1852,7 +1852,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @param Condition_colname A string or character vector specifying the name of the column "condition" of the Exptl_data dataframe.
   #' @param Normalize Logical; whether the experimental data should be normalized or not (default is FALSE). If TRUE, the
   #' experimental data will be log2 transformed.
-  #' @param r The threshold of Spearman correlation coefficient for the selection of correlated features (default is 0.3).
+  #' @param r The threshold of Spearman correlation coefficient for the selection of correlated features (default is 0.5).
   #' @param max.connections The maximum number of connections to be included in the association network.
   #' Higher max.connections might increase the computation time, cost, and accuracy of the results (default is 20000).
   #' @param alpha The threshold of the statistical significance (p-value) used throughout the entire model (default is 0.05)
@@ -1908,7 +1908,7 @@ sirir <- function(graph, vertices = V(graph),
   exir <- function(Desired_list = NULL,
                    Diff_data, Diff_value, Regr_value = NULL, Sig_value,
                    Exptl_data, Condition_colname, Normalize = FALSE,
-                   r = 0.3, max.connections = 20000, alpha = 0.05,
+                   r = 0.5, max.connections = 20000, alpha = 0.05,
                    num_trees = 10000, mtry = NULL, num_permutations = 100,
                    inf_const = 10^10, seed = 1234, verbose = TRUE) {
 
@@ -3269,6 +3269,9 @@ sirir <- function(graph, vertices = V(graph),
   #' @param show.nonDE.mediators Logical scalar, whether to show nonDE-mediators or not (default is set to TRUE).
   #' @param basis A string specifying the basis for the selection of top N candidates from each category of the results. Possible options include
   #' \code{"Rank"} and \code{"Adjusted p-value"} (default is set to "Rank").
+  #' @param label.position By default, the labels are displayed on the top of the plot. Using label.position it is possible
+  #' to place the labels on either of the four sides by setting label.position = c("top", "bottom", "left", "right").
+  #' @param nrow Number of rows of the plot (default is set to 1).
   #' @param dot.size.min The size of dots with the lowest statistical significance (default is set to 2).
   #' @param dot.size.max The size of dots with the highest statistical significance (default is set to 5).
   #' @param type.color A character string or function indicating the color palette to be used for the visualization of
@@ -3316,6 +3319,8 @@ sirir <- function(graph, vertices = V(graph),
                        show.de.mediators = TRUE,
                        show.nonDE.mediators = TRUE,
                        basis = "Rank",
+                       label.position = "top",
+                       nrow = 1,
                        dot.size.min = 2,
                        dot.size.max = 5,
                        type.color = "viridis",
@@ -3596,6 +3601,17 @@ sirir <- function(graph, vertices = V(graph),
     exir.for.plot$P.adj <- dot.size.min+(((-log10(exir.for.plot$P.adj)-min(-log10(exir.for.plot$P.adj)))*(dot.size.max-dot.size.min))/
                                            (max(-log10(exir.for.plot$P.adj))-min(-log10(exir.for.plot$P.adj))))
 
+    # Correct the levels of Features based on each class
+    visClassLength <- base::length(base::unique(exir.for.plot$Class))
+
+    visFeatureLevels <- base::unique(base::as.character(base::unlist(base::sapply(X = 1:visClassLength,
+                                                               FUN = function(i) {
+                                                                 exir.for.plot$Feature[which(exir.for.plot$Class %in% base::unique(exir.for.plot$Class)[i])]
+                                                               }))))
+
+    exir.for.plot$Feature <- base::factor(exir.for.plot$Feature,
+                                          levels = visFeatureLevels)
+
     ####*******************************####
 
     # draw the plot
@@ -3659,9 +3675,10 @@ sirir <- function(graph, vertices = V(graph),
       ##***********##
 
       # add facets
-      ggplot2::facet_grid(. ~ Class,
+      ggplot2::facet_wrap(. ~ Class,
                           scales = "free_x",
-                          space = "free_x") +
+                          strip.position = label.position,
+                          nrow = nrow) +
 
 
       ##***********##
@@ -3671,7 +3688,13 @@ sirir <- function(graph, vertices = V(graph),
       ggplot2::theme_bw()
 
     # set the x axis breaks
-    by.x_continuous <- base::round(n/5)
+    rank.uniqueness <- base::vector(mode = "integer")
+    for(i in base::unique(exir.for.plot$Class)) {
+      rank.uniqueness <- base::append(x = rank.uniqueness, values =
+                                        length(unique(exir.for.plot$Rank[exir.for.plot$Class == i]))
+      )
+    }
+    by.x_continuous <- base::ifelse(any(rank.uniqueness == 1), 1, base::round(n/5))
 
     # set the x axis numbers and start
     x.axis.numbers <- function(x) {

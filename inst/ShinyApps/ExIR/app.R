@@ -13,17 +13,28 @@ library(influential)
 library(ggplot2)
 library(igraph)
 
-options(shiny.maxRequestSize = 300 * 1024^2)
+options(shiny.maxRequestSize = Inf)
 options(warn=-1)
 
 ####**********************************************####
 
 navbarPageWithText <- function(..., text) {
-    navbar <- navbarPage(...)
-    textEl <- tags$p(class = "navbar-text", text)
-    navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
-        navbar[[3]][[1]]$children[[1]], textEl)
-    navbar
+
+    if(as.integer(paste(unlist(packageVersion(pkg = "shiny")), collapse = "")) <= 160) {
+        navbar <- navbarPage(...)
+        textEl <- tags$p(class = "navbar-text", text)
+        navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
+            navbar[[3]][[1]]$children[[1]],
+            textEl)
+        navbar
+    } else {
+        navbar <- navbarPage(...)
+        textEl <- tags$p(class = "navbar-text", text)
+        navbar[[4]][[1]][[1]]$children[[1]] <- htmltools::tagAppendChild(
+            navbar[[4]][[1]][[1]]$children[[1]],
+            textEl)
+        navbar
+    }
 }
 
 ####**********************************************####
@@ -467,7 +478,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                       column(4,
                                              tags$h5("Running the Experimental-data-based Integrative Ranking (ExIR)"),
                                              sidebarPanel(width = 12,
-                                                          style = "overflow-y:scroll; max-height: 800px; position:relative;",
+                                                          style = "overflow-y:scroll; max-height: 90vh; position:relative;",
                                                           ## Input for running ExIR
 
                                                           ### Upload the files
@@ -611,7 +622,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                                           ### Specify the r
                                                           sliderInput(inputId = "correlationCoeff",
                                                                       label = "Correlation coefficient threshold (for association network reconstruction):",
-                                                                      min = 0, max = 1, value = 0.3, step = 0.1,
+                                                                      min = 0, max = 1, value = 0.5, step = 0.1,
                                                                       ticks = TRUE, animate = FALSE),
 
                                                           # max.connections
@@ -835,6 +846,17 @@ ui <- navbarPageWithText(id = "inTabset",
                                                                       choices = list("Rank", "Adjusted p-value"),
                                                                       label = "Basis for the selection of top candidates for visualization:",
                                                                       selected = "Rank"),
+                                                          prettyRadioButtons(inputId = "labelPosition", label = "Label position",
+                                                                             choices = list("Left" = "left", "Right" = "right", "Bottom" = "bottom", "Top" = "top"),
+                                                                             icon = icon("check"),
+                                                                             bigger = TRUE,
+                                                                             status = "info",
+                                                                             animation = "jelly",
+                                                                             selected = "top"),
+                                                          # nrow
+                                                          numericInput(inputId = "exirVis_nrow",
+                                                                       label = "Determine the numer of rows of the plot:",
+                                                                       value = 1),
                                                           sliderInput(inputId = "dotSizeMin",
                                                                       label = "Specify the size of dots with the lowest statistical significance:",
                                                                       min = 1, max = 10, value = 2, step = 1,
@@ -993,6 +1015,8 @@ ui <- navbarPageWithText(id = "inTabset",
                                                               choices = NULL,
                                                               options = list(
                                                                   style = "btn-sm btn-primary",
+                                                                  size = 10,
+                                                                  `live-search` = TRUE,
                                                                   `selected-text-format` = "count > 3"),
                                                               multiple = TRUE
                                                           ),
@@ -1004,6 +1028,8 @@ ui <- navbarPageWithText(id = "inTabset",
                                                               choices = NULL,
                                                               options = list(
                                                                   style = "btn-sm btn-danger",
+                                                                  size = 10,
+                                                                  `live-search` = TRUE,
                                                                   `selected-text-format` = "count > 3"),
                                                               multiple = TRUE
                                                           ),
@@ -1120,7 +1146,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                       column(2),
                                       column(8,
                                              br(),
-                                             h4(icon("paper"), "Please cite the following two papers if you used this shiny app in your study."),
+                                             h4(icon("scroll"), "Please cite the following two papers if you used this shiny app in your study."),
                                              br(),
                                              panel(footer = "",heading = "", status = "primary",
                                       h3(tags$b("ExIR: a versatile one-stop model for the extraction, classification, and prioritization of candidate genes from experimental data"),
@@ -1478,10 +1504,47 @@ server <- function(input, output, session,
         return(df)
     }
 
-    ###############
+    ##############################
+
+    properExpData <- reactiveValues(value = 0)
+
+    ## Check duplications in row names
+    observeEvent(input$normExptlData, {
+
+        ext <- tools::file_ext(input$normExptlData$name)
+        df4CheckingDuplicates = switch(ext,
+                                       csv = read.csv(input$normExptlData$datapath, skip = 0, nrows = 1, row.names = NULL, header = TRUE),
+                                       txt = read.delim(input$normExptlData$datapath, sep = "\t", skip = 0, nrows = 1, row.names = NULL, header = TRUE),
+                                       validate("Invalid file; Please upload a .csv, or .txt file")
+        )
+
+        dfColNumbers <- ncol(df4CheckingDuplicates) - 1
+
+        df4CheckingDuplicates <- switch(ext,
+                                        csv = read.csv(input$normExptlData$datapath, skip = 0, row.names = NULL, colClasses = c("character", rep("NULL", dfColNumbers)), header = TRUE),
+                                        txt = read.delim(input$normExptlData$datapath, sep = "\t", skip = 0, row.names = NULL, colClasses = c("character", rep("NULL", dfColNumbers)), header = TRUE),
+                                        validate("Invalid file; Please upload a .csv, or .txt file")
+        )
+
+        if(any(duplicated(df4CheckingDuplicates[,1]))) {
+            sendSweetAlert(
+                session = session,
+                title = "The input Experimental data has duplicated row (feature) names!",
+                text = tags$p("Please clean your input experimental data and re-upload that."),
+                type = "warning"
+            )
+            properExpData$value <- 0
+        } else {
+            properExpData$value <- 1
+        }
+
+    })
 
     ## Experimental data
     experimentalData <- reactive({
+
+        if(properExpData$value == 1) {
+
         req(input$normExptlData)
 
         n_rows = length(count.fields(input$normExptlData$datapath))
@@ -1498,6 +1561,8 @@ server <- function(input, output, session,
                                           no_batches = 10)
 
         return(df_out)
+
+        }
     })
 
     ###############
@@ -3018,7 +3083,7 @@ server <- function(input, output, session,
     # Take care of ExIR outputs
 
         ## Drivers
-        output$driversTable <- DT::renderDataTable(
+        output$driversTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(input_ExIR_results()) && !is.null(input_ExIR_results()$`Driver table`)) {
 
                 input$restore_exir_dataset # Update on file upload
@@ -3087,7 +3152,7 @@ server <- function(input, output, session,
         #***********#
 
         ## Biomarkers
-        output$biomarkersTable <- DT::renderDataTable(
+        output$biomarkersTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(input_ExIR_results()) && !is.null(input_ExIR_results()$`Biomarker table`)) {
 
                 input$restore_exir_dataset # Update on file upload
@@ -3157,7 +3222,7 @@ server <- function(input, output, session,
         #***********#
 
         ## NonDE Mediators
-        output$NonDEMediatorsTable <- DT::renderDataTable(
+        output$NonDEMediatorsTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(input_ExIR_results()) && !is.null(input_ExIR_results()$`nonDE-mediator table`)) {
 
                 input$restore_exir_dataset # Update on file upload
@@ -3223,7 +3288,7 @@ server <- function(input, output, session,
         #***********#
 
         ## DE Mediators
-        output$DEMediatorsTable <- DT::renderDataTable(
+        output$DEMediatorsTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(input_ExIR_results()) && !is.null(input_ExIR_results()$`DE-mediator table`)) {
 
                 input$restore_exir_dataset # Update on file upload
@@ -3353,6 +3418,8 @@ server <- function(input, output, session,
                                   show.de.mediators = input$showDEMediators,
                                   show.nonDE.mediators = input$showNonDEMediators,
                                   basis = input$selectionBasis,
+                                  label.position = input$labelPosition,
+                                  nrow = input$exirVis_nrow,
                                   dot.size.min = input$dotSizeMin,
                                   dot.size.max = input$dotSizeMax,
                                   type.color = input$typeColor,
@@ -3541,7 +3608,7 @@ server <- function(input, output, session,
         # Add restored ExIR reactive values
         restored_exir_results <- reactiveVal()
 
-        # Save IVI results
+        # Save ExIR results
         output$save_exir_results <- downloadHandler(
             filename = function() {
                 paste0("Session_dataset-", Sys.Date(), ".rds")
@@ -3638,18 +3705,27 @@ server <- function(input, output, session,
 
         # Take care of inputs
 
+        ## Define the choices of vertices
+
         observe({
             if(!is.null(input_ExIR_results())) {
+
+                if(is.null(isolate(desiredFeatures()))) {
+                    vertexChoices <- igraph::as_ids(V(isolate(input_ExIR_results()$Graph)))
+                } else {
+                    vertexChoices <- igraph::as_ids(V(isolate(input_ExIR_results()$Graph)))[which(igraph::as_ids(V(isolate(input_ExIR_results()$Graph))) %in% isolate(desiredFeatures()))]
+                }
+
                 updatePickerInput(
                     session = session,
                     inputId = "ko_vertices",
-                    choices = igraph::as_ids(V(input_ExIR_results()$Graph))
+                    choices = vertexChoices
                 )
 
                 updatePickerInput(
                     session = session,
                     inputId = "upregulate_vertices",
-                    choices = igraph::as_ids(V(input_ExIR_results()$Graph))
+                    choices = vertexChoices
                 )
             }
         })
@@ -3660,7 +3736,7 @@ server <- function(input, output, session,
 
         shinySirir <- function(graph, vertices = V(graph),
                                beta = 0.5, gamma = 1,
-                               no.sim = igraph::vcount(graph)*100,  seed = 1234) {
+                               no.sim = igraph::vcount(graph)*10,  seed = 1234) {
 
             #Define a data frame
             temp.loocr.table <- data.frame(difference.value = vector("numeric", length = length(vertices)),
@@ -3727,7 +3803,7 @@ server <- function(input, output, session,
                                          upregulate_vertices = NULL,
                                          beta = 0.5,
                                          gamma = 1,
-                                         no.sim = igraph::vcount(graph) * 100,
+                                         no.sim = igraph::vcount(graph) * 10,
                                          seed = 1234) {
 
             ##**************************##
@@ -3749,7 +3825,7 @@ server <- function(input, output, session,
             # Over-expression function
 
             overexpr <- function (graph, vertices = V(graph), beta = 0.5, gamma = 1,
-                                  no.sim = igraph::vcount(graph) * 100, seed = 1234)
+                                  no.sim = igraph::vcount(graph) * 10, seed = 1234)
             {
                 temp.loocr.table <- data.frame(difference.value = vector("numeric",
                                                                          length = length(vertices)), rank = vector("integer",
@@ -3940,7 +4016,7 @@ server <- function(input, output, session,
                 beta = 0.5,
                 gamma = 1,
                 no.sim = ifelse(input$no.sim_option == TRUE,
-                                igraph::vcount(ExIRGraph) * 100,
+                                igraph::vcount(ExIRGraph) * 10,
                                 input$no.sim),
                 seed = input$seed_forCompMan
             )
@@ -3951,7 +4027,7 @@ server <- function(input, output, session,
         # Take care of output of computational manipulation
 
         ## Knockouts
-        output$knockoutRankingsTable <- DT::renderDataTable(
+        output$knockoutRankingsTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(compManiResults()) && !is.null(compManiResults()$Knockout)) {
 
                 brks_ko <- quantile(compManiResults()$Knockout$Rank, probs = seq(.05, .95, .05), na.rm = TRUE)
@@ -4016,7 +4092,7 @@ server <- function(input, output, session,
         #***********#
 
         ## Up-regulation
-        output$upregulationRankingsTable <- DT::renderDataTable(
+        output$upregulationRankingsTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(compManiResults()) && !is.null(compManiResults()$Up_regulation)) {
 
                 brks_upreg <- quantile(compManiResults()$Up_regulation$Rank, probs = seq(.05, .95, .05), na.rm = TRUE)
@@ -4081,7 +4157,7 @@ server <- function(input, output, session,
         #***********#
 
         ## Combined
-        output$combinedRankingsTable <- DT::renderDataTable(
+        output$combinedRankingsTable <- DT::renderDataTable(server = FALSE,
             if(!is.null(compManiResults()) && !is.null(compManiResults()$Combined)) {
 
                 brks_combined <- quantile(compManiResults()$Combined$Rank, probs = seq(.05, .95, .05), na.rm = TRUE)

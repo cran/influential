@@ -37,8 +37,8 @@ user-interface (UI) has been developed for the comfort of all users including th
 \itemize{
   \item Package: influential
   \item Type: Package
-  \item Version: 2.2.3
-  \item Date: 18-06-2021
+  \item Version: 2.2.4
+  \item Date: 02-11-2021
   \item License: GPL-3
 }
 }
@@ -55,6 +55,7 @@ InterJournal, Complex Systems, 1695. \url{https://igraph.org/}.
 Useful links:
 \itemize{
   \item \url{https://github.com/asalavaty/influential}
+  \item \url{https://asalavaty.github.io/influential/}
   \item Report bugs at \url{https://github.com/asalavaty/influential/issues}
 }
 

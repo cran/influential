@@ -79,7 +79,7 @@ A sample appropriate data frame is brought below:
 knitr::kable(head(coexpression.data))
 ```
     
-This is a co-expression dataset obtained from a paper by Salavaty et al.^[Salavaty A, Rezvani Z, Najafi A. *Survival analysis and functional annotation of long non-coding RNAs in lung adenocarcinoma*. J Cell Mol Med. 2019;23:5600–5617. ([PMID: 31211495](https://pubmed.ncbi.nlm.nih.gov/31211495/))]
+This is a co-expression dataset obtained from a paper by Salavaty **et al**.^[Salavaty A, Rezvani Z, Najafi A. *Survival analysis and functional annotation of long non-coding RNAs in lung adenocarcinoma*. J Cell Mol Med. 2019;23:5600–5617. ([PMID: 31211495](https://pubmed.ncbi.nlm.nih.gov/31211495/))]
 
 ```{r g_dataframe}
 # Preparing the data
@@ -889,7 +889,7 @@ Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
 seed = 60, verbose = FALSE)
 
 names(My.exir)
-#> [1] "Driver table"         "nonDE-mediator table" "Biomarker table"      "Graph"
+#> [1] "Driver table"         "DE-mediator table"    "nonDE-mediator table" "Biomarker table"      "Graph"
 
 class(My.exir)
 #> [1] "ExIR_Result"
@@ -899,53 +899,53 @@ Have a look at the heads of the output tables of ExIR:
 
 + **Drivers**
 
-|           | Score| Z.score| Rank| P.value| P.adj|Type        |
-|:----------|-----:|-------:|----:|-------:|-----:|:-----------|
-|gene_9469  |   100|      13|    1|   1e-37|     0|Accelerator |
-|gene_339   |    73|       9|    2|   2e-20|     0|Accelerator |
-|gene_6518  |    67|       8|    3|   1e-17|     0|Decelerator |
-|gene_13429 |    60|       8|    4|   1e-14|     0|Accelerator |
-|gene_8733  |    58|       7|    5|   2e-13|     0|Accelerator |
-|gene_15640 |    57|       7|    6|   3e-13|     0|Accelerator |
+|           |    Score|     Z.score| Rank|   P.value|     P.adj|Type        |
+|:----------|--------:|-----------:|----:|---------:|---------:|:-----------|
+|gene_17331 | 4.837927| -0.03142096|  135| 0.5125331| 0.6623473|Accelerator |
+|gene_12546 | 1.769802| -0.38897583|  659| 0.6513530| 0.6623473|Accelerator |
+|gene_12837 | 6.631165|  0.17756047|   93| 0.4295341| 0.6623473|Decelerator |
+|gene_18522 | 2.126212| -0.34744030|  467| 0.6358697| 0.6623473|Accelerator |
+|gene_6260  | 1.927154| -0.37063825|  551| 0.6445465| 0.6623473|Decelerator |
+|gene_2722  | 3.066216| -0.23789354|  326| 0.5940182| 0.6623473|Decelerator |
 
 ********
 
 + **Biomarkers**
 
-|           | Score| Z.score| Rank| P.value| P.adj|Type           |
-|:----------|-----:|-------:|----:|-------:|-----:|:--------------|
-|gene_27    |   100|    25.3|    1|  3e-141|   0.0|Up-regulated   |
-|gene_2464  |    32|     7.8|    2|   4e-15|   0.0|Down-regulated |
-|gene_6903  |     5|     0.9|    3|   2e-01|   0.5|Up-regulated   |
-|gene_3196  |     4|     0.7|    4|   2e-01|   0.5|Up-regulated   |
-|gene_13177 |     3|     0.6|    5|   3e-01|   0.5|Up-regulated   |
-|gene_2663  |     3|     0.5|    6|   3e-01|   0.5|Up-regulated   |
+|           |    Score|     Z.score| Rank|   P.value|     P.adj|Type           |
+|:----------|--------:|-----------:|----:|---------:|---------:|:--------------|
+|gene_17331 | 2.612152|  0.34642339|   11| 0.3645123| 0.5264108|Up-regulated   |
+|gene_12546 | 1.000005| -0.06624912|  539| 0.5264103| 0.5264108|Up-regulated   |
+|gene_12837 | 1.000735| -0.06606216|  352| 0.5263358| 0.5264108|Down-regulated |
+|gene_18522 | 1.000003| -0.06624973|  615| 0.5264105| 0.5264108|Up-regulated   |
+|gene_6260  | 1.000007| -0.06624851|  477| 0.5264100| 0.5264108|Down-regulated |
+|gene_2722  | 1.001196| -0.06594418|  339| 0.5262889| 0.5264108|Down-regulated |
 
 ********
 
 + **nonDE-mediators**
 
-|           | Score| Z.score| Rank| P.value| P.adj|
-|:----------|-----:|-------:|----:|-------:|-----:|
-|gene_28    |   100|     2.0|    1|    0.02|   0.1|
-|gene_13648 |     1|    -0.4|    2|    0.66|   0.7|
-|gene_19101 |     1|    -0.4|    2|    0.66|   0.7|
-|gene_15735 |     1|    -0.4|    2|    0.66|   0.7|
-|gene_9637  |     1|    -0.4|    2|    0.66|   0.7|
-|gene_2841  |     1|    -0.4|    2|    0.66|   0.7|
+|           |    Score|    Z.score| Rank|   P.value|     P.adj|
+|:----------|--------:|----------:|----:|---------:|---------:|
+|gene_12988 | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
+|gene_9173  | 1.000670| -0.1218875|   44| 0.5485059| 0.5485373|
+|gene_5014  | 1.022135| -0.1193471|   33| 0.5474998| 0.5485373|
+|gene_7165  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
+|gene_2687  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
+|gene_1873  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
 
 ********
 
-+ **nonDE-mediators**
++ **DE-mediators**
 
-|         |     Score|  Z.score| Rank|      P.value|     P.adj|
-|:--------|---------:|--------:|----:|------------:|---------:|
-|gene_117 | 100.00000| 5.236991|    1| 8.160804e-08| 0.0000071|
-|gene_516 |  57.59469| 2.693473|    2| 3.535593e-03| 0.1468437|
-|gene_262 |  54.38275| 2.500817|    3| 6.195351e-03| 0.1468437|
-|gene_974 |  53.87269| 2.470223|    4| 6.751434e-03| 0.1468437|
-|gene_441 |  46.60681| 2.034408|    5| 2.095524e-02| 0.3646212|
-|gene_533 |  40.91995| 1.693304|    6| 4.519882e-02| 0.6553829|
+|           |     Score|     Z.score| Rank|   P.value|     P.adj|
+|:----------|---------:|-----------:|----:|---------:|---------:|
+|gene_10754 | 62.570886|  0.93490127|    2| 0.1749196| 0.7871382|
+|gene_9479  | 30.044859| -0.02057836|    4| 0.5082090| 0.8088852|
+|gene_18046 | 49.518892|  0.55148787|    3| 0.2906496| 0.8088852|
+|gene_18954 |  1.802499| -0.85022165|    8| 0.8023991| 0.8088852|
+|gene_13827 |  7.488785| -0.68318215|    6| 0.7527541| 0.8088852|
+|gene_1992  |  1.000000| -0.87379573|    9| 0.8088852| 0.8088852|
 
 The following tutorial video demonstrates how to run the `ExIR` model on a sample experimental data.
 
@@ -1006,32 +1006,36 @@ Have a look at the heads of the output tables:
 
 |   |Feature_name | Rank|Manipulation_type |
 |:--|:------------|----:|:-----------------|
-|1  |gene_1877    |    1|Knockout          |
-|5  |gene_9469    |    2|Knockout          |
-|4  |gene_2841    |    3|Knockout          |
-|2  |gene_13430   |    4|Knockout          |
-|3  |gene_6197    |    5|Knockout          |
+|2  |gene_280     |    1|Knockout          |
+|1  |gene_4798    |    2|Knockout          |
+|4  |gene_276     |    3|Knockout          |
+|3  |gene_16459   |    4|Knockout          |
+|5  |gene_7535    |    5|Knockout          |
 
 + **Up-regulation**
 
-|   |Feature_name | Rank|Manipulation_type |
-|:--|:------------|----:|:-----------------|
-|5  |gene_2841    |    1|Up-regulation     |
-|1  |gene_8733    |    2|Up-regulation     |
-|3  |gene_9469    |    2|Up-regulation     |
-|2  |gene_13430   |    4|Up-regulation     |
-|4  |gene_16640   |    5|Up-regulation     |
+|Feature_name | Rank|Manipulation_type |
+|:------------|----:|:-----------------|
+|gene_6433    |    1|Up-regulation     |
+|gene_8426    |    1|Up-regulation     |
+|gene_6687    |    1|Up-regulation     |
+|gene_1274    |    1|Up-regulation     |
+|gene_11555   |    1|Up-regulation     |
 
 + **Combined**
 
 |   |Feature_name | Rank|Manipulation_type |
 |:--|:------------|----:|:-----------------|
-|51 |gene_2841    |    1|Up-regulation     |
-|11 |gene_8733    |    2|Up-regulation     |
-|31 |gene_9469    |    2|Up-regulation     |
-|21 |gene_13430   |    4|Up-regulation     |
-|41 |gene_16640   |    5|Up-regulation     |
-|1  |gene_1877    |    6|Knockout          |
+|2  |gene_280     |    1|Knockout          |
+|1  |gene_4798    |    2|Knockout          |
+|4  |gene_276     |    3|Knockout          |
+|3  |gene_16459   |    4|Knockout          |
+|11 |gene_6433    |    5|Up-regulation     |
+|21 |gene_8426    |    5|Up-regulation     |
+|31 |gene_6687    |    5|Up-regulation     |
+|41 |gene_1274    |    5|Up-regulation     |
+|51 |gene_11555   |    5|Up-regulation     |
+|5  |gene_7535    |   10|Knockout          |
 
 <a href="#top">Back to top</a>
 

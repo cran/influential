@@ -9,17 +9,28 @@ library(influential)
 library(ggplot2)
 library(igraph)
 
-options(shiny.maxRequestSize = 100 * 1024^2)
+options(shiny.maxRequestSize = Inf)
 options(warn=-1)
 
 ####**********************************************####
 
 navbarPageWithText <- function(..., text) {
+
+  if(as.integer(paste(unlist(packageVersion(pkg = "shiny")), collapse = "")) <= 160) {
     navbar <- navbarPage(...)
     textEl <- tags$p(class = "navbar-text", text)
     navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
-        navbar[[3]][[1]]$children[[1]], textEl)
+                                                                navbar[[3]][[1]]$children[[1]],
+                                                                textEl)
     navbar
+  } else {
+    navbar <- navbarPage(...)
+    textEl <- tags$p(class = "navbar-text", text)
+    navbar[[4]][[1]][[1]]$children[[1]] <- htmltools::tagAppendChild(
+                                                                     navbar[[4]][[1]][[1]]$children[[1]],
+                                                                     textEl)
+    navbar
+  }
 }
 
 ####**********************************************####
@@ -59,7 +70,7 @@ ui <- navbarPageWithText(id = "inTabset",
         column(4,
                tags$h5("Calculation of the Integrated Value of Influence (IVI)"),
         sidebarPanel(width = 12,
-                     style = "overflow-y:scroll; max-height: 800px; position:relative;",
+                     style = "overflow-y:scroll; max-height: 90vh; position:relative;",
         ## Input for IVI calculation
         ### Upload the file
         fileInput("file", label = "Upload your data",
