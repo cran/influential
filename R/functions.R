@@ -38,8 +38,8 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 2.2.4
-#'   \item Date: 02-11-2021
+#'   \item Version: 2.2.4.9000
+#'   \item Date: 20-12-2021
 #'   \item License: GPL-3
 #' }
 #'
@@ -52,7 +52,7 @@
 #' Maintainer: Adrian (Abbas) Salavaty \email{abbas.salavaty@@gmail.com}
 #'
 #'
-#' You may find more information on my personal website at \href{https://www.abbassalavaty.com/}{www.AbbasSalavaty.com}
+#' You may find more information on my personal website at \href{https://asalavaty.com/}{www.ASalavaty.com}
 #'
 #' @references
 #' \itemize{
@@ -164,7 +164,7 @@ runShinyApp <- function(shinyApp) {
 neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") {
 
   # Getting the names of vertices
-  if(class(vertices) == "igraph.vs") {
+  if(inherits(vertices, "igraph.vs")) {
     node.names <- as.character(igraph::as_ids(vertices))
   } else {
     node.names <- as.character(vertices)
@@ -272,7 +272,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
   }
 
   # Getting the names of vertices
-  if(class(vertices) == "igraph.vs") {
+  if(inherits(vertices, "igraph.vs")) {
     node.names <- as.character(igraph::as_ids(vertices))
   } else {
     node.names <- as.character(vertices)
@@ -327,7 +327,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
                                 mode = mode))
     }
     # Getting the names of vertices
-    if(class(vertices) == "igraph.vs") {
+    if(inherits(vertices, "igraph.vs")) {
       node.names <- as.character(igraph::as_ids(vertices))
     } else {
       node.names <- as.character(vertices)
@@ -396,7 +396,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
     }
 
     # Getting the names of vertices
-    if(class(vertices) == "igraph.vs") {
+    if(inherits(vertices, "igraph.vs")) {
       node.names <- as.character(igraph::as_ids(vertices))
     } else {
       node.names <- as.character(vertices)
@@ -464,7 +464,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all") 
 
   }
 
-  if(class(vids) == "igraph.vs") {
+  if(inherits(vids, "igraph.vs")) {
     vertices.index <- stats::na.omit(match(vids, V(graph)))
   } else {
     vertices.index <- stats::na.omit(match(vids, igraph::as_ids(V(graph))))
@@ -1549,9 +1549,9 @@ sirir <- function(graph, vertices = V(graph),
   temp.loocr.table <- data.frame(difference.value = vector("numeric", length = length(vertices)),
                                  rank = vector("integer", length = length(vertices)))
 
-  if(class(vertices) == "character") {
+  if(inherits(vertices, "character")) {
     rownames(temp.loocr.table) <- vertices
-  } else if(class(vertices) == "igraph.vs") {
+  } else if(inherits(vertices, "igraph.vs")) {
     rownames(temp.loocr.table) <- igraph::as_ids(vertices)
   }
 
@@ -1736,6 +1736,7 @@ sirir <- function(graph, vertices = V(graph),
   #' This is only required for lattice-like graphs that have very many shortest paths between a pair of vertices.
   #' If TRUE (the default), then big integers are not used.
   #' @param normalized Logical scalar, whether to normalize the betweenness scores. If TRUE, then the results are normalized.
+  #' @param ... Additional arguments according to the original \code{\link[igraph]{betweenness}} function in the package igraph.
   #' @return A numeric vector with the betweenness score for each vertex in v.
   #' @aliases BC
   #' @keywords betweenness_centrality
@@ -1750,8 +1751,19 @@ sirir <- function(graph, vertices = V(graph),
   #' GraphVertices <- V(My_graph)
   #' My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,
   #'                         directed = FALSE, normalized = FALSE)
-  #' @importFrom igraph betweenness
-  betweenness <- igraph::betweenness
+  betweenness <- function(graph,
+                          v = V(graph),
+                          directed = TRUE,
+                          weights = NULL,
+                          nobigint = TRUE,
+                          normalized = FALSE, ...) {
+    igraph::betweenness(graph = graph,
+                        v = v,
+                        directed=directed,
+                        weights = weights,
+                        nobigint = nobigint,
+                        normalized = normalized, ...)
+  }
 
   #*****************************************************************#
 
@@ -3876,7 +3888,7 @@ sirir <- function(graph, vertices = V(graph),
 
     ##**************************##
     # Take care of input graph
-    if(!is.null(exir_output) && class(exir_output) == "ExIR_Result") {
+    if(!is.null(exir_output) && inherits(exir_output, "ExIR_Result")) {
       graph <- exir_output$Graph
     }
 
@@ -3889,9 +3901,9 @@ sirir <- function(graph, vertices = V(graph),
       temp.loocr.table <- data.frame(difference.value = vector("numeric",
                                                                length = length(vertices)), rank = vector("integer",
                                                                                                          length = length(vertices)))
-      if (class(vertices) == "character") {
+      if (inherits(vertices, "character")) {
         rownames(temp.loocr.table) <- vertices
-      } else if (class(vertices) == "igraph.vs") {
+      } else if (inherits(vertices, "igraph.vs")) {
         rownames(temp.loocr.table) <- igraph::as_ids(vertices)
       }
       set.seed(seed)

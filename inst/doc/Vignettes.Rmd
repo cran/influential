@@ -1,7 +1,7 @@
 ---
 title: "Introduction to influential"
 subtitle: "*Identification and classification of the most influential nodes*"
-author: '`r paste("Adrian (Abbas) Salavaty",strftime(Sys.time(),format="%d-%b-%Y"))`'
+author: '`r paste("Abbas (Adrian) Salavaty",strftime(Sys.time(),format="%d-%b-%Y"))`'
 output:
   rmarkdown::html_vignette:
     css: influentialVignette.css
@@ -599,8 +599,7 @@ Check out [our paper](https://doi.org/10.1016/j.patter.2020.100052)^[Salavaty A,
 The following tutorial video demonstrates how to simply calculate the IVI value of 
 all of the nodes within a network.  
 
-<iframe width="100%" height="400" src="https://www.youtube.com/embed/nF9qe4dvuJc
-" frameborder="0" allowfullscreen></iframe> 
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/nF9qe4dvuJc" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe> 
 
 ## Network visualization {#NetVis}
 The `cent_network.vis` is a function for the visualization of a network based on applying a centrality measure to the size and color of network nodes. The centrality of network nodes could be calculated by any means and based on any centrality index. Here, we demonstrate the visualization of a network according to [IVI](#IVI) values.
@@ -631,7 +630,7 @@ The above figure illustrates a simple use case of the function `cent_network.vis
 
 The following tutorial video demonstrates how to visualize a network based on the centrality of nodes (e.g. their `IVI` values).
 
-<iframe width="100%" height="400" src="https://www.youtube.com/embed/kCmEdOoIUD4" frameborder="0" allowfullscreen></iframe>
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/kCmEdOoIUD4" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
 
 ## IVI shiny app {#IVIShiny}
 A shiny app has also been developed for the calculation of IVI as well as IVI-based network 
@@ -949,7 +948,7 @@ Have a look at the heads of the output tables of ExIR:
 
 The following tutorial video demonstrates how to run the `ExIR` model on a sample experimental data.
 
-<iframe width="100%" height="400" src="https://www.youtube.com/embed/-08nn4_-OUE" frameborder="0" allowfullscreen></iframe>
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/-08nn4_-OUE" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
 
 You can also [computationally simulate knockout and/or up-regulation](#CompManipulate) of the top candidate features outputted by ExIR to evaluate the impact of their manipulations on the flow of information/signaling and integrity of the network prior to taking them to your lab bench.
 
@@ -970,7 +969,7 @@ However, a complete flexibility (list of arguments) has been provided for the ad
 
 The following tutorial video demonstrates how to visualize the results of `ExIR` model.
 
-<iframe width="100%" height="400" src="https://www.youtube.com/embed/Ie19y6PuBDg" frameborder="0" allowfullscreen></iframe>
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/Ie19y6PuBDg" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
 
 ## ExIR shiny app {#ExIRShiny}
 A shiny app has also been developed for Running the ExIR model, visualization of its results as well as computational simulation of knockout and/or up-regulation of its top candidate outputs, which is accessible using the following command.  
