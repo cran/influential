@@ -19,6 +19,26 @@ knitr::include_graphics(path = "../man/figures/Symbol.png", error = FALSE)
 ## ----setup------------------------------------------------------------------------------
 library(influential)
 
+## ----exptl_data_fcor, eval=FALSE--------------------------------------------------------
+#  
+#  # Prepare a sample dataset
+#  set.seed(60)
+#  my_data <- matrix(data = runif(n = 10000, min = 2, max = 300),
+#                         nrow = 50, ncol = 200,
+#                         dimnames = list(c(paste("sample", c(1:50), sep = "_")),
+#                                         c(paste("gene", c(1:200), sep = "_")))
+#  )
+
+## ----fcor_calc, eval=FALSE--------------------------------------------------------------
+#  
+#  # Calculate correlations between all pairs of genes
+#  
+#  correlation_tbl <- fcor(data = my_data,
+#                          method = "spearman",
+#                          mutualRank = TRUE,
+#                          pvalue = "TRUE", adjust = "BH",
+#                          flat = TRUE)
+
 ## ---- echo=FALSE------------------------------------------------------------------------
 knitr::kable(head(coexpression.data))
 
@@ -429,7 +449,7 @@ print(My.conditional.prob)
 
 ## ----exir.data, eval=FALSE--------------------------------------------------------------
 #  # Prepare sample data
-#  gene.names <- paste("gene", c(1:20000), sep = "_")
+#  gene.names <- paste("gene", c(1:2000), sep = "_")
 #  
 #  set.seed(60)
 #  tp2.vs.tp1.DEGs <- data.frame(logFC = rnorm(n = 700, mean = 2, sd = 4),
@@ -460,8 +480,8 @@ print(My.conditional.prob)
 
 ## ----exptl_data, eval=FALSE-------------------------------------------------------------
 #  set.seed(60)
-#  MyExptl_data <- matrix(data = runif(n = 1000000, min = 2, max = 300),
-#                         nrow = 50, ncol = 20000,
+#  MyExptl_data <- matrix(data = runif(n = 100000, min = 2, max = 300),
+#                         nrow = 50, ncol = 2000,
 #                         dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
 #                                           paste("normal_sample", c(1:25), sep = "_")),
 #                                         gene.names))
@@ -500,17 +520,18 @@ print(My.conditional.prob)
 #  
 #  #The desired list of features
 #  set.seed(60)
-#  MyDesired_list <- sample(gene.names, size = 1000)  #Optional
+#  MyDesired_list <- sample(gene.names, size = 500)  #Optional
 #  
 #  #Running the ExIR model
 #  My.exir <- exir(Desired_list = MyDesired_list,
-#  Diff_data = my_Diff_data, Diff_value = Diff_value,
-#  Regr_value = Regr_value, Sig_value = Sig_value,
-#  Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
-#  seed = 60, verbose = FALSE)
+#                  cor_thresh_method = "mr", mr = 100,
+#                  Diff_data = my_Diff_data, Diff_value = Diff_value,
+#                  Regr_value = Regr_value, Sig_value = Sig_value,
+#                  Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
+#                  seed = 60, verbose = FALSE)
 #  
 #  names(My.exir)
-#  #> [1] "Driver table"         "DE-mediator table"    "nonDE-mediator table" "Biomarker table"      "Graph"
+#  #> [1] "Driver table"         "DE-mediator table"     "Biomarker table"      "Graph"
 #  
 #  class(My.exir)
 #  #> [1] "ExIR_Result"

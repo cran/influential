@@ -66,6 +66,61 @@ The sections below introduce these five categories. However, if you wish not goi
 library(influential)
 ```
 
+# Fase correlation analysis
+
+Correlation (association/similarity/dissimilarity) analysis is the first required step before network reconstructions. Although R base `cor` function makes it possible to perform correlation analysis of a table, this function is notably slow in the correlation analysis of large datasets. Also, calculation of probability values is not possible for all correlations between all pairs of features simultaneously. The `fcor` function calculates Pearson/Spearman correlations between all pairs of features in a matrix/dataframe much faster than the base R cor function. It is also possible to simultaneously calculate mutual rank (MR) of correlations as well as their p-values and adjusted p-values. Additionally, this function can automatically combine and flatten the result matrices. Selecting correlated features using an MR-based threshold rather than based on their correlation coefficients or an arbitrary p-value is more efficient and accurate in inferring functional associations in systems, for example in gene regulatory networks. 
+
+Here is an example of performing correlation analysis using the `fcor` function.
+
+```{r exptl_data_fcor, eval=FALSE}
+
+# Prepare a sample dataset
+set.seed(60)
+my_data <- matrix(data = runif(n = 10000, min = 2, max = 300), 
+                       nrow = 50, ncol = 200, 
+                       dimnames = list(c(paste("sample", c(1:50), sep = "_")), 
+                                       c(paste("gene", c(1:200), sep = "_")))
+)
+```
+
+Have a look at top 5 samples and gene (rows and columns) of the `my_data`:  
+
+|         |    gene_1|    gene_2|    gene_3|    gene_4|    gene_5|
+|:--------|---------:|---------:|---------:|---------:|---------:|
+|sample_1 | 229.80194| 202.09477| 286.98031| 212.86299| 255.15716|
+|sample_2 | 107.12704| 262.56776|  92.47135| 263.67454| 188.00376|
+|sample_3 | 208.04590| 123.99512| 284.35705| 173.80360| 270.60758|
+|sample_4 | 209.36913| 141.90713| 154.59261| 130.17074| 219.54511|
+|sample_5 |  86.21945|  14.10478| 258.05186|  40.89961|  18.83074|
+
+```{r fcor_calc, eval=FALSE}
+
+# Calculate correlations between all pairs of genes
+
+correlation_tbl <- fcor(data = my_data, 
+                        method = "spearman", 
+                        mutualRank = TRUE,
+                        pvalue = "TRUE", adjust = "BH",
+                        flat = TRUE)
+```
+
+Now have a look at the top 10 rows of the `correlation_tbl`:  
+
+|row    |column |        cor|         mr|         p|     p.adj|
+|:------|:------|----------:|----------:|---------:|---------:|
+|gene_1 |gene_2 |  0.3373349|   3.872983| 0.0165899| 0.8096184|
+|gene_1 |gene_3 |  0.0721729| 122.270193| 0.6184265| 0.9981266|
+|gene_2 |gene_3 |  0.0002401| 200.000000| 0.9986797| 0.9995793|
+|gene_1 |gene_4 | -0.0636255| 132.864593| 0.6606863| 0.9981266|
+|gene_2 |gene_4 |  0.0124370| 182.931681| 0.9316877| 0.9981266|
+|gene_3 |gene_4 | -0.0945498| 108.958708| 0.5136765| 0.9981266|
+|gene_1 |gene_5 | -0.0616086| 136.167177| 0.6708188| 0.9981266|
+|gene_2 |gene_5 | -0.1063625|  90.862533| 0.4622400| 0.9981266|
+|gene_3 |gene_5 |  0.2174790|  25.922963| 0.1292321| 0.9700054|
+|gene_4 |gene_5 |  0.0341417| 171.499271| 0.8139135| 0.9981266|
+
+<a href="#top">Back to top</a>
+
 # Network reconstruction
 
 Three functions have been obtained from the `igraph`^[Csardi G., Nepusz T. *The igraph software package for complex network research*.
@@ -760,7 +815,7 @@ time-points. Also, we have performed trajectory analysis to identify the genes t
 
 ```{r exir.data, eval=FALSE}
 # Prepare sample data
-gene.names <- paste("gene", c(1:20000), sep = "_")
+gene.names <- paste("gene", c(1:2000), sep = "_")
 
 set.seed(60)
 tp2.vs.tp1.DEGs <- data.frame(logFC = rnorm(n = 700, mean = 2, sd = 4),
@@ -816,8 +871,8 @@ Now, prepare a sample normalized experimental data matrix
 
 ```{r exptl_data, eval=FALSE}
 set.seed(60)
-MyExptl_data <- matrix(data = runif(n = 1000000, min = 2, max = 300), 
-                       nrow = 50, ncol = 20000, 
+MyExptl_data <- matrix(data = runif(n = 100000, min = 2, max = 300), 
+                       nrow = 50, ncol = 2000, 
                        dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
                                          paste("normal_sample", c(1:25), sep = "_")), 
                                        gene.names))
@@ -878,17 +933,18 @@ Condition_colname <- "condition"
 
 #The desired list of features
 set.seed(60)
-MyDesired_list <- sample(gene.names, size = 1000)  #Optional
+MyDesired_list <- sample(gene.names, size = 500)  #Optional
 
 #Running the ExIR model
 My.exir <- exir(Desired_list = MyDesired_list,
-Diff_data = my_Diff_data, Diff_value = Diff_value,
-Regr_value = Regr_value, Sig_value = Sig_value,
-Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
-seed = 60, verbose = FALSE)
+                cor_thresh_method = "mr", mr = 100,
+                Diff_data = my_Diff_data, Diff_value = Diff_value,
+                Regr_value = Regr_value, Sig_value = Sig_value,
+                Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
+                seed = 60, verbose = FALSE)
 
 names(My.exir)
-#> [1] "Driver table"         "DE-mediator table"    "nonDE-mediator table" "Biomarker table"      "Graph"
+#> [1] "Driver table"         "DE-mediator table"     "Biomarker table"      "Graph"
 
 class(My.exir)
 #> [1] "ExIR_Result"
@@ -898,53 +954,40 @@ Have a look at the heads of the output tables of ExIR:
 
 + **Drivers**
 
-|           |    Score|     Z.score| Rank|   P.value|     P.adj|Type        |
-|:----------|--------:|-----------:|----:|---------:|---------:|:-----------|
-|gene_17331 | 4.837927| -0.03142096|  135| 0.5125331| 0.6623473|Accelerator |
-|gene_12546 | 1.769802| -0.38897583|  659| 0.6513530| 0.6623473|Accelerator |
-|gene_12837 | 6.631165|  0.17756047|   93| 0.4295341| 0.6623473|Decelerator |
-|gene_18522 | 2.126212| -0.34744030|  467| 0.6358697| 0.6623473|Accelerator |
-|gene_6260  | 1.927154| -0.37063825|  551| 0.6445465| 0.6623473|Decelerator |
-|gene_2722  | 3.066216| -0.23789354|  326| 0.5940182| 0.6623473|Decelerator |
+|          |     Score|    Z.score| Rank|   P.value|     P.adj|Type        |
+|:---------|---------:|----------:|----:|---------:|---------:|:-----------|
+|gene_947  |  5.774833| -0.9620144|  286| 0.8319788| 0.8817412|Accelerator |
+|gene_90   | 35.813378|  0.9440501|   54| 0.1725720| 0.8817412|Decelerator |
+|gene_116  | 11.060591| -0.6266121|  221| 0.7345432| 0.8817412|Decelerator |
+|gene_96   |  8.687675| -0.7771830|  248| 0.7814746| 0.8817412|Accelerator |
+|gene_674  | 28.826453|  0.5007021|   77| 0.3082904| 0.8817412|Decelerator |
+|gene_1017 | 24.162479|  0.2047545|  100| 0.4188820| 0.8817412|Accelerator |
 
 ********
 
 + **Biomarkers**
 
-|           |    Score|     Z.score| Rank|   P.value|     P.adj|Type           |
-|:----------|--------:|-----------:|----:|---------:|---------:|:--------------|
-|gene_17331 | 2.612152|  0.34642339|   11| 0.3645123| 0.5264108|Up-regulated   |
-|gene_12546 | 1.000005| -0.06624912|  539| 0.5264103| 0.5264108|Up-regulated   |
-|gene_12837 | 1.000735| -0.06606216|  352| 0.5263358| 0.5264108|Down-regulated |
-|gene_18522 | 1.000003| -0.06624973|  615| 0.5264105| 0.5264108|Up-regulated   |
-|gene_6260  | 1.000007| -0.06624851|  477| 0.5264100| 0.5264108|Down-regulated |
-|gene_2722  | 1.001196| -0.06594418|  339| 0.5262889| 0.5264108|Down-regulated |
-
-********
-
-+ **nonDE-mediators**
-
-|           |    Score|    Z.score| Rank|   P.value|     P.adj|
-|:----------|--------:|----------:|----:|---------:|---------:|
-|gene_12988 | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
-|gene_9173  | 1.000670| -0.1218875|   44| 0.5485059| 0.5485373|
-|gene_5014  | 1.022135| -0.1193471|   33| 0.5474998| 0.5485373|
-|gene_7165  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
-|gene_2687  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
-|gene_1873  | 1.000000| -0.1219667|   46| 0.5485373| 0.5485373|
+|          |     Score|    Z.score| Rank|    P.value|     P.adj|Type           |
+|:---------|---------:|----------:|----:|----------:|---------:|:--------------|
+|gene_947  |  1.000003| -0.2050551|  269| 0.58123546| 0.5812356|Up-regulated   |
+|gene_90   |  1.000007| -0.2050545|  246| 0.58123524| 0.5812356|Down-regulated |
+|gene_116  |  1.000002| -0.2050552|  276| 0.58123549| 0.5812356|Down-regulated |
+|gene_96   |  1.308484| -0.1644440|   70| 0.56530917| 0.5812356|Up-regulated   |
+|gene_674  |  1.017092| -0.2028053|  125| 0.58035641| 0.5812356|Down-regulated |
+|gene_1017 | 12.507207|  1.3098553|   12| 0.09512239| 0.5812356|Up-regulated   |
 
 ********
 
 + **DE-mediators**
 
-|           |     Score|     Z.score| Rank|   P.value|     P.adj|
-|:----------|---------:|-----------:|----:|---------:|---------:|
-|gene_10754 | 62.570886|  0.93490127|    2| 0.1749196| 0.7871382|
-|gene_9479  | 30.044859| -0.02057836|    4| 0.5082090| 0.8088852|
-|gene_18046 | 49.518892|  0.55148787|    3| 0.2906496| 0.8088852|
-|gene_18954 |  1.802499| -0.85022165|    8| 0.8023991| 0.8088852|
-|gene_13827 |  7.488785| -0.68318215|    6| 0.7527541| 0.8088852|
-|gene_1992  |  1.000000| -0.87379573|    9| 0.8088852| 0.8088852|
+|          |    Score|     Z.score| Rank|   P.value|     P.adj|
+|:---------|--------:|-----------:|----:|---------:|---------:|
+|gene_592  | 11.10698| -1.01338150|  155| 0.8445610| 0.9191820|
+|gene_258  | 17.95400| -0.66579750|  133| 0.7472297| 0.9191820|
+|gene_549  | 55.86578|  1.25876700|   25| 0.1040573| 0.7359122|
+|gene_891  | 69.81941|  1.96711288|    9| 0.0245851| 0.4578919|
+|gene_1450 | 32.99729|  0.09786426|   68| 0.4610200| 0.9191820|
+|gene_742  | 28.62281| -0.12420298|   79| 0.5494227| 0.9191820|
 
 The following tutorial video demonstrates how to run the `ExIR` model on a sample experimental data.
 
