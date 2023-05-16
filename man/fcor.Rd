@@ -9,13 +9,14 @@ fcor(
   use = "everything",
   method = "spearman",
   mutualRank = TRUE,
+  mutualRank_mode = "unsigned",
   pvalue = FALSE,
   adjust = "BH",
   flat = TRUE
 )
 }
 \arguments{
-\item{data}{A numeric dataframe/matrix (features on columns and samples on rows).}
+\item{data}{a numeric dataframe/matrix (features on columns and samples on rows).}
 
 \item{use}{The NA handler, as in R's cov() and cor() functions. Options are "everything", "all.obs", and "complete.obs".}
 
@@ -23,10 +24,14 @@ fcor(
 
 \item{mutualRank}{logical, whether to calculate mutual ranks of correlations or not.}
 
+\item{mutualRank_mode}{a character string indicating whether to rank based on "signed" or "unsigned" (default) correlation values. 
+In the "unsigned" mode, only the level of a correlation value is important and not its sign (the function ranks the absolutes of correlations). 
+Options are "unsigned", and "signed".}
+
 \item{pvalue}{logical, whether to calculate p-values of correlations or not.}
 
 \item{adjust}{p-value correction method (when pvalue = TRUE), a character string including any of "BH" (default),
-"bonferroni", holm", "hochberg", "hommel", or "none".}
+"bonferroni", "holm", "hochberg", "hommel", or "none".}
 
 \item{flat}{logical, whether to combine and flatten the result matrices or not.}
 }

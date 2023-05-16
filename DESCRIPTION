@@ -2,7 +2,7 @@ Package: influential
 Type: Package
 Title: Identification and Classification of the Most Influential Nodes
 Language: en-US
-Version: 2.2.6
+Version: 2.2.7
 Author: Abbas (Adrian) Salavaty [aut, cre], Mirana Ramialison [ths], Peter D. Currie [ths]
 Maintainer: Adrian Salavaty <abbas.salavaty@gmail.com>
 Description: Contains functions for the classification and ranking of top candidate features, reconstruction of networks from
@@ -15,7 +15,8 @@ Description: Contains functions for the classification and ranking of top candid
     Fred Viole and David Nawrocki (2013, ISBN:1490523995).
     Csardi G, Nepusz T (2006). "The igraph software package for complex network research." InterJournal, Complex Systems, 1695.
     Adopted algorithms and sources are referenced in function document.
-Imports: igraph, janitor, ranger, coop, data.table, ggplot2
+Imports: igraph, janitor, ranger, coop, foreach, doParallel,
+        data.table, ggplot2
 Suggests: Hmisc (>= 4.3-0), mgcv (>= 1.8-31), nortest (>= 1.0-4), NNS
         (>= 0.4.7.1), parallel, shiny, shinythemes, shinyWidgets,
         shinyjs, shinycssloaders, colourpicker, magrittr, DT, knitr,
@@ -27,9 +28,9 @@ BugReports: https://github.com/asalavaty/influential/issues
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-07-26 08:26:13 UTC; asal0019
+Packaged: 2023-05-16 04:34:07 UTC; adriansalavaty
 Repository: CRAN
-Date/Publication: 2022-08-06 07:30:06 UTC
+Date/Publication: 2023-05-16 05:10:02 UTC

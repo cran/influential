@@ -5,7 +5,13 @@
 \alias{CI}
 \title{Collective Influence (CI)}
 \usage{
-collective.influence(graph, vertices = V(graph), mode = "all", d = 3)
+collective.influence(
+  graph,
+  vertices = V(graph),
+  mode = "all",
+  d = 3,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{graph}{A graph (network) of the igraph class.}
@@ -23,6 +29,8 @@ must be > 0. According to Morone & Makse (https://doi.org/10.1038/nature14604), 
 results can be reached at d=3,4, but this depends on the size/"radius" of the network.
 NOTE: the distance d is not inclusive. This means that nodes at a distance of 3 from
 our node-of-interest do not include nodes at distances 1 and 2. Only 3.}
+
+\item{verbose}{Logical; whether the accomplishment of different stages of the algorithm should be printed (default is FALSE).}
 }
 \value{
 A vector of collective influence for each vertex of the graph corresponding to
@@ -33,8 +41,8 @@ This function calculates the collective influence of input vertices and
 works with both directed and undirected networks. This function and its descriptions are
 obtained from https://github.com/ronammar/collective_influence with minor modifications.
 Collective Influence as described by Morone & Makse (2015). In simple terms,
-it is the product of the reduced degree (degree - 1) of a node and the total reduced
-degree of all nodes at a distance d from the node.
+it is the product of the reduced degree (degree - 1) of a node and the total (sum of) reduced
+degrees of all nodes at a distance d from the node.
 }
 \examples{
 MyData <- coexpression.data
