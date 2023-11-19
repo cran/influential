@@ -109,9 +109,11 @@ ui <- navbarPageWithText(id = "inTabset",
                                                        icon = NULL,
                                                        box_height = "100px",
                                   fluidRow(
+                                    style = "overflow-x: hidden; overflow-y:scroll; max-height: 90vh; max-width: 82vw; position:relative;",
 
                                       # Experimental data
                                       column(12, style = "background-color:#F6FFFE;",
+                                             style = "overflow-x: hidden; overflow-y:scroll;padding: 20px;  max-height: 90vh; max-width: 82vw; position:relative;",
                                              tags$h3(tags$b(icon("vial"), "Normalized Experimental Data")),
                                              p(style="text-align: justify",
                                              "In case you don't have access to the experimental data, you may either ask the bioinformatician/data manager
@@ -184,6 +186,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                                    icon = NULL,
                                                    box_height = "100px",
                                       column(12, style = "background-color:#FAF6FF;",
+                                             style = "overflow-x: hidden; overflow-y:scroll;padding: 20px;  max-height: 90vh; max-width: 82vw; position:relative;",
                                              tags$h3(tags$b(icon("chart-line"), "Differential Data")),
                                              p(style="text-align: justify",
                                                "In case you don't have access to the differential data, you may either ask the bioinformatician/data manager
@@ -244,6 +247,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                                    icon = NULL,
                                                    box_height = "100px",
                                                    column(12, style = "background-color:#FFFAF6;",
+                                                          style = "overflow-x: hidden; overflow-y:scroll;padding: 20px;  max-height: 90vh; max-width: 82vw; position:relative;",
                                                    tags$h3(tags$b(icon("chart-line"), "Regression Data (Optional)")),
                                                    p(style="text-align: justify",
                                                      "In case your study includes more than two conditions or time-points (TPs), you may
@@ -300,6 +304,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                                    icon = NULL,
                                                    box_height = "100px",
                                       column(12, style = "background-color:#FFF6F7;",
+                                             style = "overflow-x: hidden; overflow-y:scroll;padding: 20px;  max-height: 90vh; max-width: 82vw; position:relative;",
                                              tags$h3(tags$b(icon("list-alt"), "Desired List of Features (Optional)")),
                                              p(style="text-align: justify",
                                                "The desired list of features (e.g. genes, proteins, metabolites, etc.) is optional and you could just
@@ -365,6 +370,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                                    icon = NULL,
                                                    box_height = "100px",                                      # Desired list
                                                    column(12, style = "background-color:#FCFFF6;",
+                                                          style = "overflow-x: hidden; overflow-y:scroll;padding: 20px;  max-height: 90vh; max-width: 82vw; position:relative;",
                                                           tags$h3(tags$b(icon("table"), "Synonyms Table (Optionally required
                                                                          for the visualization of ExIR results)")),
                                                           p(style="text-align: justify",
@@ -615,9 +621,22 @@ ui <- navbarPageWithText(id = "inTabset",
                                                                     buttonLabel = "Browse"),
 
                                                           ### Specify the condition row
-                                                          textInput(inputId = "conditionRowname",
-                                                                    label = "Condition row name:",
-                                                                    value = NULL, placeholder = "Condition row name"),
+                                                          tags$style(".conditionchannel .btn {height: 40.5px; min-height: 26.5px; font-weight: bold; background: #d9534f;}
+                                                                   .bs-placeholder {color: #F2F2F2 !important;}"),
+                                                          div(class = "conditionchannel",
+                                                              pickerInput(
+                                                                inputId = "conditionRowname",
+                                                                width = "100%",
+                                                                label = "Select the condition row name", 
+                                                                choices = NULL,
+                                                                selected = NULL,
+                                                                multiple = TRUE,
+                                                                options = pickerOptions(maxOptions = 1, height = 10,
+                                                                                        noneSelectedText = "Select",
+                                                                                        size = 10,
+                                                                                        `live-search` = TRUE)
+                                                              )
+                                                          ),
 
                                                           ### specify corr coeff method
                                                           radioGroupButtons(
@@ -808,7 +827,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                       column(4,
                                              tags$h5("Visualization options"),
                                              sidebarPanel(width = 12,
-                                                          style = "overflow-y:scroll; max-height: 800px; position:relative;",
+                                                          style = "overflow-y:scroll; max-height: 90vh; position:relative;",
                                                           panel(
                                                                      fileInput("synonymsTable", label = p(icon("upload"), "Upload the Synonyms Table (optional)",
                                                                                                           style = "padding:0px; margin:0;"),
@@ -1023,7 +1042,7 @@ ui <- navbarPageWithText(id = "inTabset",
                                       column(4,
                                              tags$h5("Options"),
                                              sidebarPanel(width = 12,
-                                                          style = "overflow-y:scroll; max-height: 800px; position:relative;",
+                                                          style = "overflow-y:scroll; max-height: 90vh; position:relative;",
                                                           ## Input for running compManipulate model
 
                                                           ### Specify the ko_vertices
@@ -1574,6 +1593,11 @@ server <- function(input, output, session,
         } else {
             properExpData$value <- 1
         }
+        
+        ## Update the condition choices
+        shinyWidgets::updatePickerInput(session = session,
+                                        inputId = "conditionRowname", 
+                                        choices = df4CheckingDuplicates[,1])
 
     })
 
@@ -2135,6 +2159,11 @@ server <- function(input, output, session,
 
         # Get the column number of condition column
         condition.index <- match(Condition_colname, colnames(Exptl_data))
+        
+        # transform the data to numeric
+        if(any(sapply(Exptl_data[,-condition.index], mode)  == "character")) {
+          Exptl_data[,-condition.index] <- data.frame(sapply(Exptl_data[,-condition.index], as.numeric))
+        }
 
         # Transform the condition column to a factor
         Exptl_data[,condition.index] <- base::as.factor(Exptl_data[,condition.index])
@@ -2269,14 +2298,16 @@ server <- function(input, output, session,
                                         num.trees = num_trees,
                                         mtry = mtry,
                                         importance = "impurity_corrected",
-                                        write.forest = FALSE)
+                                        write.forest = FALSE, 
+                                        seed = seed)
 
         base::set.seed(seed = seed)
         rf.diff.exptl.pvalue <- as.data.frame(ranger::importance_pvalues(x = rf.diff.exptl,
                                                                          formula = condition ~ .,
                                                                          num.permutations = num_permutations,
                                                                          data = exptl.for.super.learn,
-                                                                         method = "altmann"))
+                                                                         method = "altmann",
+                                                                         seed = seed))
 
         #replace feature names (rownames) with their original names
         rownames(rf.diff.exptl.pvalue) <- features.exptl.for.super.learn
@@ -2297,7 +2328,11 @@ server <- function(input, output, session,
             rf.diff.exptl.pvalue <- base::subset(rf.diff.exptl.pvalue, rf.diff.exptl.pvalue$pvalue < alpha)
 
         } else {
-            rf.pval.select <- which(rf.diff.exptl.pvalue[,"pvalue"] <alpha)
+          if(length(which(rf.diff.exptl.pvalue[, "pvalue"] < alpha)) >= 10) {
+            rf.pval.select <- which(rf.diff.exptl.pvalue[, "pvalue"] < alpha)
+          } else {
+            rf.pval.select <- which(order(rf.diff.exptl.pvalue[, "pvalue"]) <= 10)
+          }
             rf.nonSig <- seq(nrow(rf.diff.exptl.pvalue))[-rf.pval.select]
             required.pos.importance <- select.number - length(rf.pval.select)
 
@@ -2352,13 +2387,14 @@ server <- function(input, output, session,
                                                                base::colnames(Exptl_data)))
         temp.Exptl_data.for.PCA <- Exptl_data[,Exptl_data.for.PCA.index]
 
+        set.seed(seed)
         temp.PCA <- stats::prcomp(temp.Exptl_data.for.PCA)
         temp.PCA.r <- base::abs(temp.PCA$rotation[,1])
 
         #range normalize the rotation values
         temp.PCA.r <- 1+(((temp.PCA.r-min(temp.PCA.r))*(100-1))/
                              (max(temp.PCA.r)-min(temp.PCA.r)))
-
+        
         updateProgressBar(
             session = session,
             title = "Performing PCA (unsupervised machine learning) ...",
@@ -2380,7 +2416,7 @@ server <- function(input, output, session,
         #c Performing correlation analysis
 
         temp.corr <- fcor(data = Exptl_data[,-condition.index],
-                          method = "spearman", mutualRank = ifelse(mr == "Mutual Rank", TRUE, FALSE))
+                          method = "spearman", mutualRank = ifelse(cor_thresh_method == "Mutual Rank", TRUE, FALSE))
 
         #save a second copy of all cor data
         temp.corr.for.sec.round <- temp.corr
@@ -2388,13 +2424,14 @@ server <- function(input, output, session,
         #filter corr data for only those corr between diff features and themselves/others
         filter.corr.index <- stats::na.omit(base::unique(c(base::which(temp.corr$row %in% rownames(rf.diff.exptl.pvalue)),
                                                            base::which(temp.corr$column %in% rownames(rf.diff.exptl.pvalue)))))
+        
         temp.corr <- temp.corr[filter.corr.index,]
 
         #filtering low level correlations
         cor.thresh <- r
         mr.thresh <- mr
         if(cor_thresh_method == "Mutual Rank") {
-
+          
           temp.corr <- base::subset(temp.corr, temp.corr[,4] < mr.thresh)
 
           if(nrow(temp.corr)> (max.connections*0.95)) {
@@ -2677,15 +2714,15 @@ server <- function(input, output, session,
         }
 
         if(nrow(as.data.frame(Driver.table))==0) {Driver.table <- NULL} else {
+          
+          #add Z.score
+          Driver.table$Z.score <- base::scale(Driver.table$final.Driver.score)
 
             #range normalize final driver score
             ifelse(length(unique(Driver.table$final.Driver.score)) > 1,
                    Driver.table$final.Driver.score <- 1+(((Driver.table$final.Driver.score-min(Driver.table$final.Driver.score))*(100-1))/
                                                              (max(Driver.table$final.Driver.score)-min(Driver.table$final.Driver.score))),
                    Driver.table$final.Driver.score <- 1)
-
-            #add Z.score
-            Driver.table$Z.score <- base::scale(Driver.table$final.Driver.score)
 
             #add driver rank
             Driver.table$rank <- rank(-Driver.table$final.Driver.score,
@@ -2815,16 +2852,15 @@ server <- function(input, output, session,
                     (Biomarker.table$rf.pvalue)*(Biomarker.table$rf.importance)*
                     (Biomarker.table$rotation)
             }
+            
+            #add biomarker Z.score
+            Biomarker.table$Z.score <- base::scale(Biomarker.table$final.biomarker.score)
 
             #range normalize biomarker score
             ifelse(length(unique(Biomarker.table$final.biomarker.score)) > 1,
                    Biomarker.table$final.biomarker.score <- 1+(((Biomarker.table$final.biomarker.score-min(Biomarker.table$final.biomarker.score))*(100-1))/
                                                                    (max(Biomarker.table$final.biomarker.score)-min(Biomarker.table$final.biomarker.score))),
                    Biomarker.table$final.biomarker.score <- 1)
-
-
-            #add biomarker Z.score
-            Biomarker.table$Z.score <- base::scale(Biomarker.table$final.biomarker.score)
 
             #add biomarker rank
             Biomarker.table$rank <- rank(-Biomarker.table$final.biomarker.score, ties.method = "min")
@@ -2911,15 +2947,15 @@ server <- function(input, output, session,
 
         DE.mediator.table <- DE.mediator.table[DE.mediator.row.index,]
         if(nrow(as.data.frame(DE.mediator.table))==0) {DE.mediator.table <- NULL} else {
+          
+          #add DE mediators Z score
+          DE.mediator.table$Z.score <- base::scale(DE.mediator.table$DE.mediator.score)
 
             #range normalize DE mediators score
             ifelse(length(unique(DE.mediator.table$DE.mediator.score)) > 1,
                    DE.mediator.table$DE.mediator.score <- 1+(((DE.mediator.table$DE.mediator.score-min(DE.mediator.table$DE.mediator.score))*(100-1))/
                                                                  (max(DE.mediator.table$DE.mediator.score)-min(DE.mediator.table$DE.mediator.score))),
                    DE.mediator.table$DE.mediator.score <- 1)
-
-            #add DE mediators Z score
-            DE.mediator.table$Z.score <- base::scale(DE.mediator.table$DE.mediator.score)
 
             #add DE mediators rank
             DE.mediator.table$rank <- rank(-DE.mediator.table$DE.mediator.score, ties.method = "min")
@@ -2989,15 +3025,15 @@ server <- function(input, output, session,
             non.DE.mediators.table$ivi <- temp.corr.ivi[non.DE.mediators.ivi.index]
 
             non.DE.mediators.table$non.DE.mediator.score <- non.DE.mediators.table$N.score*non.DE.mediators.table$ivi
+            
+            #add non-DE mediators Z.score
+            non.DE.mediators.table$Z.score <- base::scale(non.DE.mediators.table$non.DE.mediator.score)
 
             #range normalize nonDE mediators score
             ifelse(length(unique(non.DE.mediators.table$non.DE.mediator.score)) > 1,
                    non.DE.mediators.table$non.DE.mediator.score <- 1+(((non.DE.mediators.table$non.DE.mediator.score-min(non.DE.mediators.table$non.DE.mediator.score))*(100-1))/
                                                                           (max(non.DE.mediators.table$non.DE.mediator.score)-min(non.DE.mediators.table$non.DE.mediator.score))),
                    non.DE.mediators.table$non.DE.mediator.score <- 1)
-
-            #add non-DE mediators Z.score
-            non.DE.mediators.table$Z.score <- base::scale(non.DE.mediators.table$non.DE.mediator.score)
 
             #add non-DE mediators P-value
             non.DE.mediators.table$P.value <- stats::pnorm(non.DE.mediators.table$Z.score,

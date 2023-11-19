@@ -1,4 +1,4 @@
-## ---- include = FALSE-------------------------------------------------------------------
+## ----include = FALSE--------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -8,7 +8,7 @@ options(width=90)
 options(rmarkdown.html_vignette.check_title = FALSE)
 set.seed(60)
 
-## ---- echo=FALSE------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------
 spaces <- function (n) {
   paste(rep("&nbsp;", n), collapse = "")
 }
@@ -39,7 +39,7 @@ library(influential)
 #                          pvalue = "TRUE", adjust = "BH",
 #                          flat = TRUE)
 
-## ---- echo=FALSE------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------
 knitr::kable(head(coexpression.data))
 
 ## ----g_dataframe------------------------------------------------------------------------
@@ -52,7 +52,7 @@ My_graph <- graph_from_data_frame(d=MyData)
 ## ---------------------------------------------------------------------------------------
 class(My_graph)
 
-## ---- echo=FALSE------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------
 knitr::kable(head(coexpression.adjacency, n=15)[10:15,10:15])
 
 ## ----g_adj, eval=FALSE------------------------------------------------------------------
@@ -62,7 +62,7 @@ knitr::kable(head(coexpression.adjacency, n=15)[10:15,10:15])
 #  # Reconstructing the graph
 #  My_graph <- graph_from_adjacency_matrix(MyData)
 
-## ---- echo=FALSE------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------
 set.seed(60)
 My_Data <- matrix(data = sample(c(0,1), replace = TRUE, size = 20), 
                   nrow = 4, ncol = 5,
@@ -371,7 +371,7 @@ print(My.conditional.prob)
 #  # Calculation of IVI
 #  My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices,
 #                         weights = NULL, directed = FALSE, mode = "all",
-#                         loops = TRUE, d = 3, scaled = TRUE)
+#                         loops = TRUE, d = 3, scale = "range")
 #  
 #  head(My.vertices.IVI)
 #  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
@@ -408,7 +408,7 @@ print(My.conditional.prob)
 #  Spreading.score <- spreading.score(graph = My_graph,
 #                                     vertices = GraphVertices,
 #                                     weights = NULL, directed = FALSE, mode = "all",
-#                                     loops = TRUE, d = 3, scaled = TRUE)
+#                                     loops = TRUE, d = 3, scale = "range")
 #  
 #  head(Spreading.score)
 #  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
@@ -428,7 +428,7 @@ print(My.conditional.prob)
 #  Hubness.score <- hubness.score(graph = My_graph,
 #                                     vertices = GraphVertices,
 #                                     directed = FALSE, mode = "all",
-#                                     loops = TRUE, scaled = TRUE)
+#                                     loops = TRUE, scale = "range")
 #  
 #  head(Hubness.score)
 #  #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1

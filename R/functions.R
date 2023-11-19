@@ -38,7 +38,7 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 2.2.7
+#'   \item Version: 2.2.8
 #'   \item Date: 15-05-2023
 #'   \item License: GPL-3
 #' }
@@ -92,20 +92,26 @@ NULL
 #' runShinyApp(shinyApp = "IVI")
 #' }
 runShinyApp <- function(shinyApp) {
-
-  if(!requireNamespace(c("shiny", "shinythemes", "shinyWidgets", "shinyjs",
-                         "shinycssloaders", "colourpicker", "DT", "magrittr", "janitor",
-                         "ranger", "coop", "influential", "ggplot2", "igraph"), quietly = TRUE)) {
-    stop("The packages \"shiny\", \"shinythemes\", \"shinyWidgets\", \"shinyjs\", \"shinycssloaders\", \"colourpicker\",
-    \"DT\", \"magrittr\", \"ranger\", \"coop\", and \"ggplot2\"
-    are required for the shiny apps to work. Please install the required packages before using this function.
-
-  You can install the packages via the following command:
-
-         install.packages(\"Package Name\")",
-         call. = FALSE)
-
-  } else {
+  
+  cat("Checking the requirements for running the shiny app.\n")
+  
+  # Check if the BiocManager is installed
+  if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    utils::install.packages("BiocManager", dependencies = TRUE)
+  }
+  
+  # Loop through each package
+  for (pkg in c("shiny", "shinythemes", "shinyWidgets", "shinyjs",
+                "shinycssloaders", "colourpicker", "DT", "magrittr", "janitor",
+                "ranger", "coop", "influential", "ggplot2", "igraph")) {
+    # Check if the package namespace is available
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      # Install the package if it's not available
+      BiocManager::install(pkg, update = TRUE, ask = FALSE, quiet = TRUE)
+        cat(paste0("The package '", pkg, "' required for running the shiny app is installed.\n"))
+    }
+  }
+  
     # locate all the shiny app examples that exist
     validExamples <- list.files(system.file("ShinyApps", package = "influential"))
 
@@ -123,11 +129,12 @@ runShinyApp <- function(shinyApp) {
         validExamplesMsg,
         call. = FALSE)
     }
+    
+    cat("Loading the shiny app ...")
 
     # find and launch the app
     appDir <- system.file("ShinyApps", shinyApp, package = "influential")
     shiny::runApp(appDir, display.mode = "normal")
-  }
 }
 
 #=============================================================================
@@ -156,12 +163,14 @@ runShinyApp <- function(shinyApp) {
 #' \code{\link[influential]{cent_network.vis}}
 #' @export neighborhood.connectivity
 #' @examples
+#' \dontrun{
 #' MyData <- coexpression.data
 #' My_graph <- graph_from_data_frame(MyData)
 #' GraphVertices <- V(My_graph)
 #' neighrhood.co <- neighborhood.connectivity(graph = My_graph,
 #'                                            vertices = GraphVertices,
 #'                                            mode = "all")
+#'                                            }
 neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", verbose = FALSE) {
 
   # Getting the names of vertices
@@ -408,10 +417,12 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", 
   #' \code{\link[influential]{cent_network.vis}}
   #' @export collective.influence
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
   #' GraphVertices <- V(My_graph)
   #' ci <- collective.influence(graph = My_graph, vertices = GraphVertices, mode = "all", d=3)
+  #' }
   collective.influence <- function(graph, vertices = V(graph), mode = "all", d=3, verbose = FALSE) {
 
     ci <- vector(mode="numeric", length=length(vertices))  # collective influence output
@@ -421,7 +432,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", 
     }
     
     # Calculate the reduced degree of nodes
-    reduced.degrees <- degree(graph = graph,
+    reduced.degrees <- igraph::degree(graph = graph,
                               v = vertices,
                               mode = mode) - 1
 
@@ -441,7 +452,7 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", 
     }
     
     # Calculate the reduced degree of neighbors at distance d
-    nodes.at.distance_reduced.degrees <- degree(graph = graph,
+    nodes.at.distance_reduced.degrees <- igraph::degree(graph = graph,
                                                 v = nodes.at.distance_names,
                                                 mode = mode) - 1
     
@@ -494,11 +505,13 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", 
   #' \code{\link[influential]{cent_network.vis}}
   #' @export clusterRank
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
   #' GraphVertices <- V(My_graph)
   #' cr <- clusterRank(graph = My_graph, vids = GraphVertices, 
   #' directed = FALSE, loops = TRUE, ncores = 1)
+  #' }
   #' @importFrom foreach %dopar%
   clusterRank <- function(graph, vids = V(graph),
                         directed = FALSE, loops = TRUE, ncores = "default", verbose = FALSE) {
@@ -601,11 +614,13 @@ neighborhood.connectivity <- function(graph, vertices = V(graph), mode = "all", 
 #' @family centrality association assessment functions
 #' @export cond.prob.analysis
 #' @examples
+#' \dontrun{
 #' MyData <- centrality.measures
 #' My.conditional.prob <- cond.prob.analysis(data = MyData,
 #'                                           nodes.colname = rownames(MyData),
 #'                                           Desired.colname = "BC",
 #'                                           Condition.colname = "NC")
+#'                                           }
 cond.prob.analysis <- function(data, nodes.colname, Desired.colname, Condition.colname) {
 
   #filtering the data to find those nodes meeting the conditions
@@ -1175,7 +1190,12 @@ double.cent.assess.noRegression <- function(data, nodes.colname,
 #' @param NC A vector containing the values of neighborhood connectivity of the desired vertices.
 #' @param BC A vector containing the values of betweenness centrality of the desired vertices.
 #' @param CI A vector containing the values of Collective Influence of the desired vertices.
-#' @param scaled Logical; whether the end result should be 1-100 range normalized or not (default is TRUE).
+#' @param scale Character string; the method used for scaling/normalizing the results. Options include 'range' (normalization within a 1-100 range), 
+#' 'z-scale' (standardization using the z-score), and 'none' (no data scaling). The default selection is 'range'. Opting for the 'range' method is 
+#' suitable when exploring a single network, allowing you to observe the complete spectrum and distribution of node influences. In this case, there is 
+#' no intention to establish a specific threshold for the outcomes. However, it is possible to identify and present the top influential nodes 
+#' based on their rankings. Conversely, the 'z-scale' option proves advantageous if the aim is to compare node influences across multiple networks or 
+#' if there is a desire to establish a threshold (usually z-score > 1.645) for generating a list of the most influential nodes without manual intervention.
 #' @param verbose Logical; whether the accomplishment of different stages of the algorithm should be printed (default is FALSE).
 #' @return A numeric vector with the IVI values based on the provided centrality measures.
 #' @aliases IVI.FI
@@ -1184,6 +1204,7 @@ double.cent.assess.noRegression <- function(data, nodes.colname,
 #' @seealso \code{\link[influential]{cent_network.vis}}
 #' @export ivi.from.indices
 #' @examples
+#' \dontrun{
 #' MyData <- centrality.measures
 #' My.vertices.IVI <- ivi.from.indices(DC = centrality.measures$DC,
 #'                                     CR = centrality.measures$CR,
@@ -1191,7 +1212,8 @@ double.cent.assess.noRegression <- function(data, nodes.colname,
 #'                                     LH_index = centrality.measures$LH_index,
 #'                                     BC = centrality.measures$BC,
 #'                                     CI = centrality.measures$CI)
-ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE, verbose = FALSE) {
+#'                                     }
+ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scale = "range", verbose = FALSE) {
 
   #Generating temporary measures
 
@@ -1276,7 +1298,7 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE, verbos
 
   #1-100 normalization of IVI
 
-  if(scaled == TRUE) {
+  if(scale == "range") {
     
     if(verbose) {
       cat("1-100 normalization of IVI\n")
@@ -1285,6 +1307,15 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE, verbos
     if(length(unique(temp.ivi)) > 1) {
       temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
     }
+  } else if(scale == 'z-scale') {
+    if(verbose) {
+      cat("Z-score standardization of IVI\n")
+    }
+    
+    temp.ivi <- base::scale(temp.ivi)
+    temp.ivi.names <- rownames(temp.ivi)
+    temp.ivi <- c(temp.ivi)
+    names(temp.ivi) <- temp.ivi.names
   }
 
   return(temp.ivi)
@@ -1321,7 +1352,12 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE, verbos
 #' results can be reached at d=3,4, but this depends on the size/"radius" of the network.
 #' NOTE: the distance d is not inclusive. This means that nodes at a distance of 3 from
 #' our node-of-interest do not include nodes at distances 1 and 2. Only 3.
-#' @param scaled Logical; whether the end result should be 1-100 range normalized or not (default is TRUE).
+#' @param scale Character string; the method used for scaling/normalizing the results. Options include 'range' (normalization within a 1-100 range), 
+#' 'z-scale' (standardization using the z-score), and 'none' (no data scaling). The default selection is 'range'. Opting for the 'range' method is 
+#' suitable when exploring a single network, allowing you to observe the complete spectrum and distribution of node influences. In this case, there is 
+#' no intention to establish a specific threshold for the outcomes. However, it is possible to identify and present the top influential nodes 
+#' based on their rankings. Conversely, the 'z-scale' option proves advantageous if the aim is to compare node influences across multiple networks or 
+#' if there is a desire to establish a threshold (usually z-score > 1.645) for generating a list of the most influential nodes without manual intervention.
 #' @param ncores Integer; the number of cores to be used for parallel processing. If ncores == "default" (default), the number of 
 #' cores to be used will be the max(number of available cores) - 1. We recommend leaving ncores argument as is (ncores = "default").
 #' @param verbose Logical; whether the accomplishment of different stages of the algorithm should be printed (default is FALSE).
@@ -1338,10 +1374,10 @@ ivi.from.indices <- function(DC, CR, LH_index, NC, BC, CI, scaled = TRUE, verbos
 #' GraphVertices <- V(My_graph)
 #' My.vertices.IVI <- ivi(graph = My_graph, vertices = GraphVertices,
 #'                        weights = NULL, directed = FALSE, mode = "all",
-#'                        loops = TRUE, d = 3, scaled = TRUE)
+#'                        loops = TRUE, d = 3, scale = "range")
 #' }
 ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
-                mode = "all", loops = TRUE, d = 3, scaled = TRUE, ncores = "default", verbose = FALSE) {
+                mode = "all", loops = TRUE, d = 3, scale = "range", ncores = "default", verbose = FALSE) {
 
   #Calculation of required centrality measures
   
@@ -1464,7 +1500,7 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 
   #1-100 normalization of IVI
 
-  if(scaled == TRUE) {
+  if(scale == "range") {
     
     if(verbose) {
       cat("1-100 normalization of IVI\n")
@@ -1473,6 +1509,15 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
     if(length(unique(temp.ivi)) > 1) {
       temp.ivi <- 1+(((temp.ivi-min(temp.ivi))*(100-1))/(max(temp.ivi)-min(temp.ivi)))
     }
+  } else if(scale == 'z-scale') {
+    if(verbose) {
+      cat("Z-score standardization of IVI\n")
+    }
+    
+    temp.ivi <- base::scale(temp.ivi)
+    temp.ivi.names <- rownames(temp.ivi)
+    temp.ivi <- c(temp.ivi)
+    names(temp.ivi) <- temp.ivi.names
   }
 
   return(temp.ivi)
@@ -1508,7 +1553,12 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 #' results can be reached at d=3,4, but this depends on the size/"radius" of the network.
 #' NOTE: the distance d is not inclusive. This means that nodes at a distance of 3 from
 #' our node-of-interest do not include nodes at distances 1 and 2. Only 3.
-#' @param scaled Logical; whether the end result should be 1-100 range normalized or not (default is TRUE).
+#' @param scale Character string; the method used for scaling/normalizing the results. Options include 'range' (normalization within a 1-100 range), 
+#' 'z-scale' (standardization using the z-score), and 'none' (no data scaling). The default selection is 'range'. Opting for the 'range' method is 
+#' suitable when exploring a single network, allowing you to observe the complete spectrum and distribution of node influences. In this case, there is 
+#' no intention to establish a specific threshold for the outcomes. However, it is possible to identify and present the top spreading nodes 
+#' based on their rankings. Conversely, the 'z-scale' option proves advantageous if the aim is to compare node influences across multiple networks or 
+#' if there is a desire to establish a threshold (usually z-score > 1.645) for generating a list of the most spreading nodes without manual intervention.
 #' @param verbose Logical; whether the accomplishment of different stages of the algorithm should be printed (default is FALSE).
 #' @return A numeric vector with Spreading scores.
 #' @keywords spreading.score
@@ -1522,10 +1572,10 @@ ivi <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
 #' GraphVertices <- V(My_graph)
 #' Spreading.score <- spreading.score(graph = My_graph, vertices = GraphVertices,
 #'                                    weights = NULL, directed = FALSE, mode = "all",
-#'                                    loops = TRUE, d = 3, scaled = TRUE)
+#'                                    loops = TRUE, d = 3, scale = "range")
 #' }
 spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed = FALSE,
-                            mode = "all", loops = TRUE, d = 3, scaled = TRUE, verbose = FALSE) {
+                            mode = "all", loops = TRUE, d = 3, scale = "range", verbose = FALSE) {
 
   #Calculation of required centrality measures
   
@@ -1596,7 +1646,7 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
 
   #1-100 normalization of spreading score
 
-  if(scaled == TRUE) {
+  if(scale == 'range') {
     
     if(verbose) {
       cat("1-100 normalization of Spreading Score\n")
@@ -1605,6 +1655,16 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
     if(length(unique(temp.spreading.score)) > 1) {
     temp.spreading.score <- 1+(((temp.spreading.score-min(temp.spreading.score))*(100-1))/(max(temp.spreading.score)-min(temp.spreading.score)))
     }
+  } else if(scale == 'z-scale') {
+    if(verbose) {
+      cat("Z-score standardization of Spreading Score\n")
+    }
+    
+    temp.spreading.score <- base::scale(temp.spreading.score)
+    temp.spreading.score.names <- rownames(temp.spreading.score)
+    temp.spreading.score <- c(temp.spreading.score)
+    names(temp.spreading.score) <- temp.spreading.score.names
+    
   }
 
   return(temp.spreading.score)
@@ -1631,7 +1691,12 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
 #' incoming connections select "in" and for the outgoing connections select "out".
 #' Also, if all of the connections are desired, specify the "all" mode. Default mode is set to "all".
 #' @param loops Logical; whether the loop edges are also counted.
-#' @param scaled Logical; whether the end result should be 1-100 range normalized or not (default is TRUE).
+#' @param scale Character string; the method used for scaling/normalizing the results. Options include 'range' (normalization within a 1-100 range), 
+#' 'z-scale' (standardization using the z-score), and 'none' (no data scaling). The default selection is 'range'. Opting for the 'range' method is 
+#' suitable when exploring a single network, allowing you to observe the complete spectrum and distribution of node influences. In this case, there is 
+#' no intention to establish a specific threshold for the outcomes. However, it is possible to identify and present the top hub nodes 
+#' based on their rankings. Conversely, the 'z-scale' option proves advantageous if the aim is to compare node influences across multiple networks or 
+#' if there is a desire to establish a threshold (usually z-score > 1.645) for generating a list of the most hub nodes without manual intervention.
 #' @param verbose Logical; whether the accomplishment of different stages of the algorithm should be printed (default is FALSE).
 #' @return A numeric vector with the Hubness scores.
 #' @keywords hubness.score
@@ -1645,10 +1710,10 @@ spreading.score <- function(graph, vertices = V(graph), weights = NULL, directed
 #' GraphVertices <- V(My_graph)
 #' Hubness.score <- hubness.score(graph = My_graph, vertices = GraphVertices,
 #'                                directed = FALSE, mode = "all",
-#'                                loops = TRUE, scaled = TRUE)
+#'                                loops = TRUE, scale = "range")
 #' }
 hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
-                          mode = "all", loops = TRUE, scaled = TRUE, verbose = FALSE) {
+                          mode = "all", loops = TRUE, scale = "range", verbose = FALSE) {
 
   #Calculation of required centrality measures
   
@@ -1694,7 +1759,7 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 
   #1-100 normalization of Hubness score
 
-  if(scaled == TRUE) {
+  if(scale == "range") {
     
     if(verbose) {
       cat("1-100 normalization of Hubness Score\n")
@@ -1704,6 +1769,16 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
     temp.hubness.score <- 1+(((temp.hubness.score-min(temp.hubness.score))*(100-1))/(max(temp.hubness.score)-min(temp.hubness.score)))
     
     }
+  } else if(scale == 'z-scale') {
+    if(verbose) {
+      cat("Z-score standardization of Hubness Score\n")
+    }
+    
+    temp.hubness.score <- base::scale(temp.hubness.score)
+    temp.hubness.score.names <- rownames(temp.hubness.score)
+    temp.hubness.score <- c(temp.hubness.score)
+    names(temp.hubness.score) <- temp.hubness.score.names
+    
   }
 
   return(temp.hubness.score)
@@ -1733,7 +1808,11 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 #' @param no.sim Integer scalar, the number of simulation runs to perform SIR model on the
 #' original network as well as perturbed networks generated by leave-one-out technique.
 #' You may choose a different no.sim based on the available memory on your system.
+#' @param ncores Integer; the number of cores to be used for parallel processing. If ncores == "default" (default), the number of 
+#' cores to be used will be the max(number of available cores) - 1. We recommend leaving ncores argument as is (ncores = "default").
 #' @param seed A single value, interpreted as an integer to be used for random number generation.
+#' @param node_verbose Logical; whether the process of Parallel Socket Cluster creation should be printed (default is FALSE).
+#' @param loop_verbose Logical; whether the accomplishment of the evaluation of network nodes in each loop should be printed (default is TRUE).
 #' @return A two-column dataframe; a column containing the difference values of the original and
 #' perturbed networks and a column containing node influence rankings
 #' @aliases SIRIR
@@ -1743,62 +1822,81 @@ hubness.score <- function(graph, vertices = V(graph), directed = FALSE,
 #' and \code{\link[igraph]{sir}} for a complete description on SIR model
 #' @export sirir
 #' @examples
+#' \dontrun{
 #' set.seed(1234)
 #' My_graph <- igraph::sample_gnp(n=50, p=0.05)
 #' GraphVertices <- V(My_graph)
-#' Influence.Ranks <- sirir(graph = My_graph, vertices = GraphVertices,
-#'                          beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
+#' Influence.Ranks <- sirir(graph = My_graph, vertices = GraphVertices, 
+#'                          beta = 0.5, gamma = 1, ncores = "default", no.sim = 10, seed = 1234)
+#' }
 #' @importFrom igraph vcount as_ids sir
+#' @importFrom foreach %dopar%
 sirir <- function(graph, vertices = V(graph),
-                  beta = 0.5, gamma = 1,
-                  no.sim = igraph::vcount(graph)*100,  seed = 1234) {
-
-  #Define a data frame
-  temp.loocr.table <- data.frame(difference.value = vector("numeric", length = length(vertices)),
-                                 rank = vector("integer", length = length(vertices)))
-
-  if(inherits(vertices, "character")) {
-    rownames(temp.loocr.table) <- vertices
-  } else if(inherits(vertices, "igraph.vs")) {
-    rownames(temp.loocr.table) <- igraph::as_ids(vertices)
-  }
-
-
-  #Model the spreading based on all nodes
-  set.seed(seed)
-  all.included.spread <- igraph::sir(graph = graph, beta = beta,
-                             gamma = gamma, no.sim = no.sim)
-
-  #Getting the mean of spread in each independent experiment
-  all.mean.spread <- vector("numeric", length = length(all.included.spread))
-
-  for (i in 1:length(all.included.spread)) {
-    all.mean.spread[i] <- max(all.included.spread[[i]]$NR)
-  }
-  all.mean.spread <- mean(all.mean.spread)
-
-  #Model the spread based on leave one out cross ranking (LOOCR)
-
-  for(s in 1:length(vertices)) {
-
-    temp.graph <- igraph::delete_vertices(graph, unlist(vertices[s]))
-
-    set.seed(seed)
-
-    loocr.spread <- igraph::sir(graph = temp.graph, beta = beta,
-                        gamma = gamma, no.sim = no.sim)
-
-    loocr.mean.spread <- vector("numeric", length = length(loocr.spread))
-
-    for (h in 1:length(loocr.spread)) {
-      loocr.mean.spread[h] <- max(loocr.spread[[h]]$NR)
+                  beta = 0.5, gamma = 1, no.sim = 100,  
+                  ncores = "default", seed = 1234, loop_verbose = TRUE, node_verbose = FALSE) {
+  
+  suppressWarnings({
+    
+    # Make clusters for parallel processing
+    cl <- parallel::makeCluster(ifelse(ncores == "default", parallel::detectCores() - 1, ncores), 
+                                outfile=ifelse(node_verbose, "", "NULL"))
+    doParallel::registerDoParallel(cl)
+    
+    #Define a data frame
+    temp.loocr.table <- data.frame(difference.value = vector("numeric", length = length(vertices)),
+                                   rank = vector("integer", length = length(vertices)))
+    
+    if(inherits(vertices, "character")) {
+      rownames(temp.loocr.table) <- vertices
+    } else if(inherits(vertices, "igraph.vs")) {
+      rownames(temp.loocr.table) <- igraph::as_ids(vertices)
     }
-    loocr.mean.spread <- mean(loocr.mean.spread)
-    temp.loocr.table$difference.value[s] <- all.mean.spread - loocr.mean.spread
-  }
-
-  temp.loocr.table$rank <- rank(-temp.loocr.table$difference.value, ties.method = "min")
-
+    
+    #Model the spreading based on all nodes
+    set.seed(seed)
+    all.included.spread <- igraph::sir(graph = graph, beta = beta,
+                                       gamma = gamma, no.sim = no.sim)
+    
+    #Getting the mean of spread in each independent experiment
+    all.mean.spread <- sapply(1:length(all.included.spread), function(i) {
+      max(all.included.spread[[i]]$NR)
+    })
+    
+    all.mean.spread <- mean(all.mean.spread)
+    
+    #Model the spread based on leave one out cross ranking (LOOCR)
+    loocr.mean.spread_vec <- 
+      foreach::foreach(s = vertices,
+                       .combine = "c", 
+                       .verbose = loop_verbose,
+                       .multicombine = TRUE,
+                       .packages = c("igraph", "influential"),
+                       .export = c("graph", "beta", "gamma", "no.sim", "all.mean.spread")
+      ) %dopar% {
+        
+        temp.graph <- igraph::delete_vertices(graph, s)
+        set.seed(seed)
+        loocr.spread <- igraph::sir(graph = temp.graph, beta = beta,
+                                    gamma = gamma, no.sim = no.sim)
+        
+        loocr.mean.spread <- sapply(1:length(loocr.spread), function(h) {
+          max(loocr.spread[[h]]$NR)
+        })
+        
+        cat(paste("\nProcessing vertex ", as_ids(s), " is done!", "\n", sep = ""))  # Print message for each iteration
+        
+        # return mean of loocr spreads
+        mean(loocr.mean.spread)
+      }
+    
+    # Stop the parallel backend
+    parallel::stopCluster(cl)
+    
+    temp.loocr.table$difference.value <- all.mean.spread - loocr.mean.spread_vec
+    temp.loocr.table$rank <- rank(-temp.loocr.table$difference.value, ties.method = "min")
+    
+  })
+  
   return(temp.loocr.table)
 }
 
@@ -1824,8 +1922,10 @@ sirir <- function(graph, vertices = V(graph),
 #' @seealso \code{\link[igraph]{graph_from_adjacency_matrix}} for a complete description on this function
 #' @export graph_from_data_frame
 #' @examples
+#' \dontrun{
 #' MyData <- coexpression.data
 #' My_graph <- graph_from_data_frame(d=MyData)
+#' }
 #' @importFrom igraph graph_from_data_frame
   graph_from_data_frame <- igraph::graph_from_data_frame
 
@@ -1860,8 +1960,10 @@ sirir <- function(graph, vertices = V(graph),
   #' @seealso \code{\link[igraph]{graph_from_adjacency_matrix}} for a complete description on this function
   #' @export graph_from_adjacency_matrix
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.adjacency
   #' My_graph <- graph_from_adjacency_matrix(MyData)
+  #' }
   #' @importFrom igraph graph_from_adjacency_matrix
   graph_from_adjacency_matrix <- igraph::graph_from_adjacency_matrix
 
@@ -1924,9 +2026,11 @@ sirir <- function(graph, vertices = V(graph),
   #' @seealso \code{\link[igraph]{V}} for a complete description on this function
   #' @export V
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
   #' My_graph_vertices <- V(My_graph)
+  #' }
   #' @importFrom igraph V
   V <- igraph::V
 
@@ -1951,11 +2055,13 @@ sirir <- function(graph, vertices = V(graph),
   #' and \code{\link[igraph]{betweenness}} for a complete description on this function
   #' @export betweenness
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
   #' GraphVertices <- V(My_graph)
   #' My_graph_betweenness <- betweenness(My_graph, v = GraphVertices,
   #'                         directed = FALSE, normalized = FALSE)
+  #'                         }
   betweenness <- function(graph,
                           v = V(graph),
                           directed = TRUE,
@@ -1990,10 +2096,12 @@ sirir <- function(graph, vertices = V(graph),
   #' and \code{\link[igraph]{degree}} for a complete description on this function
   #' @export degree
   #' @examples
+  #' \dontrun{
   #' MyData <- coexpression.data
   #' My_graph <- graph_from_data_frame(MyData)
   #' GraphVertices <- V(My_graph)
   #' My_graph_degree <- degree(My_graph, v = GraphVertices, normalized = FALSE)
+  #' }
   #' @importFrom igraph degree
   degree <- igraph::degree
 
@@ -2173,6 +2281,11 @@ sirir <- function(graph, vertices = V(graph),
 
     # Get the column number of condition column
     condition.index <- match(Condition_colname, colnames(Exptl_data))
+    
+    # transform the data to numeric
+    if(any(sapply(Exptl_data[,-condition.index], mode)  == "character")) {
+      Exptl_data[,-condition.index] <- data.frame(sapply(Exptl_data[,-condition.index], as.numeric))
+    }
 
     # Transform the condition column to a factor
     Exptl_data[,condition.index] <- base::as.factor(Exptl_data[,condition.index])
@@ -2286,14 +2399,16 @@ sirir <- function(graph, vertices = V(graph),
                                     num.trees = num_trees,
                                     mtry = mtry,
                                     importance = "impurity_corrected",
-                                    write.forest = FALSE)
+                                    write.forest = FALSE, 
+                                    seed = seed)
 
     base::set.seed(seed = seed)
     rf.diff.exptl.pvalue <- as.data.frame(ranger::importance_pvalues(x = rf.diff.exptl,
                                                                      formula = condition ~ .,
                                                                      num.permutations = num_permutations,
                                                                      data = exptl.for.super.learn,
-                                                                     method = "altmann"))
+                                                                     method = "altmann",
+                                                                     seed = seed))
 
     #replace feature names (rownames) with their original names
     rownames(rf.diff.exptl.pvalue) <- features.exptl.for.super.learn
@@ -2314,7 +2429,11 @@ sirir <- function(graph, vertices = V(graph),
         rf.diff.exptl.pvalue <- base::subset(rf.diff.exptl.pvalue, rf.diff.exptl.pvalue$pvalue < alpha)
 
       } else {
-        rf.pval.select <- which(rf.diff.exptl.pvalue[,"pvalue"] <alpha)
+        if(length(which(rf.diff.exptl.pvalue[, "pvalue"] < alpha)) >= 10) {
+          rf.pval.select <- which(rf.diff.exptl.pvalue[, "pvalue"] < alpha)
+        } else {
+          rf.pval.select <- which(order(rf.diff.exptl.pvalue[, "pvalue"]) <= 10)
+        }
         rf.nonSig <- seq(nrow(rf.diff.exptl.pvalue))[-rf.pval.select]
         required.pos.importance <- select.number - length(rf.pval.select)
 
@@ -2364,6 +2483,7 @@ sirir <- function(graph, vertices = V(graph),
                                                            base::colnames(Exptl_data)))
     temp.Exptl_data.for.PCA <- Exptl_data[,Exptl_data.for.PCA.index]
 
+    set.seed(seed)
     temp.PCA <- stats::prcomp(temp.Exptl_data.for.PCA)
     temp.PCA.r <- base::abs(temp.PCA$rotation[,1])
 
@@ -2646,15 +2766,15 @@ sirir <- function(graph, vertices = V(graph),
     }
 
     if(nrow(as.data.frame(Driver.table))==0) {Driver.table <- NULL} else {
+      
+      #add Z.score
+      Driver.table$Z.score <- base::scale(Driver.table$final.Driver.score)
 
       #range normalize final driver score
       ifelse(length(unique(Driver.table$final.Driver.score)) > 1,
              Driver.table$final.Driver.score <- 1+(((Driver.table$final.Driver.score-min(Driver.table$final.Driver.score))*(100-1))/
                                                      (max(Driver.table$final.Driver.score)-min(Driver.table$final.Driver.score))),
              Driver.table$final.Driver.score <- 1)
-
-      #add Z.score
-      Driver.table$Z.score <- base::scale(Driver.table$final.Driver.score)
 
       #add driver rank
       Driver.table$rank <- rank(-Driver.table$final.Driver.score,
@@ -2779,16 +2899,15 @@ sirir <- function(graph, vertices = V(graph),
           (Biomarker.table$rf.pvalue)*(Biomarker.table$rf.importance)*
           (Biomarker.table$rotation)
       }
+      
+      #add biomarker Z.score
+      Biomarker.table$Z.score <- base::scale(Biomarker.table$final.biomarker.score)
 
       #range normalize biomarker score
       ifelse(length(unique(Biomarker.table$final.biomarker.score)) > 1,
              Biomarker.table$final.biomarker.score <- 1+(((Biomarker.table$final.biomarker.score-min(Biomarker.table$final.biomarker.score))*(100-1))/
                                                            (max(Biomarker.table$final.biomarker.score)-min(Biomarker.table$final.biomarker.score))),
              Biomarker.table$final.biomarker.score <- 1)
-
-
-      #add biomarker Z.score
-      Biomarker.table$Z.score <- base::scale(Biomarker.table$final.biomarker.score)
 
       #add biomarker rank
       Biomarker.table$rank <- rank(-Biomarker.table$final.biomarker.score, ties.method = "min")
@@ -2869,15 +2988,15 @@ sirir <- function(graph, vertices = V(graph),
 
     DE.mediator.table <- DE.mediator.table[DE.mediator.row.index,]
     if(nrow(as.data.frame(DE.mediator.table))==0) {DE.mediator.table <- NULL} else {
+      
+      #add DE mediators Z score
+      DE.mediator.table$Z.score <- base::scale(DE.mediator.table$DE.mediator.score)
 
       #range normalize DE mediators score
       ifelse(length(unique(DE.mediator.table$DE.mediator.score)) > 1,
              DE.mediator.table$DE.mediator.score <- 1+(((DE.mediator.table$DE.mediator.score-min(DE.mediator.table$DE.mediator.score))*(100-1))/
                                                          (max(DE.mediator.table$DE.mediator.score)-min(DE.mediator.table$DE.mediator.score))),
              DE.mediator.table$DE.mediator.score <- 1)
-
-      #add DE mediators Z score
-      DE.mediator.table$Z.score <- base::scale(DE.mediator.table$DE.mediator.score)
 
       #add DE mediators rank
       DE.mediator.table$rank <- rank(-DE.mediator.table$DE.mediator.score, ties.method = "min")
@@ -2941,15 +3060,15 @@ sirir <- function(graph, vertices = V(graph),
       non.DE.mediators.table$ivi <- temp.corr.ivi[non.DE.mediators.ivi.index]
 
       non.DE.mediators.table$non.DE.mediator.score <- non.DE.mediators.table$N.score*non.DE.mediators.table$ivi
+      
+      #add non-DE mediators Z.score
+      non.DE.mediators.table$Z.score <- base::scale(non.DE.mediators.table$non.DE.mediator.score)
 
       #range normalize nonDE mediators score
       ifelse(length(unique(non.DE.mediators.table$non.DE.mediator.score)) > 1,
              non.DE.mediators.table$non.DE.mediator.score <- 1+(((non.DE.mediators.table$non.DE.mediator.score-min(non.DE.mediators.table$non.DE.mediator.score))*(100-1))/
                                                                   (max(non.DE.mediators.table$non.DE.mediator.score)-min(non.DE.mediators.table$non.DE.mediator.score))),
              non.DE.mediators.table$non.DE.mediator.score <- 1)
-
-      #add non-DE mediators Z.score
-      non.DE.mediators.table$Z.score <- base::scale(non.DE.mediators.table$non.DE.mediator.score)
 
       #add non-DE mediators P-value
       non.DE.mediators.table$P.value <- stats::pnorm(non.DE.mediators.table$Z.score,
@@ -3032,7 +3151,7 @@ sirir <- function(graph, vertices = V(graph),
   #' \dontrun{
   #' my.Diff_data <- diff_data.assembly(Differential_data1,
   #'                                    Differential_data2,
-  #'                                    Regression_data1))
+  #'                                    Regression_data1)
   #' }
   diff_data.assembly <- function(...) {
 
@@ -4097,6 +4216,10 @@ sirir <- function(graph, vertices = V(graph),
   #' @param no.sim Integer scalar corresponding to the SIRIR model. The number of simulation runs to perform SIR model on for the
   #' original network as well perturbed networks generated by leave-one-out technique.
   #' You may choose a different no.sim based on the available memory on your system.
+  #' @param node_verbose Logical; whether the process of Parallel Socket Cluster creation should be printed (default is FALSE).
+  #' @param loop_verbose Logical; whether the accomplishment of the evaluation of network nodes in each loop should be printed (default is TRUE).
+  #' @param ncores Integer; the number of cores to be used for parallel processing. If ncores == "default" (default), the number of 
+  #' cores to be used will be the max(number of available cores) - 1. We recommend leaving ncores argument as is (ncores = "default").
   #' @param seed A single value, interpreted as an integer to be used for random number generation.
   #' @return Depending on the input data, a list including one to three data frames of knockout/up-regulation rankings.
   #' @keywords comp_manipulate
@@ -4113,14 +4236,18 @@ sirir <- function(graph, vertices = V(graph),
   #'                                               gamma = 1, no.sim = 10, seed = 1234)
   #'                                               }
   #' @importFrom igraph vcount as_ids sir
+  #' @importFrom foreach %dopar% foreach
 
   comp_manipulate <- function(exir_output = NULL,
                               graph = NULL,
-                              ko_vertices = V(graph),
-                              upregulate_vertices = V(graph),
+                              ko_vertices = igraph::V(graph),
+                              upregulate_vertices = igraph::V(graph),
                               beta = 0.5,
                               gamma = 1,
-                              no.sim = igraph::vcount(graph) * 100,
+                              no.sim = 100,
+                              node_verbose = FALSE,
+                              loop_verbose = TRUE,
+                              ncores = "default", 
                               seed = 1234) {
 
     ##**************************##
@@ -4132,73 +4259,88 @@ sirir <- function(graph, vertices = V(graph),
     ##**************************##
     # Over-expression function
 
-    overexpr <- function (graph, vertices = V(graph), beta = 0.5, gamma = 1,
-                          no.sim = igraph::vcount(graph) * 100, seed = 1234)
-    {
-      temp.loocr.table <- data.frame(difference.value = vector("numeric",
-                                                               length = length(vertices)), rank = vector("integer",
-                                                                                                         length = length(vertices)))
-      if (inherits(vertices, "character")) {
-        rownames(temp.loocr.table) <- vertices
-      } else if (inherits(vertices, "igraph.vs")) {
-        rownames(temp.loocr.table) <- igraph::as_ids(vertices)
-      }
-      set.seed(seed)
-      all.included.spread <- igraph::sir(graph = graph, beta = beta,
-                                         gamma = gamma, no.sim = no.sim)
-      all.mean.spread <- vector("numeric", length = length(all.included.spread))
-      for (i in 1:length(all.included.spread)) {
-        all.mean.spread[i] <- max(all.included.spread[[i]]$NR)
-      }
-      all.mean.spread <- mean(all.mean.spread)
-      for (s in 1:length(vertices)) {
-
-        all.edges <- as.data.frame(igraph::as_edgelist(graph))
-        all.desired.edges.index <- unlist(apply(X = all.edges, MARGIN = 2,
-                                                FUN = function(i) which(i %in% rownames(temp.loocr.table)[s])))
-
-        all.edges <- all.edges[c(all.desired.edges.index),]
-
-        all.edges.from.indices <- unlist(lapply(X = all.edges[,1],
-                                                FUN = function(i) which(igraph::as_ids(V(graph)) %in% i)))
-
-        all.edges.to.indices <- unlist(lapply(X = all.edges[,2],
-                                              FUN = function(i) which(igraph::as_ids(V(graph)) %in% i)))
-
-        all.edges.desired.indices <- data.frame(from = all.edges.from.indices, to = all.edges.to.indices)
-
-        temp.graph <- igraph::add_vertices(graph = graph, nv = 1,
-                                           name = paste0(rownames(temp.loocr.table)[s], "Fold1"))
-
-        desired.vertex.index <- match(rownames(temp.loocr.table)[s], igraph::as_ids(V(temp.graph)))
-
-        desired.vertexFold1.index <- match(paste0(rownames(temp.loocr.table)[s], "Fold1"),
-                                           igraph::as_ids(V(temp.graph)))
-
-        all.edges.desired.indices[which(all.edges.desired.indices[,1] == desired.vertex.index),1] <- desired.vertexFold1.index
-        all.edges.desired.indices[which(all.edges.desired.indices[,2] == desired.vertex.index),2] <- desired.vertexFold1.index
-        all.edges.desired.indices <- apply(X = all.edges.desired.indices, MARGIN = 1,
-                                           FUN = function(i) paste(i[1], i[2], sep = ","))
-
-        all.edges.desired.indices <- paste(all.edges.desired.indices, collapse = ",")
-
-        all.edges.desired.indices <- as.numeric(unlist(strsplit(x = all.edges.desired.indices, split = ",")))
-
-        temp.graph <- igraph::add_edges(graph = temp.graph, edges = all.edges.desired.indices)
-
-        set.seed(seed)
-        loocr.spread <- igraph::sir(graph = temp.graph, beta = beta,
-                                    gamma = gamma, no.sim = no.sim)
-        loocr.mean.spread <- vector("numeric", length = length(loocr.spread))
-        for (h in 1:length(loocr.spread)) {
-          loocr.mean.spread[h] <- max(loocr.spread[[h]]$NR)
+    overexpr <- function(graph, vertices = upregulate_vertices, beta = beta, gamma = gamma,
+                          no.sim = no.sim, loop_verbose = loop_verbose, 
+                         ncores = ncores,
+                         node_verbose = node_verbose, seed = seed) {
+      
+      suppressWarnings({
+        
+        # Make clusters for parallel processing
+        cl <- parallel::makeCluster(ifelse(ncores == "default", parallel::detectCores() - 1, ncores), 
+                                    outfile=ifelse(node_verbose, "", "NULL"))
+        doParallel::registerDoParallel(cl)
+      
+        temp.loocr.table <- data.frame(difference.value = rep(NA, length(vertices)), rank = rep(NA, length(vertices)))
+        if (inherits(vertices, "character")) {
+          rownames(temp.loocr.table) <- vertices
+        } else if (inherits(vertices, "igraph.vs")) {
+          rownames(temp.loocr.table) <- igraph::as_ids(vertices)
         }
-        loocr.mean.spread <- mean(loocr.mean.spread)
-        temp.loocr.table$difference.value[s] <- loocr.mean.spread - all.mean.spread
-        loocr.mean.spread
-      }
-      temp.loocr.table$rank <- rank(-temp.loocr.table$difference.value,
-                                    ties.method = "min")
+        
+        set.seed(seed)
+        all.included.spread <- igraph::sir(graph = graph, beta = beta,
+                                           gamma = gamma, no.sim = no.sim)
+        all.mean_spread <- foreach(i = 1:length(all.included.spread), .combine = "c", .verbose = loop_verbose) %dopar% {
+          max(all.included.spread[[i]]$NR)
+        }
+        all.mean_spread <- mean(all.mean_spread)
+        
+        results <- foreach(s = 1:length(vertices), .combine = "c", .verbose = loop_verbose) %dopar% {
+          all.edges <- as.data.frame(igraph::as_edgelist(graph))
+          all.desired.edges.index <- unlist(apply(X = all.edges, MARGIN = 2,
+                                                  FUN = function(i) which(i %in% rownames(temp.loocr.table)[s])))
+          
+          all.edges <- all.edges[c(all.desired.edges.index),]
+          
+          all.edges.from.indices <- unlist(lapply(X = all.edges[,1],
+                                                  FUN = function(i) which(igraph::as_ids(V(graph)) %in% i)))
+          
+          all.edges.to.indices <- unlist(lapply(X = all.edges[,2],
+                                                FUN = function(i) which(igraph::as_ids(V(graph)) %in% i)))
+          
+          all.edges.desired.indices <- data.frame(from = all.edges.from.indices, to = all.edges.to.indices)
+          
+          temp.graph <- igraph::add_vertices(graph = graph, nv = 1,
+                                             name = paste0(rownames(temp.loocr.table)[s], "Fold1"))
+          
+          desired.vertex.index <- match(rownames(temp.loocr.table)[s], igraph::as_ids(V(temp.graph)))
+          
+          desired.vertexFold1.index <- match(paste0(rownames(temp.loocr.table)[s], "Fold1"),
+                                             igraph::as_ids(V(temp.graph))
+          )
+          
+          all.edges.desired.indices[which(all.edges.desired.indices[,1] == desired.vertex.index),1] <- desired.vertexFold1.index
+          all.edges.desired.indices[which(all.edges.desired.indices[,2] == desired.vertex.index),2] <- desired.vertexFold1.index
+          all.edges.desired.indices <- apply(X = all.edges.desired.indices, MARGIN = 1,
+                                             FUN = function(i) paste(i[1], i[2], sep = ","))
+          
+          all.edges.desired.indices <- paste(all.edges.desired.indices, collapse = ",")
+          
+          all.edges.desired.indices <- as.numeric(unlist(strsplit(x = all.edges.desired.indices, split = ",")))
+          
+          temp.graph <- igraph::add_edges(graph = temp.graph, edges = all.edges.desired.indices)
+          
+          set.seed(seed)
+          loocr.spread <- igraph::sir(graph = temp.graph, beta = beta,
+                                      gamma = gamma, no.sim = no.sim)
+          loocr.mean_spread <- foreach(h = 1:length(loocr.spread), .combine = "c", .verbose = loop_verbose) %dopar% {
+            max(loocr.spread[[h]]$NR)
+          }
+          loocr.mean_spread <- mean(loocr.mean_spread)
+          
+          loocr.mean_spread - all.mean_spread
+        }
+        
+        temp.loocr.table$difference.value <- results
+        
+        # Stop the parallel backend
+        parallel::stopCluster(cl)
+        
+        temp.loocr.table$rank <- rank(-temp.loocr.table$difference.value, ties.method = "min")
+      
+      })
+      
       return(temp.loocr.table)
     }
 
@@ -4212,6 +4354,9 @@ sirir <- function(graph, vertices = V(graph),
         beta = beta,
         gamma = gamma,
         no.sim = no.sim,
+        loop_verbose = loop_verbose, 
+        node_verbose = node_verbose,
+        ncores = ncores,
         seed = seed
       )
       )
@@ -4239,6 +4384,9 @@ sirir <- function(graph, vertices = V(graph),
         beta = beta,
         gamma = gamma,
         no.sim = no.sim,
+        loop_verbose = loop_verbose, 
+        node_verbose = node_verbose,
+        ncores = ncores,
         seed = seed
       )
       )
@@ -4448,5 +4596,7 @@ sirir <- function(graph, vertices = V(graph),
                            "Y",
                            "Y1",
                            "Y2",
-                           "Z.score"
+                           "Z.score",
+                           "s",
+                           "h"
                            ))

@@ -8,6 +8,7 @@ library(colourpicker)
 library(influential)
 library(ggplot2)
 library(igraph)
+library(readr)
 
 options(shiny.maxRequestSize = Inf)
 options(warn=-1)
@@ -121,9 +122,14 @@ ui <- navbarPageWithText(id = "inTabset",
         numericInput("d", "Distance value corresponding to the calculation of collective influence (optimal: 3,4):",
                      value = 3, step = 1, min = 1),
                ### Scale
-        materialSwitch(inputId = "scaled", label = "Scale the IVI values",
-                      value = TRUE,
-                      status = "info")
+        prettyRadioButtons("scale", "Scaling method:",
+                           choices = list("Range Normalization" = "range",
+                                          "Z-score Standardization" = "z-scale",
+                                          "No Scaling" = "none"),
+                           icon = icon("check"),
+                           bigger = TRUE,
+                           status = "info",
+                           animation = "jelly")
                )),
 
         ## Output IVI calculation
@@ -154,7 +160,7 @@ ui <- navbarPageWithText(id = "inTabset",
         column(4,
                tags$h5("Visualization options"),
                sidebarPanel(width = 12,
-                            style = "overflow-y:scroll; max-height: 800px; position:relative;",
+                            style = "overflow-y:scroll; max-height: 90vh; position:relative;",
                             selectInput(inputId = "layout",
                                         choices = list("KK"="kk", "Star" = "star", "Tree"="tree",
                                                        "Components"="components", "Circle"="circle",
@@ -435,9 +441,9 @@ server <- function(input, output, session) {
             return(NULL)
         ext <- tools::file_ext(input$file$name)
         switch(ext,
-               csv = read.csv(input$file$datapath, sep = ","),
-               tsv = read.delim(input$file$datapath, sep = "\t"),
-               txt = read.delim(input$file$datapath, sep = "\t"),
+               csv = readr::read_delim(input$file$datapath),
+               tsv = readr::read_delim(input$file$datapath),
+               txt = readr::read_delim(input$file$datapath),
                sif = read.delim(input$file$datapath, header = FALSE, sep = "\t")[,c(1,3)],
                validate("Invalid file; Please upload a .csv, .tsv, .txt, or .sif file")
         )
@@ -457,12 +463,15 @@ server <- function(input, output, session) {
                    adjacency = igraph::graph_from_adjacency_matrix(adjmatrix = data(), mode = input$mode, weighted = input$weighted),
                    incidence = igraph::graph_from_incidence_matrix(incidence = data(), mode = input$mode, directed = input$directed, weighted = input$weighted),
                    sif = igraph::graph_from_data_frame(d = data(), directed = input$directed))
-
+        
+        if(input$weighted == TRUE && input$weightColumn != 0) {
         temp.graph <-
             set.edge.attribute(graph = temp.graph,
                                name = "weight",
                                index= E(temp.graph),
                                value = data()[,input$weightColumn])
+        }
+        
         return(temp.graph)
     })
 
@@ -524,7 +533,7 @@ server <- function(input, output, session) {
                          value = 65, min = 1, max = 100, {
 
                 ivi(graph = final.graph(), weights = NULL, directed = input$directed,
-                    mode = input$mode, loops = input$loops, d = input$d, scaled = input$scaled)
+                    mode = input$mode, loops = input$loops, d = input$d, scale = input$scale)
             })
         })
 
