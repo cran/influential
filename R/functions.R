@@ -38,8 +38,6 @@
 #' \itemize{
 #'   \item Package: influential
 #'   \item Type: Package
-#'   \item Version: 2.2.9
-#'   \item Date: 01-12-2023
 #'   \item License: GPL-3
 #' }
 #'
@@ -103,7 +101,7 @@ runShinyApp <- function(shinyApp) {
   # Loop through each package
   for (pkg in c("shiny", "shinythemes", "shinyWidgets", "shinyjs",
                 "shinycssloaders", "colourpicker", "DT", "magrittr", "janitor",
-                "ranger", "coop", "influential", "ggplot2", "igraph")) {
+                "ranger", "influential", "ggplot2", "igraph")) {
     # Check if the package namespace is available
     if (!requireNamespace(pkg, quietly = TRUE)) {
       # Install the package if it's not available
@@ -2085,7 +2083,6 @@ sirir <- function(graph, vertices = V(graph),
   #' @family integrative ranking functions
   #' @seealso \code{\link[influential]{exir.vis}},
   #' \code{\link[influential]{diff_data.assembly}},
-  #' \code{\link[coop]{pcor}},
   #' \code{\link[stats]{prcomp}},
   #' \code{\link[ranger]{ranger}},
   #' \code{\link[ranger]{importance_pvalues}}
@@ -2126,6 +2123,7 @@ sirir <- function(graph, vertices = V(graph),
     #make sure the input data is of data frame class
     Diff_data <- as.data.frame(Diff_data)
     Exptl_data <- as.data.frame(Exptl_data)
+    Exptl_data[is.na(Exptl_data)] <- 0
 
     #change the colnames of Diff_data
     base::colnames(Diff_data) <- base::paste("source",
@@ -2261,16 +2259,55 @@ sirir <- function(graph, vertices = V(graph),
       features.exptl.for.super.learn <- colnames(exptl.for.super.learn)[-ncol(exptl.for.super.learn)]
 
     colnames(exptl.for.super.learn) <- janitor::make_clean_names(colnames(exptl.for.super.learn))
+    
+    # Defining the num.threads
+    if(ncores == "default") {
+      num.threads <- parallel::detectCores() - 1
+    } else {
+      num.threads <- ncores
+    }
 
     #b Perform random forests classification
     base::set.seed(seed = seed)
-    rf.diff.exptl <- ranger::ranger(formula = condition ~ .,
-                                    data = exptl.for.super.learn,
-                                    num.trees = num_trees,
-                                    mtry = mtry,
-                                    importance = "impurity_corrected",
-                                    write.forest = FALSE, 
-                                    seed = seed)
+    rf.diff.exptl <- tryCatch(
+      
+      {
+        ranger::ranger(
+          formula = condition ~ .,
+          data = exptl.for.super.learn,
+          num.trees = num_trees,
+          mtry = mtry,
+          importance = "impurity_corrected",
+          write.forest = FALSE,
+          num.threads = num.threads,
+          seed = seed
+        )
+      },
+      
+      error = function(e) {
+        
+        if (grepl("protection stack overflow", conditionMessage(e))) {
+          
+          n_features <- ncol(exptl.for.super.learn) - 1
+          
+          stop(
+            paste0(
+              "Supervised machine learning failed due to extremely high feature dimensionality.\n\n",
+              "The input data contains ", n_features, " features (e.g. genes/proteins), which exceeds ",
+              "what the formula interface in R can safely handle on this system.\n\n",
+              "Please reduce the number of features prior to model fitting, for example by:\n",
+              "  - Applying more stringent filtering (e.g. edgeR::filterByExpr)\n",
+              "  - Selecting only highly variable features\n",
+              "  - Removing low-expression or low-variance features"
+            ),
+            call. = FALSE
+          )
+          
+        } else {
+          stop(e)  # rethrow unrelated errors
+        }
+      }
+    )
 
     base::set.seed(seed = seed)
     rf.diff.exptl.pvalue <- as.data.frame(ranger::importance_pvalues(x = rf.diff.exptl,
@@ -2278,6 +2315,7 @@ sirir <- function(graph, vertices = V(graph),
                                                                      num.permutations = num_permutations,
                                                                      data = exptl.for.super.learn,
                                                                      method = "altmann",
+                                                                     num.threads = num.threads,
                                                                      seed = seed))
 
     #replace feature names (rownames) with their original names
@@ -2690,6 +2728,10 @@ sirir <- function(graph, vertices = V(graph),
 
       #filtering redundant (NaN) results
       Driver.table <- Driver.table[stats::complete.cases(Driver.table),]
+      
+      Driver.table <- cbind("Driver" = rownames(Driver.table), Driver.table)
+      Driver.table$Z.score <- as.numeric(Driver.table$Z.score)
+      Driver.table$P.value <- as.numeric(Driver.table$P.value)
 
       if(nrow(as.data.frame(Driver.table))==0) {Driver.table <- NULL}
 
@@ -2817,6 +2859,10 @@ sirir <- function(graph, vertices = V(graph),
 
       #filtering redundant (NaN) results
       Biomarker.table <- Biomarker.table[stats::complete.cases(Biomarker.table),]
+      
+      Biomarker.table <- cbind("Biomarker" = rownames(Biomarker.table), Biomarker.table)
+      Biomarker.table$Z.score <- as.numeric(Biomarker.table$Z.score)
+      Biomarker.table$P.value <- as.numeric(Biomarker.table$P.value)
 
       if(nrow(as.data.frame(Biomarker.table))==0) {Biomarker.table <- NULL}
 
@@ -2891,8 +2937,64 @@ sirir <- function(graph, vertices = V(graph),
       #filtering redundant (NaN) results
       DE.mediator.table <- DE.mediator.table[stats::complete.cases(DE.mediator.table),]
 
-      if(nrow(as.data.frame(DE.mediator.table))==0) {DE.mediator.table <- NULL}
-
+      if(nrow(as.data.frame(DE.mediator.table))==0) {
+        DE.mediator.table <- NULL
+        } else {
+          # Adding the associated drivers to the table
+          
+          ## First order drivers
+          first_order_drivers <- 
+            lapply(1:nrow(DE.mediator.table), function(i) {
+              
+              first_order_assoc_drivers <-
+                Driver.table[grep(paste0(paste("^",
+                                               igraph::as_ids(igraph::neighborhood(temp.corr.graph, 
+                                                                                   nodes = rownames(DE.mediator.table)[i], 
+                                                                                   order = 1)[[1]]),
+                                               "$", sep = ""), 
+                                         collapse = "|"), 
+                                  rownames(Driver.table), value = TRUE),]
+              
+              first_order_assoc_drivers <- rownames(first_order_assoc_drivers[order(first_order_assoc_drivers$Rank),])
+              first_order_assoc_drivers
+            })
+          
+          ## Second order drivers
+          second_order_drivers <- 
+            lapply(1:nrow(DE.mediator.table), function(i) {
+              
+              second_order_assoc_drivers <-
+                Driver.table[grep(paste0(paste("^",
+                                               igraph::as_ids(igraph::neighborhood(temp.corr.graph, 
+                                                                                   nodes = rownames(DE.mediator.table)[i], 
+                                                                                   order = 2)[[1]]),
+                                               "$", sep = ""), 
+                                         collapse = "|"), 
+                                  rownames(Driver.table), value = TRUE),]
+              
+              second_order_assoc_drivers <- second_order_assoc_drivers[!(rownames(second_order_assoc_drivers) %in% first_order_drivers[[i]]),]
+              
+              second_order_assoc_drivers <- rownames(second_order_assoc_drivers[order(second_order_assoc_drivers$Rank),])
+              second_order_assoc_drivers
+            })
+          
+          ## Collapsing the associated drivers
+          first_order_drivers <- lapply(first_order_drivers, function(i) {
+            paste0(i, collapse = ", ")
+          })
+          
+          second_order_drivers <- lapply(second_order_drivers, function(i) {
+            paste0(i, collapse = ", ")
+          })
+          
+          ## Adding to the table
+          DE.mediator.table$First.order.Drivers <- unlist(first_order_drivers)
+          DE.mediator.table$Second.order.Drivers <- unlist(second_order_drivers)
+          
+          DE.mediator.table <- cbind("DE.mediator" = rownames(DE.mediator.table), DE.mediator.table)
+          DE.mediator.table$Z.score <- as.numeric(DE.mediator.table$Z.score)
+          DE.mediator.table$P.value <- as.numeric(DE.mediator.table$P.value)
+        }
     }
 
     #ProgressBar: Preparation of the DE-mediator table
@@ -2964,8 +3066,65 @@ sirir <- function(graph, vertices = V(graph),
       #filtering redundant (NaN) results
       non.DE.mediators.table <- non.DE.mediators.table[stats::complete.cases(non.DE.mediators.table),]
 
-      if(nrow(as.data.frame(non.DE.mediators.table))==0) {non.DE.mediators.table <- NULL}
-
+      if(nrow(as.data.frame(non.DE.mediators.table))==0) {
+        non.DE.mediators.table <- NULL
+      } else {
+        # Adding the associated drivers to the table
+        
+        ## First order drivers
+        first_order_drivers <- 
+          lapply(1:nrow(non.DE.mediators.table), function(i) {
+            
+            first_order_assoc_drivers <-
+              Driver.table[grep(paste0(paste("^",
+                                             igraph::as_ids(igraph::neighborhood(temp.corr.graph, 
+                                                                                 nodes = rownames(non.DE.mediators.table)[i], 
+                                                                                 order = 1)[[1]]),
+                                             "$", sep = ""), 
+                                       collapse = "|"), 
+                                rownames(Driver.table), value = TRUE),]
+            
+            first_order_assoc_drivers <- rownames(first_order_assoc_drivers[order(first_order_assoc_drivers$Rank),])
+            first_order_assoc_drivers
+          })
+        
+        ## Second order drivers
+        second_order_drivers <- 
+          lapply(1:nrow(non.DE.mediators.table), function(i) {
+            
+            second_order_assoc_drivers <-
+              Driver.table[grep(paste0(paste("^",
+                                             igraph::as_ids(igraph::neighborhood(temp.corr.graph, 
+                                                                                 nodes = rownames(non.DE.mediators.table)[i], 
+                                                                                 order = 2)[[1]]),
+                                             "$", sep = ""), 
+                                       collapse = "|"), 
+                                rownames(Driver.table), value = TRUE),]
+            
+            second_order_assoc_drivers <- second_order_assoc_drivers[!(rownames(second_order_assoc_drivers) %in% first_order_drivers[[i]]),]
+            
+            second_order_assoc_drivers <- rownames(second_order_assoc_drivers[order(second_order_assoc_drivers$Rank),])
+            second_order_assoc_drivers
+          })
+        
+        ## Collapsing the associated drivers
+        first_order_drivers <- lapply(first_order_drivers, function(i) {
+          paste0(i, collapse = ", ")
+        })
+        
+        second_order_drivers <- lapply(second_order_drivers, function(i) {
+          paste0(i, collapse = ", ")
+        })
+        
+        ## Adding to the table
+        non.DE.mediators.table$First.order.Drivers <- unlist(first_order_drivers)
+        non.DE.mediators.table$Second.order.Drivers <- unlist(second_order_drivers)
+        
+        non.DE.mediators.table <- cbind("non.DE.mediator" = rownames(non.DE.mediators.table), non.DE.mediators.table)
+        non.DE.mediators.table$Z.score <- as.numeric(non.DE.mediators.table$Z.score)
+        non.DE.mediators.table$P.value <- as.numeric(non.DE.mediators.table$P.value)
+        
+        }
     }
 
     #ProgressBar: Preparation of the nonDE-mediator table
@@ -3086,6 +3245,7 @@ sirir <- function(graph, vertices = V(graph),
   #' "sphere", "random", "dh", "drl", "fr", "gem", "graphopt", "lgl", "mds", and "sugiyama"}
   #' (default is set to "kk"). For a complete description of different layouts and their
   #' underlying algorithms please refer to the function \code{\link[igraph]{layout_}}.
+  #' @param node.group A vector of the same length as the number of network nodes defining the group each node of the network belongs to.
   #' @param node.color A character string indicating the colormap option to use.
   #' Five options are available: "magma" (or "A"), "inferno" (or "B"), "plasma"
   #' (or "C"), "viridis" (or "D", the default option) and "cividis" (or "E").
@@ -3153,6 +3313,7 @@ sirir <- function(graph, vertices = V(graph),
   cent_network.vis <- function(graph,
                                cent.metric,
                                layout = "kk",
+                               node.group = NULL,
                                node.color = "viridis",
                                node.size.min = 3,
                                node.size.max = 15,
@@ -3253,6 +3414,13 @@ sirir <- function(graph, vertices = V(graph),
 
   # add the Node name
   plotcord$Node.name <- base::as.character(igraph::as_ids(V(graph)))
+  
+  # add node.group
+  if(!is.null(node.group)) {
+    plotcord$Group <- node.group
+  } else {
+    plotcord$Group <- plotcord$Node.name
+  }
 
   ####*******************************####
 
@@ -3349,7 +3517,7 @@ sirir <- function(graph, vertices = V(graph),
 
   # add stroke color
   base::suppressWarnings(
-  if(stroke.color == "identical") {
+  if(length(stroke.color) == 1 && stroke.color == "identical") {
     temp.plot <- temp.plot +
       ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y, colour = cent.metric),
                           shape = node.shape,
@@ -3361,13 +3529,13 @@ sirir <- function(graph, vertices = V(graph),
                                      begin = 0.15)
   } else {
     temp.plot <- temp.plot +
-      ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y),
+      ggplot2::geom_point(data = plotcord, ggplot2::aes(x = X, y = Y, color = Group),
                           shape = node.shape,
-                          colour = stroke.color,
                           size = plotcord$Node.size,
                           stroke = stroke.size,
                           alpha = stroke.alpha,
-                          show.legend = FALSE)
+                          show.legend = ifelse(length(stroke.color) == 1, FALSE, TRUE)) +
+      ggplot2::scale_color_manual(values = stroke.color)
   }
   )
 
@@ -4331,7 +4499,7 @@ sirir <- function(graph, vertices = V(graph),
   #' rather than based on their correlation coefficients or an arbitrary p-value is more efficient and accurate in inferring
   #' functional associations in systems, for example in gene regulatory networks.
   #' @param data a numeric dataframe/matrix (features on columns and samples on rows).
-  #' @param use The NA handler, as in R's cov() and cor() functions. Options are "everything", "all.obs", and "complete.obs".
+  #' @param na_to_zero logical, whether to convert NAs to 0 in the output (default) or not.
   #' @param method a character string indicating which correlation coefficient is to be computed. One of "pearson" or "spearman" (default).
   #' @param mutualRank logical, whether to calculate mutual ranks of correlations or not.
   #' @param mutualRank_mode a character string indicating whether to rank based on "signed" or "unsigned" (default) correlation values. 
@@ -4344,8 +4512,7 @@ sirir <- function(graph, vertices = V(graph),
   #' @return Depending on the input data, a dataframe or list including cor (correlation coefficients),
   #' mr (mutual ranks of correlation coefficients), p (p-values of correlation coefficients), and p.adj (adjusted p-values).
   #' @keywords fcor
-  #' @seealso \code{\link[coop]{pcor}}, \code{\link[stats]{p.adjust}},
-  #' and \code{\link[influential]{graph_from_data_frame}}
+  #' @seealso \code{\link[stats]{p.adjust}} and \code{\link[influential]{graph_from_data_frame}}
   #' @export fcor
   #' @examples
   #' \dontrun{
@@ -4355,99 +4522,240 @@ sirir <- function(graph, vertices = V(graph),
   #' }
 
   fcor <- function(data,
-                   use = "everything",
+                   na_to_zero = TRUE,
                    method = "spearman",
                    mutualRank = TRUE,
                    mutualRank_mode = "unsigned",
                    pvalue = FALSE,
                    adjust = "BH",
                    flat = TRUE) {
-
-    if(method == "spearman") {
-      data <- base::apply(X = data, MARGIN = 2, data.table::frankv)
+    
+    #________________________________________
+    # Dealing with warnings
+    ## Save current warning setting and disable warnings
+    old_warn <- getOption("warn")
+    options(warn = -1)   # -1 = suppress all warnings
+    
+    on.exit(options(warn = old_warn), add = TRUE)  # restore when function exits
+    
+    #________________________________________
+    
+    # Define and compile the rank_matrix function inline
+    Rcpp::cppFunction('
+  NumericMatrix rank_matrix(NumericMatrix mat, bool descending = true, bool use_abs = false) {
+    int nrows = mat.nrow();
+    int ncols = mat.ncol();
+    NumericMatrix ranks(nrows, ncols);
+    auto get_val = [use_abs](double x) { return use_abs ? fabs(x) : x; };
+    auto comp = [descending](double va, double vb) { 
+      if (descending) return va > vb;
+      return va < vb;
+    };
+    for(int i = 0; i < nrows; i++) {
+      std::vector<double> row_vec(ncols);
+      for(int j=0; j<ncols; j++) row_vec[j] = mat(i,j);
+      std::vector<size_t> idx(ncols);
+      std::iota(idx.begin(), idx.end(), 0);
+      std::sort(idx.begin(), idx.end(), 
+        [&get_val, &comp, &row_vec](size_t a, size_t b){
+          double va = get_val(row_vec[a]);
+          double vb = get_val(row_vec[b]);
+          if(va == vb) return a < b;
+          return comp(va, vb);
+        });
+      size_t k = 0;
+      while(k < ncols) {
+        size_t start = k;
+        double val = get_val(row_vec[idx[k]]);
+        while(k < ncols && get_val(row_vec[idx[k]]) == val) ++k;
+        size_t end = k - 1;
+        double avg_rank = (static_cast<double>(start + 1) + static_cast<double>(end + 1)) / 2.0;
+        for(size_t j = start; j <= end; ++j) {
+          size_t id = idx[j];
+          ranks(i, id) = avg_rank;
+        }
+      }
     }
-
+    return ranks;
+  }')
+    
+    # Define and compile the flatten_cor_matrix function inline
+    Rcpp::cppFunction('
+  List flatten_cor_matrix(NumericMatrix cormat, Nullable<NumericMatrix> mrmat = R_NilValue, 
+                          Nullable<NumericMatrix> pmat = R_NilValue, Nullable<NumericMatrix> padjmat = R_NilValue,
+                          CharacterVector row_names = CharacterVector::create()) {
+    int m = cormat.nrow();
+    bool has_mr = mrmat.isNotNull();
+    bool has_p = pmat.isNotNull();
+    bool has_pa = padjmat.isNotNull();
+    bool has_names = row_names.size() == m;
+    size_t num = (size_t)(m) * (m - 1LL) / 2;
+    CharacterVector rows, cols;
+    if(has_names) {
+      rows = CharacterVector(num);
+      cols = CharacterVector(num);
+    }
+    NumericVector cors(num);
+    NumericVector mrs, ps, pas;
+    if(has_mr) mrs = NumericVector(num);
+    if(has_p) ps = NumericVector(num);
+    if(has_pa) pas = NumericVector(num);
+    NumericMatrix mr = has_mr ? NumericMatrix(mrmat) : NumericMatrix();
+    NumericMatrix p = has_p ? NumericMatrix(pmat) : NumericMatrix();
+    NumericMatrix pa = has_pa ? NumericMatrix(padjmat) : NumericMatrix();
+    size_t cnt = 0;
+    for(int i = 0; i < m-1; i++) {
+      for(int j = i+1; j < m; j++) {
+        if(has_names) {
+          rows[cnt] = row_names[i];
+          cols[cnt] = row_names[j];
+        }
+        cors[cnt] = cormat(i, j);
+        if(has_mr) mrs[cnt] = mr(i, j);
+        if(has_p) ps[cnt] = p(i, j);
+        if(has_pa) pas[cnt] = pa(i, j);
+        cnt++;
+      }
+    }
+    List res;
+    if(has_names) {
+      res["row"] = rows;
+      res["column"] = cols;
+    }
+    res["cor"] = cors;
+    if(has_mr) res["mr"] = mrs;
+    if(has_p) res["p"] = ps;
+    if(has_pa) res["p.adj"] = pas;
+    return res;
+  }')
+    
     #######################
-
+    
+    # Preserve dimnames
+    var_names <- colnames(data)
+    obs_names <- rownames(data)
+    
+    if(method == "spearman") {
+      # Rank columns using C++ (ascending, no abs)
+      data_t <- t(data)
+      ranked_t <- rank_matrix(data_t, descending = FALSE, use_abs = FALSE)
+      data <- t(ranked_t)
+      colnames(data) <- var_names
+      rownames(data) <- obs_names
+    }
+    
+    #######################
+    
     # Set initial NULL values
     r = NULL
     mutR = NULL
     p = NULL
     pa = NULL
+    
+    #######################
+    
+    # Perform correlation analysis
+    
+    # Preserve original variable names and dimensions
+    variableNames <- colnames(data)
+    totalVariables <- ncol(data)
+    
+    # Identify variables with non-zero variance
+    validVariablesIdx <- which(apply(data, 2, var) > 0)
+    filteredData <- data[, validVariablesIdx, drop = FALSE]
+    
+    if (length(validVariablesIdx) == 0L) {
+      r <- matrix(
+        NA_real_,
+        nrow = totalVariables,
+        ncol = totalVariables,
+        dimnames = list(variableNames, variableNames)
+      )
+      return(r)
+    }
+    
+    # Center data (variables as rows)
+    centeredMatrix <- t(filteredData)
+    centeredMatrix <- centeredMatrix - rowMeans(centeredMatrix)
+    
+    # Compute L2 norms (sqrt of sum of squares)
+    l2Norms <- sqrt(rowSums(centeredMatrix^2))
+    
+    # Guard against numerical zero (should not happen after var filtering,
+    # but protects against floating-point edge cases)
+    l2Norms[l2Norms == 0] <- NA_real_
+    
+    # Normalize rows to unit length
+    normalizedMatrix <- centeredMatrix / l2Norms
+    
+    # Pearson correlation via cosine similarity
+    # This is BLAS-backed tcrossprod()
+    correlationMatrix <- tcrossprod(normalizedMatrix)
+    
+    # Reinsert into full matrix
+    r <- matrix(
+      NA_real_,
+      nrow = totalVariables,
+      ncol = totalVariables
+    )
+    
+    r[validVariablesIdx, validVariablesIdx] <- correlationMatrix
+    rownames(r) <- variableNames
+    colnames(r) <- variableNames
+    
+    if(na_to_zero) {
+      r[!is.finite(r)] <- 0
+    }
 
     #######################
-
-    # Perform correlation analysis using coop::pcor
-    r <- coop::pcor(x = data, use = use)
-
+    
     if(pvalue) {
-
+      
       # Calculate n required for p-value measurement
       n <- nrow(data)
-
+      
       # Calculate t required for p-value measurement
-      t <- (r * sqrt(n - 2))/sqrt(1 - r^2)
-
+      t <- (r * sqrt(n - 2)) / sqrt(1 - r^2)
+      
       # Calculate p-value
       p <- -2 * expm1(stats::pt(abs(t), (n - 2), log.p = TRUE))
       p[p > 1 | is.nan(p)] <- 1
-
+      
       # Calculate adjusted p-value
       if (adjust != "none") {
         pa <- stats::p.adjust(p, adjust)
       }
     }
-
-    # Calculate Mutual Rank
-    ## We set the order= -1 so that higher correlations get higher ranks (highest cor will be first rank)
-
-    if(mutualRank) {
-      if(mutualRank_mode == "unsigned") {
-        r_rank <- base::apply(base::abs(r), 1, data.table::frankv, order= -1) # Fast rank the correlation of each gene with all the other genes
-      } else {
-        r_rank <- base::apply(r, 1, data.table::frankv, order= -1)
-      }
-      rownames(r_rank) <- rownames(r) # Add back row names since it is lost in the 'frankv' function
-      mutR <- base::sqrt(r_rank*t(r_rank))
-    }
-
+    
     #######################
-
-    # Flatten the results
-
-    ## Define a function for flattening the corr matrix
-    #reshape the cor matrix
-    flt.Corr.Matrix <- function(cormat, mrmat = NULL,
-                                pmat = NULL, p.adjmat = NULL) {
-      ut <- base::upper.tri(cormat)
-      flt_data <-
-        data.frame(
-          row = base::rownames(cormat)[base::row(cormat)[ut]],
-          column = base::rownames(cormat)[base::col(cormat)[ut]],
-          cor  = cormat[ut]
-        )
-
-      if(!is.null(mrmat)) flt_data$mr <- mrmat[ut]
-      if(!is.null(pmat)) flt_data$p <- pmat[ut]
-      if(!is.null(p.adjmat)) flt_data$p.adj <- p.adjmat[ut]
-
-      return(flt_data)
+    
+    # Calculate Mutual Rank
+    if(mutualRank) {
+      use_abs <- (mutualRank_mode == "unsigned")
+      r_rank <- rank_matrix(r, descending = TRUE, use_abs = use_abs)
+      dimnames(r_rank) <- dimnames(r)  # Add back dimnames
+      mutR <- sqrt(r_rank * t(r_rank))
     }
-
+    
+    #######################
+    
+    # Flatten the results if requested
     if(flat) {
-      result <- flt.Corr.Matrix(cormat = r, mrmat = mutR,
-                                pmat = p, p.adjmat = pa)
+      flt_list <- flatten_cor_matrix(r, if(mutualRank) mutR else NULL,
+                                     if(pvalue) p else NULL, if(pvalue && adjust != "none") pa else NULL,
+                                     rownames(r))
+      result <- data.frame(flt_list, stringsAsFactors = FALSE, row.names = NULL)
     } else {
       result <- list(r = r,
                      mr = mutR,
                      p = p,
                      p.adj = pa)
     }
-
+    
     class(result) <- c(class(result), "fcor", "influential")
     return(result)
   }
-
+  
 #=============================================================================
 #
 #    Code chunk ∞: Required global variables
@@ -4468,5 +4776,9 @@ sirir <- function(graph, vertices = V(graph),
                            "Y2",
                            "Z.score",
                            "s",
-                           "h"
+                           "h",
+                           "var",
+                           "Group",
+                           "flatten_cor_matrix",
+                           "rank_matrix"
                            ))

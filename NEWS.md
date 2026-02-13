@@ -3,6 +3,26 @@ influential
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit that file -->
 
+# influential 2.3.0 (CRAN version)
+
+- Added first-order and second-order associated drivers of mediators to
+  the final mediator result tables.
+
+- Implemented matrix-based linear algebra formulation and C++ code in
+  the `fcor` function and consequently the association analysis module
+  of the function `exir`, resulting in a highly optimized and
+  significantly faster association analysis.
+
+- Removed the data.table dependency, as it is no longer required.
+
+- Enabled parallel multi-core processing across multiple components of
+  the function `exir`, including the supervised machine learning module.
+
+- The function `exir` is optimized. It now automatically handles NA
+  values of the input experimental data and convert them to zero.
+
+- Debug the function `cent_network.vis`.
+
 # influential 2.2.9 (CRAN version)
 
 - Add the reexports function.
