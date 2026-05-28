@@ -448,27 +448,27 @@ print(My.conditional.prob)
 # 
 
 ## ----exir.data, eval=FALSE--------------------------------------------------------------
-# # Prepare sample data
-# gene.names <- paste("gene", c(1:2000), sep = "_")
+# # Prepare sample feature names
+# gene.names <- paste("gene", 1:2000, sep = "_")
 # 
 # set.seed(60)
-# tp2.vs.tp1.DEGs <- data.frame(logFC = rnorm(n = 700, mean = 2, sd = 4),
-#                               FDR = runif(n = 700, min = 0.0001, max = 0.049))
-# 
-# set.seed(60)
+# tp2.vs.tp1.DEGs <- data.frame(
+#   logFC = rnorm(n = 700, mean = 2, sd = 4),
+#   FDR = runif(n = 700, min = 0.0001, max = 0.049)
+# )
 # rownames(tp2.vs.tp1.DEGs) <- sample(gene.names, size = 700)
 # 
 # set.seed(70)
-# tp3.vs.tp2.DEGs <- data.frame(logFC = rnorm(n = 1300, mean = -1, sd = 5),
-#                               FDR = runif(n = 1300, min = 0.0011, max = 0.039))
-# 
-# set.seed(70)
+# tp3.vs.tp2.DEGs <- data.frame(
+#   logFC = rnorm(n = 1300, mean = -1, sd = 5),
+#   FDR = runif(n = 1300, min = 0.0011, max = 0.039)
+# )
 # rownames(tp3.vs.tp2.DEGs) <- sample(gene.names, size = 1300)
 # 
 # set.seed(80)
-# regression.data <- data.frame(R_squared = runif(n = 800, min = 0.1, max = 0.85))
-# 
-# set.seed(80)
+# regression.data <- data.frame(
+#   R_squared = runif(n = 800, min = 0.1, max = 0.85)
+# )
 # rownames(regression.data) <- sample(gene.names, size = 800)
 
 ## ----diff_data_assembl, eval=FALSE------------------------------------------------------
@@ -478,63 +478,169 @@ print(My.conditional.prob)
 # 
 # my_Diff_data[c(1:10),]
 
+## ---------------------------------------------------------------------------------------
+Exptl_data_orientation = "features_rows"
+
+## ---------------------------------------------------------------------------------------
+normalize = TRUE
+
 ## ----exptl_data, eval=FALSE-------------------------------------------------------------
 # set.seed(60)
-# MyExptl_data <- matrix(data = runif(n = 100000, min = 2, max = 300),
-#                        nrow = 50, ncol = 2000,
-#                        dimnames = list(c(paste("cancer_sample", c(1:25), sep = "_"),
-#                                          paste("normal_sample", c(1:25), sep = "_")),
-#                                        gene.names))
 # 
-# # Log transform the data to bring them closer to normal distribution
+# MyExptl_data <- matrix(
+#   data = runif(n = 100000, min = 2, max = 300),
+#   nrow = 2000,
+#   ncol = 50,
+#   dimnames = list(
+#     gene.names,
+#     c(
+#       paste("cancer_sample", 1:25, sep = "_"),
+#       paste("normal_sample", 1:25, sep = "_")
+#     )
+#   )
+# )
+# 
+# # Log-transform the data to mimic normalized log-scale bulk expression values
 # MyExptl_data <- log2(MyExptl_data)
 # 
-# MyExptl_data[c(1:5, 45:50),c(1:5)]
+# MyExptl_data[1:5, c(1:5, 45:50)] %>% t()
 
 ## ----condition.col, eval=FALSE----------------------------------------------------------
-# MyExptl_data <- as.data.frame(MyExptl_data)
-# MyExptl_data$condition <- c(rep("C", 25), rep("N", 25))
+# condition <- c(rep("C", 25), rep("N", 25))
+# MyExptl_data$condition <- condition
+
+## ----eval=FALSE-------------------------------------------------------------------------
+# 
+# MyExptl_data_with_condition <- rbind(
+#   condition = condition,
+#   MyExptl_data
+# )
+# 
+# # In this case, condition = "condition"
+# 
+
+## ---------------------------------------------------------------------------------------
+pseudo_samples_per_group = 100
+
+## ---------------------------------------------------------------------------------------
+feature_filter = TRUE
+
+## ---------------------------------------------------------------------------------------
+always_keep_diff_features = TRUE
 
 ## ----ExIR, eval=FALSE-------------------------------------------------------------------
 # 
-# #The table of differential/regression previously prepared
+# # The table of differential/regression data previously prepared
 # my_Diff_data
 # 
-# #The column indices of differential values in the Diff_data table
-# Diff_value <- c(1,3)
+# # Column indices of differential values in Diff_data
+# Diff_value <- c(1, 3)
 # 
-# #The column indices of regression values in the Diff_data table
+# # Column index of regression values in Diff_data
 # Regr_value <- 5
 # 
-# #The column indices of significance (P-value/FDR) values in
-# # the Diff_data table
-# Sig_value <- c(2,4)
+# # Column indices of significance values in Diff_data
+# Sig_value <- c(2, 4)
 # 
-# #The matrix/data frame of normalized experimental
-# # data previously prepared
+# # The matrix of normalized experimental data previously prepared
 # MyExptl_data
 # 
-# #The name of the column delineating the conditions of
-# # samples in the Exptl_data matrix
-# Condition_colname <- "condition"
+# # The condition vector in the same order as the samples/columns of MyExptl_data
+# condition <- c(rep("C", 25), rep("N", 25))
 # 
-# #The desired list of features
+# # Optional desired list of features
 # set.seed(60)
-# MyDesired_list <- sample(gene.names, size = 500)  #Optional
+# MyDesired_list <- sample(gene.names, size = 500)
 # 
-# #Running the ExIR model
-# My.exir <- exir(Desired_list = MyDesired_list,
-#                 cor_thresh_method = "mr", mr = 100,
-#                 Diff_data = my_Diff_data, Diff_value = Diff_value,
-#                 Regr_value = Regr_value, Sig_value = Sig_value,
-#                 Exptl_data = MyExptl_data, Condition_colname = Condition_colname,
-#                 seed = 60, verbose = FALSE)
+# # Run the ExIR model
+# My.exir <- exir(
+#   Desired_list = MyDesired_list,
+#   Diff_data = my_Diff_data,
+#   Diff_value = Diff_value,
+#   Regr_value = Regr_value,
+#   Sig_value = Sig_value,
+#   Exptl_data = MyExptl_data,
+#   Exptl_data_type = "bulk",
+#   condition = condition,
+#   Exptl_data_orientation = "features_rows",
+#   normalize = FALSE,
+#   pseudo_sample = FALSE,
+#   feature_filter = TRUE,
+#   cor_thresh_method = "mr",
+#   mr = 100,
+#   seed = 60,
+#   verbose = FALSE
+# )
 # 
 # names(My.exir)
-# #> [1] "Driver table"         "DE-mediator table"     "Biomarker table"      "Graph"
+# #> [1] "Driver table"         "DE-mediator table"    "Biomarker table"      "Graph"
 # 
 # class(My.exir)
 # #> [1] "ExIR_Result"
+
+## ----eval=FALSE-------------------------------------------------------------------------
+# My.exir <- exir(
+#   Desired_list = MyDesired_list,
+#   Diff_data = my_Diff_data,
+#   Diff_value = Diff_value,
+#   Regr_value = Regr_value,
+#   Sig_value = Sig_value,
+#   Exptl_data = raw_count_matrix,
+#   Exptl_data_type = "bulk",
+#   condition = condition,
+#   Exptl_data_orientation = "features_rows",
+#   normalize = TRUE,
+#   feature_filter = TRUE,
+#   cor_thresh_method = "mr",
+#   mr = 100,
+#   seed = 60,
+#   verbose = FALSE
+# )
+
+## ----eval=FALSE-------------------------------------------------------------------------
+# My.exir.sc <- exir(
+#   Desired_list = MyDesired_list,
+#   Diff_data = my_Diff_data,
+#   Diff_value = Diff_value,
+#   Regr_value = Regr_value,
+#   Sig_value = Sig_value,
+#   Exptl_data = sc_counts,
+#   Exptl_data_type = "sc",
+#   condition = cell_condition,
+#   Exptl_data_orientation = "features_rows",
+#   pseudo_sample = TRUE,
+#   pseudo_samples_per_group = 100,
+#   feature_filter = TRUE,
+#   cor_thresh_method = "mr",
+#   mr = 20,
+#   seed = 60,
+#   verbose = FALSE
+# )
+
+## ----eval=FALSE-------------------------------------------------------------------------
+# My.exir.seurat <- exir(
+#   Desired_list = MyDesired_list,
+#   Diff_data = my_Diff_data,
+#   Diff_value = Diff_value,
+#   Regr_value = Regr_value,
+#   Sig_value = Sig_value,
+#   Exptl_data = seurat_object,
+#   Exptl_data_type = "sc",
+#   condition = "condition",
+#   assay = "RNA",
+#   layer = "counts",
+#   pseudo_sample = TRUE,
+#   pseudo_samples_per_group = 100,
+#   feature_filter = TRUE,
+#   cor_thresh_method = "mr",
+#   mr = 20,
+#   seed = 60,
+#   verbose = FALSE
+# )
+
+## ----eval=FALSE-------------------------------------------------------------------------
+# pseudo_sample = FALSE
+# normalize = FALSE
 
 ## ----exir.vis, eval=FALSE---------------------------------------------------------------
 # My.exir.Vis <- exir.vis(exir.results = My.exir,
