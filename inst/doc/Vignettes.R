@@ -1,25 +1,25 @@
-## ----include = FALSE--------------------------------------------------------------------
+## ----include = FALSE-------------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5.4,
+  out.width = "92%"
 )
 options(tibble.print_min = 4L, tibble.print_max = 4L)
-options(width=90)
+options(width = 95)
 options(rmarkdown.html_vignette.check_title = FALSE)
 set.seed(60)
 
-## ----echo=FALSE-------------------------------------------------------------------------
+## ----echo=FALSE------------------------------------------------------------------------------
 spaces <- function (n) {
   paste(rep("&nbsp;", n), collapse = "")
 }
 
-## ----fig.align="right", echo=FALSE, out.width="25%", out.extra='style="float:right; padding:10px"'----
-knitr::include_graphics(path = "../man/figures/Symbol.png", error = FALSE)
-
-## ----setup------------------------------------------------------------------------------
+## ----setup-----------------------------------------------------------------------------------
 library(influential)
 
-## ----exptl_data_fcor, eval=FALSE--------------------------------------------------------
+## ----exptl_data_fcor, eval=FALSE-------------------------------------------------------------
 # 
 # # Prepare a sample dataset
 # set.seed(60)
@@ -29,7 +29,7 @@ library(influential)
 #                                        c(paste("gene", c(1:200), sep = "_")))
 # )
 
-## ----fcor_calc, eval=FALSE--------------------------------------------------------------
+## ----fcor_calc, eval=FALSE-------------------------------------------------------------------
 # 
 # # Calculate correlations between all pairs of genes
 # 
@@ -39,30 +39,30 @@ library(influential)
 #                         pvalue = "TRUE", adjust = "BH",
 #                         flat = TRUE)
 
-## ----echo=FALSE-------------------------------------------------------------------------
+## ----echo=FALSE------------------------------------------------------------------------------
 knitr::kable(head(coexpression.data))
 
-## ----g_dataframe------------------------------------------------------------------------
+## ----g_dataframe-----------------------------------------------------------------------------
 # Preparing the data
 MyData <- coexpression.data
 
 # Reconstructing the graph
 My_graph <- graph_from_data_frame(d=MyData)
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 class(My_graph)
 
-## ----echo=FALSE-------------------------------------------------------------------------
+## ----echo=FALSE------------------------------------------------------------------------------
 knitr::kable(head(coexpression.adjacency, n=15)[10:15,10:15])
 
-## ----g_adj, eval=FALSE------------------------------------------------------------------
+## ----g_adj, eval=FALSE-----------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.adjacency
 # 
 # # Reconstructing the graph
 # My_graph <- graph_from_adjacency_matrix(MyData)
 
-## ----echo=FALSE-------------------------------------------------------------------------
+## ----echo=FALSE------------------------------------------------------------------------------
 set.seed(60)
 My_Data <- matrix(data = sample(c(0,1), replace = TRUE, size = 20), 
                   nrow = 4, ncol = 5,
@@ -71,18 +71,18 @@ My_Data <- matrix(data = sample(c(0,1), replace = TRUE, size = 20),
 
 knitr::kable(My_Data)
 
-## ----g_inc, eval=FALSE------------------------------------------------------------------
+## ----g_inc, eval=FALSE-----------------------------------------------------------------------
 # # Reconstructing the graph
 # My_graph <- graph_from_adjacency_matrix(MyData)
 
-## ----g_sif, eval=FALSE------------------------------------------------------------------
+## ----g_sif, eval=FALSE-----------------------------------------------------------------------
 # # Reconstructing the graph
 # My_graph <- sif2igraph(Path = "Sample_SIF.sif")
 # 
 # class(My_graph)
 # #> [1] "igraph"
 
-## ----Vertices, eval=FALSE---------------------------------------------------------------
+## ----Vertices, eval=FALSE--------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -96,7 +96,7 @@ knitr::kable(My_Data)
 # #> + 6/794 vertices, named, from 775cff6:
 # #> [1] ADAMTS9-AS2 C8orf34-AS1 CADM3-AS1   FAM83A-AS1  FENDRR      LANCL1-AS1
 
-## ----DC, eval=FALSE---------------------------------------------------------------------
+## ----DC, eval=FALSE--------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -113,7 +113,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>         172         121         168          26         189         176
 
-## ----BC, eval=FALSE---------------------------------------------------------------------
+## ----BC, eval=FALSE--------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -131,7 +131,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>   21719.857   28185.199   26946.625    2940.467   33333.369   21830.511
 
-## ----NC, eval=FALSE---------------------------------------------------------------------
+## ----NC, eval=FALSE--------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -150,7 +150,7 @@ knitr::kable(My_Data)
 # #>  ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>   11.290698    4.983471    7.970238    3.000000   15.153439   13.465909
 
-## ----H_index, eval=FALSE----------------------------------------------------------------
+## ----H_index, eval=FALSE---------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -169,7 +169,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>          11           9          11           2          12          12
 
-## ----LH_index, eval=FALSE---------------------------------------------------------------
+## ----LH_index, eval=FALSE--------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -188,7 +188,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>        1165         446         994          34        1289        1265
 
-## ----CI, eval=FALSE---------------------------------------------------------------------
+## ----CI, eval=FALSE--------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -207,7 +207,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>        9918       70560       39078         675       10716        7350
 
-## ----CR, eval=FALSE---------------------------------------------------------------------
+## ----CR, eval=FALSE--------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -226,7 +226,7 @@ knitr::kable(My_Data)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>   63.459812    5.185675   21.111776    1.280000  135.098278   81.255195
 
-## ----cond.prob--------------------------------------------------------------------------
+## ----cond.prob-------------------------------------------------------------------------------
 # Preparing the data
 MyData <- centrality.measures        
 
@@ -238,7 +238,7 @@ My.conditional.prob <- cond.prob.analysis(data = MyData,
 
 print(My.conditional.prob)
 
-## ----double.cent.assess, eval=FALSE-----------------------------------------------------
+## ----double.cent.assess, eval=FALSE----------------------------------------------------------
 # # Preparing the data
 # MyData <- centrality.measures
 # 
@@ -294,7 +294,7 @@ print(My.conditional.prob)
 # #> $ConditionalProbability_split.half.sample
 # #> [1] 55.90331
 
-## ----double.cent.assess.noRegr., eval=FALSE---------------------------------------------
+## ----double.cent.assess.noRegr., eval=FALSE--------------------------------------------------
 # # Preparing the data
 # MyData <- centrality.measures
 # 
@@ -343,7 +343,7 @@ print(My.conditional.prob)
 # #> $ConditionalProbability_split.half.sample
 # #> [1] 55.68163
 
-## ----IVI.from.indices, eval=FALSE-------------------------------------------------------
+## ----IVI.from.indices, eval=FALSE------------------------------------------------------------
 # # Preparing the data
 # MyData <- centrality.measures
 # 
@@ -358,7 +358,7 @@ print(My.conditional.prob)
 # head(My.vertices.IVI)
 # #> [1] 24.670056  8.344337 18.621049  1.017768 29.437028 33.512598
 
-## ----IVI, eval=FALSE--------------------------------------------------------------------
+## ----IVI, eval=FALSE-------------------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -377,7 +377,7 @@ print(My.conditional.prob)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>    39.53878    19.94999    38.20524     1.12371   100.00000    47.49356
 
-## ----net.for.vis, eval=FALSE------------------------------------------------------------
+## ----net.for.vis, eval=FALSE-----------------------------------------------------------------
 # # Reconstructing the graph
 # set.seed(70)
 # My_graph <-  igraph::sample_gnm(n = 50, m = 120, directed = TRUE)
@@ -394,7 +394,7 @@ print(My.conditional.prob)
 # 
 # My_graph_IVI_Vis
 
-## ----Spreading.score, eval=FALSE--------------------------------------------------------
+## ----Spreading.score, eval=FALSE-------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -414,7 +414,7 @@ print(My.conditional.prob)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>   42.932497   38.094111   45.114648    1.587262  100.000000   49.193292
 
-## ----Hubness.score, eval=FALSE----------------------------------------------------------
+## ----Hubness.score, eval=FALSE---------------------------------------------------------------
 # # Preparing the data
 # MyData <- coexpression.data
 # 
@@ -434,7 +434,7 @@ print(My.conditional.prob)
 # #> ADAMTS9-AS2 C8orf34-AS1   CADM3-AS1  FAM83A-AS1      FENDRR  LANCL1-AS1
 # #>   84.299719   46.741660   77.441514    8.437142   92.870451   88.734131
 
-## ----SIRIR, eval=FALSE------------------------------------------------------------------
+## ----SIRIR, eval=FALSE-----------------------------------------------------------------------
 # # Reconstructing the graph
 # My_graph <-  sif2igraph(Path = "Sample_SIF.sif")
 # 
@@ -447,7 +447,7 @@ print(My.conditional.prob)
 #                                    beta = 0.5, gamma = 1, no.sim = 10, seed = 1234)
 # 
 
-## ----exir.data, eval=FALSE--------------------------------------------------------------
+## ----exir.data, eval=FALSE-------------------------------------------------------------------
 # # Prepare sample feature names
 # gene.names <- paste("gene", 1:2000, sep = "_")
 # 
@@ -471,20 +471,20 @@ print(My.conditional.prob)
 # )
 # rownames(regression.data) <- sample(gene.names, size = 800)
 
-## ----diff_data_assembl, eval=FALSE------------------------------------------------------
+## ----diff_data_assembl, eval=FALSE-----------------------------------------------------------
 # my_Diff_data <- diff_data.assembly(tp2.vs.tp1.DEGs,
 #                                    tp3.vs.tp2.DEGs,
 #                                    regression.data)
 # 
 # my_Diff_data[c(1:10),]
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 Exptl_data_orientation = "features_rows"
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 normalize = TRUE
 
-## ----exptl_data, eval=FALSE-------------------------------------------------------------
+## ----exptl_data, eval=FALSE------------------------------------------------------------------
 # set.seed(60)
 # 
 # MyExptl_data <- matrix(
@@ -505,11 +505,11 @@ normalize = TRUE
 # 
 # MyExptl_data[1:5, c(1:5, 45:50)] %>% t()
 
-## ----condition.col, eval=FALSE----------------------------------------------------------
+## ----condition.col, eval=FALSE---------------------------------------------------------------
 # condition <- c(rep("C", 25), rep("N", 25))
 # MyExptl_data$condition <- condition
 
-## ----eval=FALSE-------------------------------------------------------------------------
+## ----eval=FALSE------------------------------------------------------------------------------
 # 
 # MyExptl_data_with_condition <- rbind(
 #   condition = condition,
@@ -519,16 +519,16 @@ normalize = TRUE
 # # In this case, condition = "condition"
 # 
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 pseudo_samples_per_group = 100
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 feature_filter = TRUE
 
-## ---------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------
 always_keep_diff_features = TRUE
 
-## ----ExIR, eval=FALSE-------------------------------------------------------------------
+## ----ExIR, eval=FALSE------------------------------------------------------------------------
 # 
 # # The table of differential/regression data previously prepared
 # my_Diff_data
@@ -578,7 +578,7 @@ always_keep_diff_features = TRUE
 # class(My.exir)
 # #> [1] "ExIR_Result"
 
-## ----eval=FALSE-------------------------------------------------------------------------
+## ----eval=FALSE------------------------------------------------------------------------------
 # My.exir <- exir(
 #   Desired_list = MyDesired_list,
 #   Diff_data = my_Diff_data,
@@ -597,7 +597,7 @@ always_keep_diff_features = TRUE
 #   verbose = FALSE
 # )
 
-## ----eval=FALSE-------------------------------------------------------------------------
+## ----eval=FALSE------------------------------------------------------------------------------
 # My.exir.sc <- exir(
 #   Desired_list = MyDesired_list,
 #   Diff_data = my_Diff_data,
@@ -617,7 +617,7 @@ always_keep_diff_features = TRUE
 #   verbose = FALSE
 # )
 
-## ----eval=FALSE-------------------------------------------------------------------------
+## ----eval=FALSE------------------------------------------------------------------------------
 # My.exir.seurat <- exir(
 #   Desired_list = MyDesired_list,
 #   Diff_data = my_Diff_data,
@@ -638,18 +638,18 @@ always_keep_diff_features = TRUE
 #   verbose = FALSE
 # )
 
-## ----eval=FALSE-------------------------------------------------------------------------
+## ----eval=FALSE------------------------------------------------------------------------------
 # pseudo_sample = FALSE
 # normalize = FALSE
 
-## ----exir.vis, eval=FALSE---------------------------------------------------------------
+## ----exir.vis, eval=FALSE--------------------------------------------------------------------
 # My.exir.Vis <- exir.vis(exir.results = My.exir,
 #                         n = 5,
 #                         y.axis.title = "Gene")
 # 
 # My.exir.Vis
 
-## ----comp_manipulate, eval=FALSE--------------------------------------------------------
+## ----comp_manipulate, eval=FALSE-------------------------------------------------------------
 # # Select which genes to knockout
 # set.seed(60)
 # ko_vertices <- sample(igraph::as_ids(V(My.exir$Graph)), size = 5)
