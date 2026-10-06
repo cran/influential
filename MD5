@@ -1,6 +1,6 @@
-46a2fc80fe88ba4d48a9b640d3ef9e55 *DESCRIPTION
+1008cb839f7ae6a1eb447772b5ff8b86 *DESCRIPTION
 83b1937bb70a60506607669ecb81a1d2 *NAMESPACE
-252f652be95f853fca0e2cebb1af20c2 *NEWS.md
+a0a17b52bbd65b050b9fd99f19b9eace *NEWS.md
 59033db30483285d7868aea9f7283a0b *R/RcppExports.R
 547c5e2b5f0fa80f0a7ed89cfaadfb29 *R/cent-network-vis.R
 88767c1baf733f98664a1bc55cd11f23 *R/centrality-betweenness.R
@@ -13,7 +13,7 @@ f5b634d74c635f528b464171d6b6d382 *R/centrality-ivi-from-indices.R
 3bfd590f2a7d78d471e2cfbd369129bb *R/centrality-lh-index.R
 9d5147516f01c36ca5c1666877ac14d6 *R/centrality-neighborhood-connectivity.R
 00b0eb78f8c0d68e4f07741f0d2fe3b5 *R/centrality-spreading-score.R
-84b15dc741f085712a342ef29f7aeee6 *R/comp-manipulate.R
+113d661cd4fc89cd7d724937f17c4d67 *R/comp-manipulate.R
 15d3fc2767c681054759ba39a0b5c4db *R/cond-prob-analysis.R
 6d828e6cfe0f7880179cb36ba584f3cd *R/data.R
 7aad9f8042e7478a1390a47e2c7d8684 *R/double-cent-assess-noRegression.R
@@ -28,7 +28,7 @@ cbc1f34794a6f6452d13cb7710f0cbfa *R/igraph-reexports.R
 706d2a270468c543e57e96cdd33b59d9 *R/influential-package.R
 07961c583e5e318f333522ca57a3aaf2 *R/shiny.R
 d0e626e5e361b1718c2b7b8c0d3f7504 *R/sif2igraph.R
-5851f72b10e73b83c8575232b391a8a4 *R/sirir.R
+64128ff19996338c4db927be54eafbb1 *R/sirir.R
 31ef80012174bc699a65a01a75f062b2 *README.md
 b52aabe9a2757fc86742763db9dafc9b *build/partial.rdb
 9b3669e0e743e6563f9e03be4973444e *build/vignette.rds
@@ -36,14 +36,14 @@ f340b8acb4f7f1f8abdce7e463850109 *data/centrality.measures.rda
 8b32e4c665ad780d480d7201959160b1 *data/coexpression.adjacency.rda
 9b43777675a61d1b6a013a40e7320b25 *data/coexpression.data.rda
 30d7d1dc493f81c67245445d3320fa02 *inst/CITATION
-3a5f53f82394c56543899ba5541d8542 *inst/ShinyApps/ExIR/app.R
+9a82df89f9636bb60b10fc08cfd242af *inst/ShinyApps/ExIR/app.R
 22862016499ae4a7399ed2bbe2ff7a72 *inst/ShinyApps/ExIR/www/influential_logo.jpg
-0e1a5ac848d24d311dfffe0bb1b4b83b *inst/ShinyApps/IVI/app.R
+6caf56a77c21466f1cdcbd542cf6c095 *inst/ShinyApps/IVI/app.R
 a6a1893b6b0d04aa51713728d637e7fd *inst/ShinyApps/IVI/www/IVI.Patterns.cover.jpg
 22862016499ae4a7399ed2bbe2ff7a72 *inst/ShinyApps/IVI/www/influential_logo.jpg
 9866db723ef7ae5eaab63a58c4182ff9 *inst/doc/Vignettes.R
 e00eb039772a745c15c52f9bb8387cb6 *inst/doc/Vignettes.Rmd
-dc09744979543d5883c567507621567f *inst/doc/Vignettes.html
+a4ed18b1f4b3143f70ef6ad595e56b67 *inst/doc/Vignettes.html
 2144e6f4ed7bfd4dd83c4307319fa9cc *man/betweenness.Rd
 3305ddaf138fc0dc3ac0fb2730acfd04 *man/cent_network.vis.Rd
 2e66bbc6aa77801d53d9412c7ee4229e *man/centrality.measures.Rd
@@ -76,7 +76,7 @@ d68cb08b82670c6fcc4f6e07ee717b56 *man/reexports.Rd
 0af97b51d2e7e62a82419e09cd8db07f *man/sirir.Rd
 39fe18d12f31d533910be46f552f359d *man/spreading.score.Rd
 72d17c5dd8487603333337b66e323da4 *src/RcppExports.cpp
-30586364a533fbc9623f32ceea16480a *src/fcor_rcpp.cpp
+1916356751f00ad8f95532f00c545f3a *src/fcor_rcpp.cpp
 df751b1caefc4843933b67d729bf44cc *vignettes/Sample_SIF.sif
 e00eb039772a745c15c52f9bb8387cb6 *vignettes/Vignettes.Rmd
 299fb472e920fc0f0e1cef2168bf29a0 *vignettes/figures/Symbol.png

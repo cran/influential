@@ -3,9 +3,14 @@ influential
 
 <!-- NEWS.md is generated from NEWS.Rmd. Please edit that file -->
 
-# influential 2.3.2.9000 (Developmental version)
+# influential 2.3.3
 
-- 
+- Bundled apps work with current Shiny and igraph
+
+- Debug `fcor` function.
+
+- Debug `sirir` function so that it works with character vector inputs
+  as well.
 
 # influential 2.3.2
 

@@ -2,7 +2,7 @@ Package: influential
 Type: Package
 Title: Identification and Classification of the Most Influential Nodes
 Language: en-US
-Version: 2.3.2
+Version: 2.3.3
 Authors@R: 
     c(
       person("Adrian", "Salavaty",
@@ -41,11 +41,11 @@ LazyData: true
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2026-08-23 10:39:26 UTC; salavatyadrian
+Packaged: 2026-10-06 22:58:36 UTC; salavatyadrian
 Author: Adrian Salavaty [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-9320-5889>),
   Mirana Ramialison [ths],
   Peter D. Currie [ths]
 Maintainer: Adrian Salavaty <abbas.salavaty@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-08-23 12:30:02 UTC
+Date/Publication: 2026-10-06 23:20:02 UTC
